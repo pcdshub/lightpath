@@ -1,0 +1,2 @@
+class CoordinateError(Exception):
+    pass
