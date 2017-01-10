@@ -1,7 +1,9 @@
 import time
 import logging
 import textwrap
+from collections import OrderedDict
 
+from psp import PV
 logger = logging.getLogger(__name__)
 
 class States:
@@ -13,17 +15,100 @@ class States:
     partially  = 'partially inserted'
     unknown    = 'unknown'
 
-
-class StatePV(object):
+class Component(object):
     """
     Object to handle a device related to an objects state
     """
-    def __init__(self, suffix=None, add_prefix=True, doc=None):
-        self.suffix = suffix
-        self.prefix = add_prefix
-        self.doc    = doc
+    def __init__(self, suffix, add_prefix=True, update=False):
+        self.suffix     = suffix
+        self.attr       = None #Set later by Device
+        self.add_prefix = add_prefix
+        self.update     = update
 
-    def add_prefix(self, instance, suffix): 
+
+    def maybe_add_prefix(self, instance, suffix):
+        """
+        Add the suffix to the devices prefix
+        """ 
+        if instance.prefix:        
+            return '{}{}'.format(instance.prefix, suffix)
+
+        return suffix
+
+    
+    def create_component(self, instance):
+        """
+        Create a component PV for the instance
+        """
+        if self.add_prefix:
+            pv_name = self.maybe_add_prefix(instance, self.suffix)
+
+        else:
+            pv_name = suffix
+        
+        pv_inst = PV(pv_name, initialize=True, monitor=True) 
+        
+        if self.update:
+            self.add_monitor_callback(instance.update, once=False)
+
+        return pv_inst
+
+
+    def __repr__(self):
+        return 'PV({},update={!r})'.format(self.suffix, self.update)  
+
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+
+        return instance._cpts[self.attr]
+
+
+    def __set__(self, instance, owner):
+        raise RuntimeError('Use .put()')
+
+
+class Device(type):
+    """
+    Creates attributes for Components class definition
+    """
+    def __new__(cls, name, bases, clsdict):
+        clsobj = super(Device, cls).__new__(cls, name, bases, clsdict)
+
+
+        #These attributes are reserved for LightDevice functionality and 
+        #can not be used as component names
+        RESERVED_ATTRS = ['line_position', 'alias', 'prefix', 'beamline',
+                          'insert', 'inserted', 'remove', 'removed', 'state',
+                          'transmission', 'home', 'update']
+
+
+        #Check names
+        clsobj._cpts = OrderedDict()
+        for attr, value in clsdict.items():
+            if isinstance(value, Component):
+                if attr in RESERVED_ATTRS:
+                    raise TypeError('The attribute name {} is part of the '\
+                                    'LightDevice interface and can not be '\
+                                    'used as a name of a component. Choose '\
+                                    'a different name'.format(attr))
+
+                if attr.startswith('_'):
+                    raise TypeError('Attribute name can not start with _ '\
+                                    'because of the risk of overwriting '\
+                                    'an existing private attribute. Choose '\
+                                    'a different name')
+                
+                clsobj._cpts[attr] = value
+                
+        #Set the attributes
+        for cpt_attr, cpt in clsobj._cpts.items():
+            cpt.attr = cpt_attr
+            setattr(clsobj, cpt_attr, cpt.create_component(clsobj))
+
+
+        return clsobj
 
 
 class LightDevice(object):
@@ -33,25 +118,30 @@ class LightDevice(object):
     The main function of this class is to define a standard API for further
     device classes to reuse based on their individual states. Each class
     that inherits this as its base should reimplement the following methods;     
-    :meth:`.insert`, :meth:`.remove`, :meth:`.home`, and :meth:`.update. Also,
+    :meth:`.insert`, :meth:`.remove`, :meth:`.home`, and :meth:`.update`. Also,
     if the device has a more complex relationship with the beam than blocking
-    or not, it may be neccesary to reimplement :meth:`.transmission` 
+    or not, it may be neccesary to reimplement :meth:`.transmission`. 
 
     Parameters
     ----------
     alias : str
         Alias for the device
 
-    z : float
+    prefix : str
+        Base PV address for all related records
+
+    z : float, optional
         Z position along the beamline
 
-    beamline : str
+    beamline : str, optional
         Three character abbreviation for the specific beamline the device is on
     """
-    _last_home = None
-
-    def __init__(self, alias, base, z=-1.0, beamline=None):
+    __metaclass__ = Device
+    _last_home    = None
+    
+    def __init__(self, alias, prefix=None, z=-1.0, beamline=None):
         self._alias    = alias
+        self._prefix   = prefix
         self._z        = z
         self._beamline = None
         self._state    = States.unknown 
@@ -82,11 +172,20 @@ class LightDevice(object):
         return self._beamline
 
 
+    @property
+    def prefix(self):
+        """
+        Base PV prefix for the device
+        """
+        return self._prefix
+
+
     def insert(self):
         """
         Insert the device into the beam path
         """
-        self._state = States.inserted
+        logger.debug('Inserting device {} ...'.format(self))
+        pass
 
 
     @property
@@ -105,7 +204,8 @@ class LightDevice(object):
         """
         Remove the device into the beam path
         """
-        self._state = States.removed
+        logger.debug('Removing device {} ...'.format(self))
+        pass
 
 
     @property
@@ -148,7 +248,7 @@ class LightDevice(object):
             If the device is ``partially`` blocking the beam or the
             :attr:`.state` is an unrecognized value
         """
-        if self.state == States.inserted
+        if self.state == States.inserted:
             return 0.
 
         elif self.state == States.removed:
@@ -161,10 +261,12 @@ class LightDevice(object):
             raise NotImplementedError('Transmission can not be '
                                       'calculated for state {}'.format(self.state))
 
+
     def home(self):
         """
         Home the device
         """
+        logger.debug('Homing device {} ...'.format(self))
         self._last_home = time.ctime()
 
 
@@ -173,9 +275,20 @@ class LightDevice(object):
         Update the current state of the device
 
         .. note::
-            This method is used as a callback for a devices state PVS
+
+            This method is used as a callback for a devices state PV
         """
-        pass 
+        logger.debug('Updating state for device {} ...'.format(self))
+        pass
 
 
-   
+    def _repr_info(self):
+       yield ('alias', self.alias)
+       yield ('position', self.line_position)
+       yield ('beamline', self.beamline)
+
+ 
+    def __repr__(self):
+        info = self._repr_info()
+        info = ','.join('{}={!r}'.format(key, value) for key, value in info)
+        return '{}({})'.format(self.__class__.name, info)   

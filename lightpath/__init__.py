@@ -1,4 +1,8 @@
+__all__ = [':wqdevice']
+
 import logging
+
+from device import LightDevice, Component
 
 #Setup logger
 logger = logging.getLogger(__name__)
