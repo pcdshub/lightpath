@@ -2,6 +2,6 @@ LightDevice
 ***********
 
 .. currentmodule:: lightpath.device
-.. autoclass:`.LightDevice`::
+.. autoclass:: LightDevice
    :members:
 
