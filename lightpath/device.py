@@ -4,6 +4,8 @@ import textwrap
 from collections import OrderedDict
 
 from psp import PV
+from . status import Status
+
 logger = logging.getLogger(__name__)
 
 class States:
@@ -120,7 +122,10 @@ class LightDevice(object):
     that inherits this as its base should reimplement the following methods;     
     :meth:`.insert`, :meth:`.remove`, :meth:`.home`, and :meth:`.update`. Also,
     if the device has a more complex relationship with the beam than blocking
-    or not, it may be neccesary to reimplement :meth:`.transmission`. 
+    or not, it may be neccesary to reimplement :meth:`.transmission`. Finally,
+    if the device is capable of measuring the presence of beam, rewriting the
+    :meth:`.verify` can be overwritten as well to be used by the LightPath client
+    to check the predicted beamline state
 
     Parameters
     ----------
@@ -180,18 +185,17 @@ class LightDevice(object):
         return self._prefix
 
 
-    def insert(self):
+    def insert(self, timeout=None):
         """
         Insert the device into the beam path
         """
         logger.debug('Inserting device {} ...'.format(self))
-        pass
-
-
+   
+ 
     @property
     def inserted(self):
         """
-        Report of the device is inserted
+        Report if the device is inserted
         """
         if self.state in (States.inserted, States.partially):
             return True
@@ -205,7 +209,6 @@ class LightDevice(object):
         Remove the device into the beam path
         """
         logger.debug('Removing device {} ...'.format(self))
-        pass
 
 
     @property
@@ -270,6 +273,14 @@ class LightDevice(object):
         self._last_home = time.ctime()
 
 
+    def verify(self):
+        """
+        Verify that the beam is actually incident upon the device
+        """
+        raise NotImplementedError('{!r} does not have a method to verify '\
+                                  'the beam location'.format(self))
+
+
     def update(self):
         """
         Update the current state of the device
@@ -279,7 +290,6 @@ class LightDevice(object):
             This method is used as a callback for a devices state PV
         """
         logger.debug('Updating state for device {} ...'.format(self))
-        pass
 
 
     def _repr_info(self):
@@ -291,4 +301,101 @@ class LightDevice(object):
     def __repr__(self):
         info = self._repr_info()
         info = ','.join('{}={!r}'.format(key, value) for key, value in info)
-        return '{}({})'.format(self.__class__.name, info)   
+        return '{!r}({})'.format(self.__class__, info)   
+
+
+class MPSDevice(LightDevice):
+    """
+    A LightPath Device that is also protected by MPS
+
+    Parameters
+    ----------
+    alias : str
+        Alias for the device
+
+    prefix : str
+        Base PV address for all related records
+
+    mps_prefix : str
+        Base PV address for all related MPS records
+
+    veto : bool, optional
+        Whether it is considered an MPS vetodevice 
+ 
+    z : float, optional
+        Z position along the beamline
+
+    beamline : str, optional
+        Three character abbreviation for the specific beamline the device is on
+
+    """
+    def __init__(self, alias, mps_prefix=None, veto=False,
+                 prefix=None, z=-1.0, beamline=None):
+        super(MPSDevice, self).__init__(alias, prefix=prefix, z=z, beamline=beamline)
+
+        #Some additional attributes
+        self.vetoable  = veto
+        self._faulted  = False
+        self._bypassed = False
+
+        #Raise error if not properly initialized with MPS
+        if not mps_prefx:
+            raise ValueError('MPSDevice must be provided a base PV description '\
+                             'for the pertinent MPS records to be monitored.')
+
+        #Start monitoring
+        self._is_ok  = PV('{}_MPSC',initialize=True, monitor=True)
+        self._bypass = PV('{}_BYPS',initialize=True, monitor=True)
+
+        map(lambda pv : pv.add_monitor_callback(self._state_change),
+            [self._bypass, self._fault])
+
+        #Establish starting state
+        self._state_change()
+
+
+    @property
+    def faulted(self):
+        """
+        Whether device is currently in a faulted state or not
+        """
+        return self._faulted
+
+
+    def insert(self):
+        """
+        Insert the device into the beamline
+        """
+        super(MPSDevice,self).remove()
+        if not self.vetoable:
+            logger.warning('Inserting MPS device {}, '\
+                           'this may cause a fault ...'.format(self)) 
+        
+
+    def remove(self):
+        """
+        Remove the device from the beamline
+        """
+        super(MPSDevice,self).remove()
+        if self.vetoable:
+            logger.warning('Removing MPS veto device {}, '\
+                           'this may cause a fault ...'.format(self)) 
+
+
+    def _state_change(self, e=None)
+        """
+        Callback for changes to the MPS state
+        """
+        if self._bypassed.get():
+            logger.info('Device {} has been bypassed'.format(self))
+            self._faulted = False
+
+        elif not self._is_ok.get():
+            logger.error('Device {} is reporting an MPS fault'.format(self))
+            self._faulted = True
+
+        else:
+            self._faulted = False
+
+ 
+
