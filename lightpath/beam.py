@@ -1,11 +1,23 @@
 import logging
-from   psp import PV
+from enum import Enum
+from psp import PV
 
+
+class Frequency(Enum):
+    120Hz = 0
+    30Hz  = 1
+    10Hz  = 2
+    5Hz   = 3
+    1Hz   = 4
+    0.5Hz = 
 
 class Beam(object):
     """
     Class to hold statistics about the beam
     """
+    energy = C(EpicsSignalR0, 'SIOC:SYS0:ML00:A0627')
+    beamrate = C(EpicsSignalR0, 'EVN:SYS0:1:LCLSBEAMRATE')
+
     def __init__(self):
         self._transmission = 1.0
 
@@ -28,7 +40,7 @@ class Beam(object):
     @property
     def energy
         """
-        Current reporeted energy of the XFEL
+        Current reported energy of the XFEL
         """
         return 
 

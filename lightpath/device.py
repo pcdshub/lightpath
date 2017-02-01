@@ -1,11 +1,10 @@
 import time
 import logging
 import textwrap
+import numpy as np
 from collections import OrderedDict
 
-from psp import PV
-from . status import Status
-
+from ophyd import Device
 logger = logging.getLogger(__name__)
 
 class States:
@@ -16,6 +15,7 @@ class States:
     removed    = 'removed'
     partially  = 'partially inserted'
     unknown    = 'unknown'
+
 
 class Component(object):
     """
@@ -144,7 +144,7 @@ class LightDevice(object):
     __metaclass__ = Device
     _last_home    = None
     
-    def __init__(self, alias, prefix=None, z=-1.0, beamline=None):
+    def __init__(self, alias, prefix=None, z=np.nan, beamline=None):
         self._alias    = alias
         self._prefix   = prefix
         self._z        = z
@@ -183,6 +183,15 @@ class LightDevice(object):
         Base PV prefix for the device
         """
         return self._prefix
+
+
+    @property
+    def destination(self):
+        """
+        Name of the destination beamline after the beam interacts with the
+        device.
+        """
+        return self.beamline
 
 
     def insert(self, timeout=None):
@@ -258,12 +267,11 @@ class LightDevice(object):
             return 100.0
 
         elif self.state == States.unknown:
-            return -1.0
+            return np.nan
 
         else:
             raise NotImplementedError('Transmission can not be '
                                       'calculated for state {}'.format(self.state))
-
 
     def home(self):
         """
@@ -278,7 +286,7 @@ class LightDevice(object):
         Verify that the beam is actually incident upon the device
         """
         raise NotImplementedError('{!r} does not have a method to verify '\
-                                  'the beam location'.format(self))
+                                  'the beam is present'.format(self))
 
 
     def update(self):
@@ -297,11 +305,13 @@ class LightDevice(object):
        yield ('position', self.line_position)
        yield ('beamline', self.beamline)
 
- 
+
+
     def __repr__(self):
         info = self._repr_info()
         info = ','.join('{}={!r}'.format(key, value) for key, value in info)
         return '{!r}({})'.format(self.__class__, info)   
+
 
 
 class MPSDevice(LightDevice):
@@ -339,7 +349,7 @@ class MPSDevice(LightDevice):
         self._bypassed = False
 
         #Raise error if not properly initialized with MPS
-        if not mps_prefx:
+        if not mps_prefix:
             raise ValueError('MPSDevice must be provided a base PV description '\
                              'for the pertinent MPS records to be monitored.')
 
@@ -382,7 +392,7 @@ class MPSDevice(LightDevice):
                            'this may cause a fault ...'.format(self)) 
 
 
-    def _state_change(self, e=None)
+    def _state_change(self, e=None):
         """
         Callback for changes to the MPS state
         """

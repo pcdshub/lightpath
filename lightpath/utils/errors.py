@@ -3,3 +3,6 @@ class CoordinateError(Exception):
 
 class MotionError(Exception):
     pass
+
+class TimeoutError(Exception):
+    pass

@@ -1,4 +1,4 @@
-__all__ = [':wqdevice']
+__all__ = ['device']
 
 import logging
 
