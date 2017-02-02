@@ -1,131 +1,108 @@
 import time
 import logging
-import textwrap
+import functoools
 import numpy as np
-from collections import OrderedDict
 
-from ophyd import Device
+from ophyd        import Device
+from ophyd.device import Component
+from ophyd.signal import EpicsSignal, EpicsSignalRO
+
+from .utils import LoggingPropertyMachine
+
 logger = logging.getLogger(__name__)
 
-class States:
-    """
-    Four way state
-    """
-    inserted   = 'inserted'
-    removed    = 'removed'
-    partially  = 'partially inserted'
-    unknown    = 'unknown'
+
+class StateComponent(Component):
+
+    SUB_CP_CH= 'component_state_changed'
+
+    def __init__(self, suffix, read_only=True, transitions=None):
+            #Transitions are mandatory
+            if not transitions:
+                raise ValueError('State Component must have associated '
+                                 'transitions dictionary')
+
+            #Setup state variables
+            self.state       = 'unknown'
+            self.transitions = dict(transitions)
+
+            #Pick correct class
+            if read_only:
+                cls = EpicSignalRO
+
+            else:
+                cls = EpicsSignal
+
+            super().__init__(self, cls, suffix=suffix)
 
 
-class Component(object):
-    """
-    Object to handle a device related to an objects state
-    """
-    def __init__(self, suffix, add_prefix=True, update=False):
-        self.suffix     = suffix
-        self.attr       = None #Set later by Device
-        self.add_prefix = add_prefix
-        self.update     = update
-
-
-    def maybe_add_prefix(self, instance, suffix):
-        """
-        Add the suffix to the devices prefix
-        """ 
-        if instance.prefix:        
-            return '{}{}'.format(instance.prefix, suffix)
-
-        return suffix
-
-    
     def create_component(self, instance):
         """
-        Create a component PV for the instance
+        Add transitions dictionary to created component
         """
-        if self.add_prefix:
-            pv_name = self.maybe_add_prefix(instance, self.suffix)
+        cpt_inst = super().create_component(instance)
+        return cpt_inst.subscribe(self.update, run=True)
 
-        else:
-            pv_name = suffix
+
+    def update(self, *args, old_value=None, value=None, **kwargs):
+        """
+        Callback to change state of Component
+        """
+        logger.debug('Update caused by {} from {} -> {}'.format(obj.name,
+                                                                value,
+                                                                old_value))
+        #Check that we are in fact getting a new valu 
+        if old_value and old_value ==value:
+            logger.debug('No state change ...')
+            return 
+
+        try:
+            #Keep track of transition
+            transition = self.transitions[value]
+
+            #Check the validity
+            if transition not in ('inserted', 'removed', 'unknown',
+                                  'partially', 'defer'):
+                logger.critical('Unsupported transition {} by {}'
+                                 ''.format(transition, obj.name))
+                #Make unknown if invalid
+                transition  = 'unknown'
         
-        pv_inst = PV(pv_name, initialize=True, monitor=True) 
-        
-        if self.update:
-            self.add_monitor_callback(instance.update, once=False)
+        #By default if a component is an unknown state
+        #The device is unknown
+        except KeyError:
+            logger.warning('Device {} received an unknown value from '
+                           'signal {}'.format(self.name, obj.name))
+            transition = 'unknown'
 
-        return pv_inst
+        #Check that transition is valid
 
+        finally:
+            self.state, old_value =  transition, self.state
 
-    def __repr__(self):
-        return 'PV({},update={!r})'.format(self.suffix, self.update)  
+            logger.debug('Signal {} transitioned from {} - {} ...'
+                         ''.format(obj.name, self.state, state))
 
-
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-
-        return instance._cpts[self.attr]
-
-
-    def __set__(self, instance, owner):
-        raise RuntimeError('Use .put()')
-
-
-class Device(type):
-    """
-    Creates attributes for Components class definition
-    """
-    def __new__(cls, name, bases, clsdict):
-        clsobj = super(Device, cls).__new__(cls, name, bases, clsdict)
+            #Run subscriptions in parent
+            if obj.parent and self.SUB_CP_CH in obj.parent._subs:
+                parent._run_subs(event_type = self.SUB_CP_CH,
+                                 old_value=
+                                 value = self.state)
 
 
-        #These attributes are reserved for LightDevice functionality and 
-        #can not be used as component names
-        RESERVED_ATTRS = ['line_position', 'alias', 'prefix', 'beamline',
-                          'insert', 'inserted', 'remove', 'removed', 'state',
-                          'transmission', 'home', 'update']
-
-
-        #Check names
-        clsobj._cpts = OrderedDict()
-        for attr, value in clsdict.items():
-            if isinstance(value, Component):
-                if attr in RESERVED_ATTRS:
-                    raise TypeError('The attribute name {} is part of the '\
-                                    'LightDevice interface and can not be '\
-                                    'used as a name of a component. Choose '\
-                                    'a different name'.format(attr))
-
-                if attr.startswith('_'):
-                    raise TypeError('Attribute name can not start with _ '\
-                                    'because of the risk of overwriting '\
-                                    'an existing private attribute. Choose '\
-                                    'a different name')
-                
-                clsobj._cpts[attr] = value
-                
-        #Set the attributes
-        for cpt_attr, cpt in clsobj._cpts.items():
-            cpt.attr = cpt_attr
-            setattr(clsobj, cpt_attr, cpt.create_component(clsobj))
-
-
-        return clsobj
-
-
-class LightDevice(object):
+class LightDevice(Device, LightInterface):
     """
     Base class to represent a device along the Lightpath
 
     The main function of this class is to define a standard API for further
     device classes to reuse based on their individual states. Each class
     that inherits this as its base should reimplement the following methods;     
-    :meth:`.insert`, :meth:`.remove`, :meth:`.home`, and :meth:`.update`. Also,
-    if the device has a more complex relationship with the beam than blocking
-    or not, it may be neccesary to reimplement :meth:`.transmission`. Finally,
-    if the device is capable of measuring the presence of beam, rewriting the
-    :meth:`.verify` can be overwritten as well to be used by the LightPath client
-    to check the predicted beamline state
+    :meth:`.insert`, :meth:`.remove`, and :meth:`.home`. Also, if the device
+    has a more complex relationship with the beam than blocking or not, it may
+    be neccesary to reimplement :attr:`.transmission`. Finally, if the device
+    is capable of measuring the presence of beam, rewriting the :meth:`.verify`
+    can be overwritten as well to be used by the LightPath client to check the
+    predicted beamline state
 
     Parameters
     ----------
@@ -141,32 +118,37 @@ class LightDevice(object):
     beamline : str, optional
         Three character abbreviation for the specific beamline the device is on
     """
-    __metaclass__ = Device
-    _last_home    = None
-    
-    def __init__(self, alias, prefix=None, z=np.nan, beamline=None):
-        self._alias    = alias
-        self._prefix   = prefix
+    state = LoggingPropertyMachine(DeviceStateMachine)
+
+    SUB_DEV_CH = 'device_state_changed'
+    _SUB_CP_CH = StateComponent._SUB_CP_CH
+
+    def __init__(self, alias, prefix=None, read_attrs=None,
+            configuration_attrs=None, z=np.nan, beamline=None):
+
+        #Instantiate all Opyhd signals
+        super().__init__(prefix, name=alias,
+                         read_attrs=read_attrs,
+                         configuration_attrs=configuration_attrs)
+
+        #Make a logger for the device
+        self.log = logging.getLogger('device_{}'.format(alias))
+        self.log.setLevel(logging.DEBUG)
+
+        #Location identification
         self._z        = z
-        self._beamline = None
-        self._state    = States.unknown 
+        self._beamline = beamline
+
+        #Link update method with Component Change 
+        self.subscribe(self._update, self._SUB_CP_CH, run=True)
 
 
-    #Set these as properties to make them write-only
     @property
-    def line_position(self):
+    def z(self):
         """
         Z position along the beamline 
         """
         return self._z
-
-
-    @property
-    def alias(self):
-        """
-        Alias of the device
-        """
-        return self._alias
 
 
     @property
@@ -178,11 +160,95 @@ class LightDevice(object):
 
 
     @property
-    def prefix(self):
+    def blocking(self):
         """
-        Base PV prefix for the device
+        Report if the device is inserted
         """
-        return self._prefix
+        return (self.state.is_inserted or self.state.is_partially)
+
+
+    @property
+    def removed(self):
+        """
+        Report if the device is removed
+        """
+        return self.state.is_removed
+
+
+
+    def _repr_info(self):
+        yield ('prefix',   self.prefix)
+        yield ('name',     self.name)
+        yield ('z',        self.z)
+        yield ('beamline', self.beamline)
+
+
+    def _update(self, *args, timestamp=None,
+                value=None, old_value=None,
+                obj=None, **kwargs):
+        """
+        Callback to update underlying device StateMachine
+        """
+        logger.debug('Updating device {} based on updated ' 
+                     'component {}'.format(self, obj.name))
+
+        #Grab cached states from components
+        states = [(attr,cpt.state) for (attr,cpt) in self._sig_attrs:
+                  if isinstance(cpt, StateComponent)]
+      
+        #Assume unknown state
+        state = 'unknown'
+
+        #Single unknown state
+        if 'unknown' in [state for (attr, state) in states]:
+            reason  = 'One or more components reporting unknown states'
+
+        else:
+            #Remove defered states
+            known = [(attr,state) for (attr,state) in states
+                     if state == 'defer']
+
+            #If not state specifies
+            if not known:
+                reason = 'No component is in a definite state'
+
+            #If multiple known states
+            elif len(known) > 1:
+                reason = 'Multiple conflicting components' 
+
+            #A significant state
+            else:
+                attr, state  =  states[0]
+                reason =  'Component {} moved to a state {}'.format(attr,
+                                                                    state)
+
+        #Log reasoning
+        logger.debug(reason)
+
+        #Change state machine if neccesary
+        if state != self.state:
+            self.state, old_value = state, self.state
+            self._run_subs(event_type=self.SUB_DV_CH,
+                           old_value=old_value,
+                           state = self.state)
+
+        else:
+            logging.debug('Component states changed but overall '
+                          'Device state remains {}'.format(self.state))
+
+
+class LightInterface:
+    """
+    Generic Interface for LightDevice
+
+    Subclasses can safely reimplement these methods without breaking mro
+    """
+    def __init__(self,*args, **kwargs):
+
+        #Subclasses should populate this information
+        self._beamline = None
+
+        super().__init__(*args, **kwargs)
 
 
     @property
@@ -191,221 +257,40 @@ class LightDevice(object):
         Name of the destination beamline after the beam interacts with the
         device.
         """
-        return self.beamline
+        return self._beamline
 
 
     def insert(self, timeout=None):
         """
         Insert the device into the beam path
         """
-        logger.debug('Inserting device {} ...'.format(self))
-   
- 
-    @property
-    def inserted(self):
-        """
-        Report if the device is inserted
-        """
-        if self.state in (States.inserted, States.partially):
-            return True
-
-        else:
-            return False
+        pass
 
 
     def remove(self):
         """
         Remove the device into the beam path
         """
-        logger.debug('Removing device {} ...'.format(self))
-
-
-    @property
-    def removed(self):
-        """
-        Report if the device is removed
-        """
-        if self.state == States.removed:
-            return True
-
-        else:
-            return False
-
-
-    @property
-    def state(self):
-        """
-        Current state of the device
-        """
-        return self._state
+        pass
 
 
     @property
     def transmission(self):
         """
         Current transmission through the device
-        
-        This only needs to be reimplimented if the device needs to handle being
-        partially blocked
-
-        Returns
-        -------
-        transmission : float
-            Current transmission through the device, if the state is unknown
-            -1.0 is returned
-        
-        Raises
-        ------
-        NotImplementedError:
-            If the device is ``partially`` blocking the beam or the
-            :attr:`.state` is an unrecognized value
         """
-        if self.state == States.inserted:
-            return 0.
+        return 0.
 
-        elif self.state == States.removed:
-            return 100.0
-
-        elif self.state == States.unknown:
-            return np.nan
-
-        else:
-            raise NotImplementedError('Transmission can not be '
-                                      'calculated for state {}'.format(self.state))
 
     def home(self):
         """
         Home the device
         """
-        logger.debug('Homing device {} ...'.format(self))
-        self._last_home = time.ctime()
+        pass
 
 
     def verify(self):
         """
         Verify that the beam is actually incident upon the device
         """
-        raise NotImplementedError('{!r} does not have a method to verify '\
-                                  'the beam is present'.format(self))
-
-
-    def update(self):
-        """
-        Update the current state of the device
-
-        .. note::
-
-            This method is used as a callback for a devices state PV
-        """
-        logger.debug('Updating state for device {} ...'.format(self))
-
-
-    def _repr_info(self):
-       yield ('alias', self.alias)
-       yield ('position', self.line_position)
-       yield ('beamline', self.beamline)
-
-
-
-    def __repr__(self):
-        info = self._repr_info()
-        info = ','.join('{}={!r}'.format(key, value) for key, value in info)
-        return '{!r}({})'.format(self.__class__, info)   
-
-
-
-class MPSDevice(LightDevice):
-    """
-    A LightPath Device that is also protected by MPS
-
-    Parameters
-    ----------
-    alias : str
-        Alias for the device
-
-    prefix : str
-        Base PV address for all related records
-
-    mps_prefix : str
-        Base PV address for all related MPS records
-
-    veto : bool, optional
-        Whether it is considered an MPS vetodevice 
- 
-    z : float, optional
-        Z position along the beamline
-
-    beamline : str, optional
-        Three character abbreviation for the specific beamline the device is on
-
-    """
-    def __init__(self, alias, mps_prefix=None, veto=False,
-                 prefix=None, z=-1.0, beamline=None):
-        super(MPSDevice, self).__init__(alias, prefix=prefix, z=z, beamline=beamline)
-
-        #Some additional attributes
-        self.vetoable  = veto
-        self._faulted  = False
-        self._bypassed = False
-
-        #Raise error if not properly initialized with MPS
-        if not mps_prefix:
-            raise ValueError('MPSDevice must be provided a base PV description '\
-                             'for the pertinent MPS records to be monitored.')
-
-        #Start monitoring
-        self._is_ok  = PV('{}_MPSC',initialize=True, monitor=True)
-        self._bypass = PV('{}_BYPS',initialize=True, monitor=True)
-
-        map(lambda pv : pv.add_monitor_callback(self._state_change),
-            [self._bypass, self._fault])
-
-        #Establish starting state
-        self._state_change()
-
-
-    @property
-    def faulted(self):
-        """
-        Whether device is currently in a faulted state or not
-        """
-        return self._faulted
-
-
-    def insert(self):
-        """
-        Insert the device into the beamline
-        """
-        super(MPSDevice,self).remove()
-        if not self.vetoable:
-            logger.warning('Inserting MPS device {}, '\
-                           'this may cause a fault ...'.format(self)) 
-        
-
-    def remove(self):
-        """
-        Remove the device from the beamline
-        """
-        super(MPSDevice,self).remove()
-        if self.vetoable:
-            logger.warning('Removing MPS veto device {}, '\
-                           'this may cause a fault ...'.format(self)) 
-
-
-    def _state_change(self, e=None):
-        """
-        Callback for changes to the MPS state
-        """
-        if self._bypassed.get():
-            logger.info('Device {} has been bypassed'.format(self))
-            self._faulted = False
-
-        elif not self._is_ok.get():
-            logger.error('Device {} is reporting an MPS fault'.format(self))
-            self._faulted = True
-
-        else:
-            self._faulted = False
-
- 
-
+        pass
