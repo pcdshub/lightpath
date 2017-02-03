@@ -274,7 +274,7 @@ class LightDevice(Device, LightInterface):
 
             #A significant state
             else:
-                attr, state  =  states[0]
+                attr, state  =  known[0]
                 reason =  'Component {} moved to a state {}'.format(attr,
                                                                     state)
 
