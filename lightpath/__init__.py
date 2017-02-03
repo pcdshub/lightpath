@@ -2,7 +2,7 @@ __all__ = ['device']
 
 import logging
 
-from device import LightDevice, Component
+from .device import LightDevice
 
 #Setup logger
 logger = logging.getLogger(__name__)
@@ -11,4 +11,4 @@ logger.setLevel(logging.CRITICAL)
 
 #For development
 def DEBUG():
-    logging.setLevel(logging.DEBUG)
+    logger.setLevel(logging.DEBUG)
