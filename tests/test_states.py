@@ -30,8 +30,7 @@ class FakeStateComponent(StateComponent):
 class SimpleDevice(LightDevice):
     component = FakeStateComponent(transitions = {0 : 'inserted',
                                                   1 : 'removed',
-                                                  2 : 'partially',
-                                                  3 : 'bad_transition'}
+                                                  2 : 'bad_transition'}
                                   )
 
     def insert(self):
@@ -39,9 +38,6 @@ class SimpleDevice(LightDevice):
 
     def remove(self):
         self.component.put(1)
-
-    def partial(self):
-        self.component.put(2)
 
 
 class ComplexDevice(LightDevice):
@@ -76,26 +72,19 @@ def test_simple_initial_state(simple_device):
     assert simple_device.removed
     assert not simple_device.blocking
 
+
 def test_simple_insert(simple_device):
     simple_device.insert()
     assert simple_device.state == 'inserted'
     assert simple_device.blocking
     assert not simple_device.removed
 
+
 def test_simple_remove(simple_device):
     simple_device.component.put(0)
     simple_device.remove()
     assert simple_device.state == 'removed'
 
-def test_simple_partial(simple_device):
-    simple_device.partial()
-    assert simple_device.state == 'partially'
-    assert simple_device.blocking
-    assert not simple_device.removed
-
-def test_bad_transition(simple_device):
-    simple_device.component.put(3)
-    assert simple_device.state == 'unknown'
 
 def test_unknown_transition(simple_device):
     simple_device.component.put(10)

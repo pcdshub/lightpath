@@ -13,7 +13,6 @@ class DeviceStateMachine(StateMachine):
         """
         INSERTED   = 'inserted'
         REMOVED    = 'removed'
-        PARTIALLY  = 'partially'
         UNKNOWN    = 'unknown'
 
     @classmethod

@@ -59,8 +59,8 @@ class StateComponent(Component):
             transition = self.transitions[value]
 
             #Check that transition is valid
-            if transition not in ('inserted', 'removed', 'unknown',
-                                  'partially', 'defer'):
+            if transition not in ('inserted','removed',
+                                  'unknown', 'defer'):
                 logger.critical('Unsupported transition {} by {}'
                                  ''.format(transition, obj.name))
                 #Make unknown if invalid
@@ -220,7 +220,7 @@ class LightDevice(Device, LightInterface):
         """
         Report if the device is inserted
         """
-        return (self.state.is_inserted or self.state.is_partially)
+        return (self.state.is_inserted)
 
 
     @property
