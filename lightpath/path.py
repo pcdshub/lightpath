@@ -50,27 +50,28 @@ class BeamPath:
     def inserted_devices(self):
         """
         A list of devices that are currently blocking the beam
+        or are in unknown positions
         """
         #Used .removed instead of .inserted for `unknown devices`
         return [device for device in self.devices if not device.removed]
 
 
-    @property
-    def faulted_devices(self):
-        """
-        A list of faulted MPS devices
-        """
-        return [device for device in self.devices
-                if isinstance(device,MPSDevice) and device.faulted]
-
-
-    @property
-    def veto_devices(self):
-        """
-        A list of MPS veto devices along the path
-        """
-        return [device for device in self.devices
-                if isinstance(device,MPSDevice) and device.vetoable]
+#    @property
+#    def faulted_devices(self):
+#        """
+#        A list of faulted MPS devices
+#        """
+#        return [device for device in self.devices
+#                if isinstance(device,MPSDevice) and device.faulted]
+#
+#
+#    @property
+#    def veto_devices(self):
+#        """
+#        A list of MPS veto devices along the path
+#        """
+#        return [device for device in self.devices
+#                if isinstance(device,MPSDevice) and device.vetoable]
 
 
     @property
@@ -177,17 +178,15 @@ class BeamPath:
             logger.debug('Waiting for all devices to be '\
                          'removed from the beampath {} ...'.format(self))
 
-            try:
-                timeout(
-
-            except TimeoutError:
-                 
             if all([device.removed for device in target_devices]):
                 logger.info('{} has been successfully cleared.'.format(self))
 
             else:
                 raise MotionError('Failed to remove all devices '\
                                   'from the beampath in {}s.'.format(timeout))
+
+
+        return status
 
 
     def join(self, *beampaths):

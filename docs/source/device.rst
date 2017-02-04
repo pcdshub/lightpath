@@ -11,6 +11,7 @@ High-Level Interface
 .. automethod:: LightDevice.insert
 .. automethod:: LightDevice.remove
 .. automethod:: LightDevice.home
+.. automethod:: LightDevice.destination
 .. automethod:: LightDevice.transmission
 .. automethod:: LightDevice.verify
 

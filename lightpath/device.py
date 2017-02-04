@@ -1,9 +1,11 @@
 import logging
 import numpy as np
+from   functools import partial
 
 from ophyd        import Device
 from ophyd.device import Component
 from ophyd.signal import EpicsSignal, EpicsSignalRO
+from ophyd.status import DeviceStatus
 
 from .utils import DeviceStateMachine, LoggingPropertyMachine
 
@@ -110,26 +112,14 @@ class LightInterface:
         return self._beamline
 
 
-    def insert(self, timeout=None):
-        """
-        Insert the device into the beam path
-        """
-        pass
-
-
-    def remove(self):
-        """
-        Remove the device into the beam path
-        """
-        pass
-
-
     @property
     def transmission(self):
         """
         Current transmission through the device
         """
         return 0.
+
+
 
 
     def home(self):
@@ -151,14 +141,14 @@ class LightDevice(Device, LightInterface):
     Base class to represent a device along the Lightpath
 
     The main function of this class is to define a standard API for further
-    device classes to reuse based on their individual states. Each class
-    that inherits this as its base should reimplement the following methods;     
-    :meth:`.insert`, :meth:`.remove`, and :meth:`.home`. Also, if the device
-    has a more complex relationship with the beam than blocking or not, it may
-    be neccesary to reimplement :attr:`.transmission`. Finally, if the device
-    is capable of measuring the presence of beam, rewriting the :meth:`.verify`
-    can be overwritten as well to be used by the LightPath client to check the
-    predicted beamline state
+    device classes to reuse based on their individual states. Each class that
+    inherits this as its base should reimplement the following methods;
+    :meth:`.insert`, :meth:`.remove`, :attr:`.destination and :meth:`.home`.
+    Also, if the device has a more complex relationship with the beam than
+    blocking or not, it may be neccesary to reimplement :attr:`.transmission`.
+    Finally, if the device is capable of measuring the presence of beam,
+    rewriting the :meth:`.verify` can be overwritten as well to be used by the
+    LightPath client to check the predicted beamline state
 
     Parameters
     ----------
@@ -176,7 +166,7 @@ class LightDevice(Device, LightInterface):
     """
     state = LoggingPropertyMachine(DeviceStateMachine)
 
-    SUB_DEV_CH = 'device_state_changed'
+    _SUB_DEV_CH = 'device_state_changed'
     _SUB_CP_CH = StateComponent.SUB_CP_CH
 
     def __init__(self, prefix, name=None, read_attrs=None,
@@ -196,7 +186,7 @@ class LightDevice(Device, LightInterface):
         self._beamline = beamline
 
         #Link update method with StateComponent callback 
-        self.subscribe(self._update, self._SUB_CP_CH, run=True)
+        self.subscribe(self._update, event_type=self._SUB_CP_CH, run=True)
 
 
     @property
@@ -215,12 +205,22 @@ class LightDevice(Device, LightInterface):
         return self._beamline
 
 
+
     @property
     def blocking(self):
         """
+        Whether device has the potential to block the beam, this is True if
+        either the state is ``unknown`` or ``inserted``
+        """
+        return (self.state.is_inserted or self.state.is_unknown)
+
+
+    @property
+    def inserted(self):
+        """
         Report if the device is inserted
         """
-        return (self.state.is_inserted)
+        return self.state.is_inserted
 
 
     @property
@@ -230,6 +230,52 @@ class LightDevice(Device, LightInterface):
         """
         return self.state.is_removed
 
+
+    def _setup_move(self, state, finished_cb=None, timeout=None):
+        """
+        Setup a Status object for a status change request
+        """ 
+        def finished():
+            return self.state == state
+
+        status = DeviceStatus(self, done=finished(),  timeout=timeout)
+
+        def cb(*args, **kwargs):
+            logger.debug('Checking if device has finished move')
+            if finished():
+                logger.debug('Device has completed the move')
+                status._finished(success=True)
+                if finished_cb is not None:
+                    print('function',finished_cb())
+
+        status.finished_cb = partial(self.clear_sub, cb)
+        self.subscribe(cb, event_type=self._SUB_DEV_CH, run=False)
+
+        return status
+
+
+    def insert(self, timeout=None, finished_cb=None):
+        """
+        Insert the device into the beam path
+
+        Returns
+        -------
+        DeviceStatus
+        """
+        return self._setup_move(self.inserted,
+                                timeout=timeout,
+                                finished_cb=finished_cb,
+                               )
+
+
+    def remove(self):
+        """
+        Remove the device into the beam path
+        """
+        return self._setup_move(self.removed,
+                                timeout=timeout,
+                                finished_cb=finished_cb,
+                               )
 
 
     def _repr_info(self):
@@ -251,7 +297,7 @@ class LightDevice(Device, LightInterface):
         #Grab cached states from components
         states = [(attr,cpt.state) for (attr,cpt) in self._sig_attrs.items()
                   if isinstance(cpt, StateComponent)]
-      
+
         #Assume unknown state
         state = 'unknown'
 
@@ -284,9 +330,9 @@ class LightDevice(Device, LightInterface):
         #Change state machine if neccesary
         if state != self.state:
             self.state, old_value = state, self.state
-            self._run_subs(sub_type=self.SUB_DV_CH,
-                           old_value=old_value,
-                           state = self.state)
+            self._run_subs(sub_type  = self._SUB_DEV_CH,
+                           old_value = old_value,
+                           value     = self.state)
 
         else:
             logger.debug('Component states changed but overall '
