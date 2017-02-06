@@ -3,7 +3,7 @@ import logging
 from ophyd   import Signal
 
 import lightpath
-from   lightpath import LightDevice
+from   lightpath import BeamPath, LightDevice
 from   lightpath.device import StateComponent
 
 lightpath.device.logger.setLevel(logging.DEBUG)
@@ -35,7 +35,7 @@ class SimpleDevice(LightDevice):
         return status
 
     def remove(self,timeout=None):
-        status = super().insert(timeout=timeout)
+        status = super().remove(timeout=timeout)
         self.component.put(1)
         return status
 
@@ -48,14 +48,17 @@ class ComplexDevice(LightDevice):
                                             1 : 'defer',
                             })
 
-    def insert(self):
+    def insert(self, timeout=None):
+        status = super().insert(timeout=timeout)
         self.opn.put(0)
         self.cls.put(0)
+        return status 
 
-    def remove(self):
+    def remove(self, timeout=None):
+        status = super().remove(timeout=timeout)
         self.opn.put(1)
         self.cls.put(1)
-
+        return status
 
 @pytest.fixture(scope='function')
 def simple_device():
@@ -66,3 +69,15 @@ def simple_device():
 def complex_device():
     device = ComplexDevice('DEVICE', name='simple', z = 10, beamline=40)
     return device
+
+
+@pytest.fixture(scope='module')
+def beampath():
+    devices = [SimpleDevice('DEVICE_1', name='first',  z = 0.),
+               SimpleDevice('DEVICE_2', name='second', z = 2.),
+               SimpleDevice('DEVICE_3', name='third',  z = 9.),
+               SimpleDevice('DEVICE_4', name='fourth', z = 15.),
+               SimpleDevice('DEVICE_5', name='fifth',  z = 16.),
+               SimpleDevice('DEVICE_6', name='sixth',  z = 30.),
+              ]
+    return BeamPath(*devices)

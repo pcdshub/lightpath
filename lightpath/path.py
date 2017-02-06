@@ -1,12 +1,17 @@
+import sys
 import copy
 import logging
 import numpy as np
-from .device import LightDevice, MPSDevice
-from .utils  import timeout, CoordinateError, MotionError
+
+from ophyd.ophydobj import OphydObject
+from prettytable import PrettyTable
+
+from .device import LightDevice
+from .utils  import CoordinateError, MotionError
 
 logger = logging.getLogger(__name__)
 
-class BeamPath:
+class BeamPath(OphydObject):
     """
     Represents a straight line of devices along the beamline
 
@@ -15,19 +20,28 @@ class BeamPath:
     devices : :class:`.LightDevice`
         Arguments are interpreted as LightDevices along a common beamline.
     """
+    SUB_PTH_CHNG = 'beampath_changed'
+
     def __init__(self, *devices):
         #Check types and positions
         for dev in devices:
             if not isinstance(dev, LightDevice):
                 raise TypeError('{!r} is not a valid LightDevice'.format(dev))
 
-            if np.isnan(dev.line_position):
+            #Ensure positioning is physical
+            if np.isnan(dev.z) or dev.z < 0.:
                 CoordinateError('Device {!r} is reporting a non-existant beamline '\
                                 'position, its coordinate was not properly '\
                                 'initialized.'.format(dev))
 
         #Sort by position downstream to upstream
-        self.devices = sorted(devices, key =lambda dev : dev.line_position)
+        self.devices = sorted(devices, key =lambda dev : dev.z)
+
+        #Add callback to device state change
+        map(lambda d : d.subscribe(self_device_moved,
+                                   event_type=d._SUB_DEV_CH,
+                                   run=False),
+            self.devices)
 
 
     @property
@@ -47,13 +61,72 @@ class BeamPath:
 
 
     @property
-    def inserted_devices(self):
+    def range(self):
+        """
+        Range of Z positions the path covers
+        """
+        return self.start.z, self.finish.z
+
+
+    @property
+    def device_names(self):
+        """
+        Device names fo devices in the BeamPath
+        """
+        return [device.name for device in self.devices]
+
+
+    @property
+    def device_prefixes(self):
+        """
+        The prefix names for all devices in the BeamPath
+        """
+        return [device.prefix for device in self.devices]
+
+
+    @property
+    def blocking_devices(self):
         """
         A list of devices that are currently blocking the beam
         or are in unknown positions
         """
-        #Used .removed instead of .inserted for `unknown devices`
-        return [device for device in self.devices if not device.removed]
+        return [device for device in self.devices if device.blocking]
+
+
+
+    def show_devices(self, state=None, file=sys.stdout):
+        """
+        Print a table of the devices along the beamline
+ 
+        Parameters
+        ----------
+        state : str
+            Show only devices in a specific state, 'inserted', 'removed',
+            'unknown'
+
+        file : file-like object
+            File to place table
+        """
+        #Initialize Table
+        pt = PrettyTable(['Name', 'Prefix', 'Position', 'State'])
+    
+        #Adjust Table settings
+        pt.align('r')
+        pt.align['Name'] = 'l'
+        pt.float_format = '8.5'
+
+        #Narrow to state
+        if state: 
+            d_list = [d for d in self.devices if d.state == state]
+
+        else:
+            d_list = self.devices
+
+        #Add info
+        map(lambda d : pt.add_row([p.name, p.prefix, p.z, p.state]), d_list)
+        
+        #Show table
+        print(pt, file=file)
 
 
 #    @property
@@ -94,50 +167,50 @@ class BeamPath:
         return any(self.inserted_devices)
 
 
-    def device_scan(self, timeout=None, reversed=False, ignore_devices=None):
-        """
-        Insert and remove each device one by one
-        """
-
-        #Setup scanned device list
-        if ignore_devices:
-            devices, ignore_devices = self._ignore(ignore_devices)
-
-        else:
-            devices = copy.copy(self.devices)
-            ignore_devices = []
-
-        #If you want to go from upstream to downstream
-        if reversed:
-            devices.reverse()
-
-
-        #Iterate through the devices
-        logger.info('Scanning along the beampath {} ...'.format(self))
-        for device in devices:
-
-            #Insert the device 
-            ignore_devices.append(start)
-            start.insert()
-            t0 = time.time()
-
-            #Clear the beampath
-            self.clear(wait=True, timeout=timeout,
-                       ignore_devices=ignore_devices)
-
-            #Check device has finished move
-            if not device.inserted:
-                logger.debug('Waiting for {} to be '\
-                             'inserted into the beam ...'.format(device))
-
-               while not timeout is None and time.time() > t0:
-                    time.sleep(0.05)
-
-            #Yield the current device in the beam
-            yield device
-
-            #Remove the device from ignored 
-            ignore_devices.pop(device)
+#    def device_scan(self, timeout=None, reversed=False, ignore_devices=None):
+#        """
+#        Insert and remove each device one by one
+#        """
+#
+#        #Setup scanned device list
+#        if ignore_devices:
+#            devices, ignore_devices = self._ignore(ignore_devices)
+#
+#        else:
+#            devices = copy.copy(self.devices)
+#            ignore_devices = []
+#
+#        #If you want to go from upstream to downstream
+#        if reversed:
+#            devices.reverse()
+#
+#
+#        #Iterate through the devices
+#        logger.info('Scanning along the beampath {} ...'.format(self))
+#        for device in devices:
+#
+#            #Insert the device 
+#            ignore_devices.append(start)
+#            start.insert()
+#            t0 = time.time()
+#
+#            #Clear the beampath
+#            self.clear(wait=True, timeout=timeout,
+#                       ignore_devices=ignore_devices)
+#
+#            #Check device has finished move
+#            if not device.inserted:
+#                logger.debug('Waiting for {} to be '\
+#                             'inserted into the beam ...'.format(device))
+#
+#               while not timeout is None and time.time() > t0:
+#                    time.sleep(0.05)
+#
+#            #Yield the current device in the beam
+#            yield device
+#
+#            #Remove the device from ignored 
+#            ignore_devices.pop(device)
 
 
     def clear(self, wait=False, timeout=None, ignore_devices=None):
@@ -170,13 +243,14 @@ class BeamPath:
             target_devices = self.devices
 
         #Remove devices
-        map(lambda device : device.remove(), target_devices)
+        status = [device.remove(timeout=timeout) for device in target_devices]
 
         #Wait parameters
         if wait:
-
             logger.debug('Waiting for all devices to be '\
                          'removed from the beampath {} ...'.format(self))
+
+            map(partial(wait,timeout=timeout), status)
 
             if all([device.removed for device in target_devices]):
                 logger.info('{} has been successfully cleared.'.format(self))
@@ -212,6 +286,42 @@ class BeamPath:
         return BeamPath.join(self,*beampaths)
 
 
+    def split(self, z=None, device=None):
+        """
+        Split the beampath producing two new BeamPath objects either by a
+        specific position or a devices location
+        
+        Parameters
+        ----------
+        z : float
+            Z position to split the paths
+
+        device  : LightDevice, name, or base PV
+            The specified device will be the first device in the second
+            :class:`.BeamPath` object
+        
+        Returns
+        -------
+        BeamPath, BeamPath
+            Two new beampath instances
+        """
+        if not z or device:
+            raise ValueError("Must supply information where to split the path")
+
+
+        #If given a device, find z 
+        if not isinstance(device, LightDevice):
+            z = self._device_lookup(device).z
+        else:
+            z = device.z
+
+        if z< self.range[0] and z<self.range[1]:
+            raise ValueError("Split position  {} is not within the range of "
+                             "the path.".format(z))
+
+        return (BeamPath(*[d for d in devices if d.z <  z]),
+                BeamPath(*[d for d in devices if d.z >= z]),
+               )
 
 
     @classmethod
@@ -261,14 +371,44 @@ class BeamPath:
         return target_devices, ignore_devices
 
 
+    def _device_lookup(self, device):
+        """
+        Lookup a device by name or prefix
+        """
+        if device in self.device_names:
+            pos = self.device_names.index(device)
+            dev   = self.devices.index(pos)
+
+        elif device in self.device_prefixes:
+            pos = self.device_prefixes.index(device)
+            dev   = self.devices.index(pos)
+
+        else:
+            raise ValueError("Could not find device {} in the path"
+                             "".format(device))
+
+        return dev
+
+
+    def _device_moved(self, *args, obj=None):
+        """
+        Run when a device changes state
+        """
+        #Maybe this should introspect and see if beampath state changes
+        self._run_subs(*args, 
+                       sub_type=self.SUB_PTH_CHNG,
+                       device = obj,
+                       **kwargs)
+
+
     def _repr_info(self):
-        yield('start',  self.start.line_position)
-        yield('finish', self.finish.line_position)
-        yield('devices', len(self.devices)
+        yield('start',  self.start.z)
+        yield('finish', self.finish.z)
+        yield('devices', len(self.devices))
 
 
-    def __repr__(self):
-        info = self._repr_info()
-        info = ','.join('{}={!r}'.format(key, value) for key, value in info)
-        return '{!r}({})'.format(self.__class__, info)   
- 
+    def __cmp__(self, *args, **kwargs):
+        if arg[0] is NOne:
+            return 1
+
+        return cmp(self.devices, arg[0].devices)

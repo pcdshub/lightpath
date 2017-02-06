@@ -1,6 +1,8 @@
 import logging
+from threading import RLock
+
 import numpy as np
-from   functools import partial
+from functools import partial
 
 from ophyd        import Device
 from ophyd.device import Component
@@ -166,8 +168,10 @@ class LightDevice(Device, LightInterface):
     """
     state = LoggingPropertyMachine(DeviceStateMachine)
 
-    _SUB_DEV_CH = 'device_state_changed'
+    SUB_DEV_CH = 'device_state_changed'
     _SUB_CP_CH = StateComponent.SUB_CP_CH
+
+    _default_sub = SUB_DEV_CH
 
     def __init__(self, prefix, name=None, read_attrs=None,
             configuration_attrs=None, z=np.nan, beamline=None):
@@ -184,7 +188,7 @@ class LightDevice(Device, LightInterface):
         #Location identification
         self._z        = z
         self._beamline = beamline
-
+            
         #Link update method with StateComponent callback 
         self.subscribe(self._update, event_type=self._SUB_CP_CH, run=True)
 
@@ -249,9 +253,10 @@ class LightDevice(Device, LightInterface):
                     print('function',finished_cb())
 
         status.finished_cb = partial(self.clear_sub, cb)
-        self.subscribe(cb, event_type=self._SUB_DEV_CH, run=False)
+        self.subscribe(cb, event_type=self.SUB_DEV_CH, run=False)
 
         return status
+
 
 
     def insert(self, timeout=None, finished_cb=None):
@@ -268,7 +273,7 @@ class LightDevice(Device, LightInterface):
                                )
 
 
-    def remove(self):
+    def remove(self, timeout=None, finished_cb=None):
         """
         Remove the device into the beam path
         """
@@ -330,7 +335,7 @@ class LightDevice(Device, LightInterface):
         #Change state machine if neccesary
         if state != self.state:
             self.state, old_value = state, self.state
-            self._run_subs(sub_type  = self._SUB_DEV_CH,
+            self._run_subs(sub_type  = self.SUB_DEV_CH,
                            old_value = old_value,
                            value     = self.state)
 

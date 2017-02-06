@@ -3,8 +3,9 @@
 import time
 import pytest
 from unittest.mock import Mock
-
 from ophyd.status  import wait
+
+from lightpath.device import StateComponent, LightDevice
 #####
 #####
 
@@ -27,6 +28,10 @@ def test_simple_remove(simple_device):
     simple_device.remove()
     assert simple_device.state == 'removed'
 
+def test_bad_transition(simple_device):
+    simple_device.component.put(2)
+    assert simple_device.state == 'unknown'
+
 
 def test_unknown_transition(simple_device):
     simple_device.component.put(10)
@@ -39,10 +44,16 @@ def test_complex_insert(complex_device):
     complex_device.insert()
     assert complex_device.state == 'inserted'
     assert complex_device.inserted
+
 def test_complex_remove(complex_device):
     complex_device.insert()
     complex_device.remove()
     assert complex_device.state == 'removed'
+
+def test_complex_no_change(complex_device):
+    complex_device.opn.put(4)
+    complex_device.cls.put(4)
+    assert complex_device.state == 'unknown'
 
 def test_conflicting_states(complex_device):
     complex_device.opn.put(0)

@@ -2,6 +2,7 @@ __all__ = ['device']
 
 import logging
 
+from .path   import BeamPath
 from .device import LightDevice
 
 #Setup logger

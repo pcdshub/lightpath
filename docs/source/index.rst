@@ -12,6 +12,6 @@ Contents:
    :maxdepth: 1
 
    device.rst
-
+   path.rst
 
 
