@@ -39,8 +39,8 @@ class BeamPath(OphydObject):
 
         #Add callback to device state change
         for d in self.devices:
-            d.subscribe(self_device_moved,
-                        event_type=d._SUB_DEV_CH,
+            d.subscribe(self._device_moved,
+                        event_type=d.SUB_DEV_CH,
                         run=False)
 
         #Add callback here!
@@ -105,10 +105,45 @@ class BeamPath(OphydObject):
                 except IndexError:
                     logger.debug('Branching device is last in beamline')
 
-            elif device.blocking:
+            elif device.blocking and not device.passive:
                 block.append(device)
 
         return block
+
+    
+    @property
+    def state(self):
+        """
+        Current state of the path devices
+        
+        .. todo::
+
+            Both this and restore state should use ``configuration_attrs`` from
+            Ophyd
+        """
+        return dict([(device.name, device.state) for device in self.devices])
+
+
+    def restore_state(self, state):
+        """
+        Restore a beampath configuration from state
+        """
+        def restore(dev, st):
+            if state == 'unknown':
+                logger.error('Can not restore {} to an unknown state'
+                             ''.format(dev))
+                status = None
+
+            elif st == 'removed':
+                status = dev.remove()
+
+            elif st == 'unknown':
+                status = dev.insert()
+
+            else:
+                raise ValueError('Unrecognized state {}'.format(st))
+
+        return [restore(d,s) for d,s in state.items()]
 
 
     def show_devices(self, state=None, file=sys.stdout):
@@ -247,16 +282,12 @@ class BeamPath(OphydObject):
         ignore: LightDevice or iterable, optional
             Leave devices in their current state without removing them
 
-        Raises
-        ------
-        MotionError:
-            If one or more of the devices fails to complete its move in the
-            time alotted
+        passive : If True, passive devices will also be reviewed 
         """
         logger.info('Clearing beampath {} ...'.format(self))
 
         #Assemble device list
-        target_devices, ignored = self._ignore(ignore, passive=)
+        target_devices, ignored = self._ignore(ignore, passive=passive)
 
         #Remove devices
         status = [device.remove(timeout=timeout) for device in target_devices]
@@ -269,6 +300,7 @@ class BeamPath(OphydObject):
             for s in status:
                 print('Waiting for {} to be done ...'.format(s))
                 wait(s, timeout=timeout)
+                print('Completed')
 
         return status
 

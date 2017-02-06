@@ -54,7 +54,7 @@ class StateComponent(Component):
                                                                 old_value,
                                                                 value))
         #Check that we are in fact getting a new valu 
-        if old_value and old_value ==value:
+        if old_value ==value:
             logger.debug('No state change ...')
             return 
 
@@ -97,13 +97,30 @@ class LightInterface:
 
     Subclasses can safely reimplement these methods without breaking mro
     """
-    def __init__(self,*args, **kwargs):
+    _beamline     = None
+    _z            = -1.0
+    _transmission = 0.
+    _branching    = None
+    _passive      = False
 
-        #Subclasses should populate this information
-        self._beamline = None
-        self._passive  = False
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+
+    @property
+    def z(self):
+        """
+        Z position along the beamline 
+        """
+        return self._z
+
+
+    @property
+    def beamline(self):
+        """
+        Specific beamline the device is on
+        """
+        return self._beamline
 
     @property
     def destination(self):
@@ -119,7 +136,11 @@ class LightInterface:
         """
         Current transmission through the device
         """
-        return 0.
+        if self.passive:
+            return 1.
+
+        else:
+            return self._transmission
 
 
     @property
@@ -128,7 +149,7 @@ class LightInterface:
         Other possible beamlines the device is capable of sending the
         beam
         """
-        return None
+        return self._branching
 
 
     @property
@@ -201,27 +222,15 @@ class LightDevice(Device, LightInterface):
         self.log.setLevel(logging.DEBUG)
 
         #Location identification
-        self._z        = z
-        self._beamline = beamline
-            
+        if z is not None:
+            self._z        = z
+
+        if beamline is not None:
+            self._beamline = beamline
+
         #Link update method with StateComponent callback 
         self.subscribe(self._update, event_type=self._SUB_CP_CH, run=True)
 
-
-    @property
-    def z(self):
-        """
-        Z position along the beamline 
-        """
-        return self._z
-
-
-    @property
-    def beamline(self):
-        """
-        Specific beamline the device is on
-        """
-        return self._beamline
 
 
 
@@ -256,10 +265,10 @@ class LightDevice(Device, LightInterface):
         The output of the device in a tuple ``(beamline, transmission)``
         """
         if self.inserted:
-            output = self.transmission:
+            output = self.transmission
 
         elif self.state == 'unknown':
-            output = np.nam
+            output = np.nan
 
         else:
             output = 1.
@@ -284,8 +293,8 @@ class LightDevice(Device, LightInterface):
                 if finished_cb is not None:
                     print('function',finished_cb())
 
-        status.finished_cb = partial(self.clear_sub, cb)
         self.subscribe(cb, event_type=self.SUB_DEV_CH, run=False)
+        status.finished_cb = partial(self.clear_sub, cb)
 
         return status
 
@@ -329,7 +338,7 @@ class LightDevice(Device, LightInterface):
         Callback to update underlying device StateMachine
         """
         logger.debug('Updating device {} based on updated ' 
-                     'component {}'.format(self, obj.name))
+                     'signal {}'.format(self, obj.name))
 
         #Grab cached states from components
         states = [(attr,cpt.state) for (attr,cpt) in self._sig_attrs.items()
@@ -337,6 +346,8 @@ class LightDevice(Device, LightInterface):
 
         #Assume unknown state
         state = 'unknown'
+
+        print(states)
 
         #Single unknown state
         if 'unknown' in [state for (attr, state) in states]:
@@ -357,22 +368,23 @@ class LightDevice(Device, LightInterface):
 
             #A significant state
             else:
-                attr, state  =  known[0]
+                (attr, state)  =  known[0]
                 reason =  'Component {} moved to a state {}'.format(attr,
                                                                     state)
-
         #Log reasoning
         logger.debug(reason)
+        
+        try:
+            #Change state machine if neccesary
+            if state != self.state:
+                self.state = state
+                self._run_subs(sub_type  = self.SUB_DEV_CH,
+                               old_value = old_value,
+                               value     = self.state)
 
-        #Change state machine if neccesary
-        if state != self.state:
-            self.state, old_value = state, self.state
-            self._run_subs(sub_type  = self.SUB_DEV_CH,
-                           old_value = old_value,
-                           value     = self.state)
-
-        else:
-            logger.debug('Component states changed but overall '
-                          'Device state remains {}'.format(self.state))
-
+            else:
+                logger.debug('Component states changed but overall '
+                              'Device state remains {}'.format(self.state))
+        except e:
+            print(e)
 

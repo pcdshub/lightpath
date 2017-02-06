@@ -6,3 +6,6 @@ def test_start(beampath):
 
 def test_finish(beampath):
     assert beampath.finish.z == 30.
+
+def test_range(beampath):
+    assert beampath.range == (0.,30.)

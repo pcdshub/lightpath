@@ -1,6 +1,7 @@
 import pytest
 import logging
-from ophyd   import Signal
+import numpy as np
+from ophyd import Signal
 
 import lightpath
 from   lightpath import BeamPath, LightDevice
@@ -28,6 +29,12 @@ class SimpleDevice(LightDevice):
                                                   1 : 'removed',
                                                   2 : 'bad_transition'}
                                   )
+    _beamline     = 'LCLS'
+    _transmission = 0.
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, beamline='LCLS', **kwargs)
 
     def insert(self,timeout=None):
         status = super().insert(timeout=timeout)
@@ -48,6 +55,9 @@ class ComplexDevice(LightDevice):
                                             1 : 'defer',
                             })
 
+    _transmission = .5
+    _beamline = 'LCLS'
+
     def insert(self, timeout=None):
         status = super().insert(timeout=timeout)
         self.opn.put(0)
@@ -60,24 +70,27 @@ class ComplexDevice(LightDevice):
         self.cls.put(1)
         return status
 
+
 @pytest.fixture(scope='function')
 def simple_device():
-    device = SimpleDevice('DEVICE', name='simple', z = 10, beamline=40)
+    device = SimpleDevice('DEVICE', name='simple', z = 4)
     return device
 
 @pytest.fixture(scope='function')
 def complex_device():
-    device = ComplexDevice('DEVICE', name='simple', z = 10, beamline=40)
+    device = ComplexDevice('DEVICE', name='simple', z = 10)
     return device
 
 
-@pytest.fixture(scope='module')
-def beampath():
+@pytest.fixture(scope='function')
+def beampath(simple_device, complex_device):
     devices = [SimpleDevice('DEVICE_1', name='first',  z = 0.),
                SimpleDevice('DEVICE_2', name='second', z = 2.),
                SimpleDevice('DEVICE_3', name='third',  z = 9.),
                SimpleDevice('DEVICE_4', name='fourth', z = 15.),
                SimpleDevice('DEVICE_5', name='fifth',  z = 16.),
                SimpleDevice('DEVICE_6', name='sixth',  z = 30.),
+               simple_device,
+               complex_device,
               ]
     return BeamPath(*devices)

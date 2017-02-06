@@ -2,6 +2,7 @@
 #####
 import time
 import pytest
+import numpy as np
 from unittest.mock import Mock
 from ophyd.status  import wait
 
@@ -62,6 +63,17 @@ def test_conflicting_states(complex_device):
 def test_unknown_states(complex_device):
     complex_device.opn.put(10)
     assert complex_device.state == 'unknown'
+
+def test_simple_output(simple_device):
+    assert simple_device.output == ('LCLS', 1.)
+    simple_device.insert()
+    assert simple_device.output == ('LCLS', 0.)
+    simple_device.component.put(12)
+    assert simple_device.output == ('LCLS', np.nan)
+
+def test_passive(simple_device):
+    simple_device._passive = True
+    assert simple_device.output == ('LCLS', 1.)
 
 def test_done_status(simple_device):
     status = simple_device._setup_move('removed')

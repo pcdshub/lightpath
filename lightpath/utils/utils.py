@@ -15,6 +15,7 @@ class DeviceStateMachine(StateMachine):
         REMOVED    = 'removed'
         UNKNOWN    = 'unknown'
 
+
     @classmethod
     def states(cls):
         return [state.value for state in cls]
