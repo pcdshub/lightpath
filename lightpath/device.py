@@ -122,6 +122,13 @@ class LightInterface:
         return 0.
 
 
+    @property
+    def branching(self):
+        """
+        Other possible beamlines the device is capable of sending the
+        beam
+        """
+        return None
 
 
     def home(self):
@@ -233,6 +240,23 @@ class LightDevice(Device, LightInterface):
         Report if the device is removed
         """
         return self.state.is_removed
+
+
+    @property
+    def output(self):
+        """
+        The output of the device in a tuple ``(beamline, transmission)``
+        """
+        if self.inserted:
+            output = self.transmission:
+
+        elif self.state == 'unknown':
+            output = np.nam
+
+        else:
+            output = 1.
+
+        return (self.destination, output)
 
 
     def _setup_move(self, state, finished_cb=None, timeout=None):
