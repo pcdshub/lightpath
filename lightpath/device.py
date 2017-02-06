@@ -101,7 +101,7 @@ class LightInterface:
 
         #Subclasses should populate this information
         self._beamline = None
-
+        self._passive  = False
         super().__init__(*args, **kwargs)
 
 
@@ -129,6 +129,14 @@ class LightInterface:
         beam
         """
         return None
+
+
+    @property
+    def passive(self):
+        """
+        Whether the device is considered passive or not
+        """
+        return self._passive
 
 
     def home(self):

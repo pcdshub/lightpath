@@ -38,10 +38,13 @@ class BeamPath(OphydObject):
         self.devices = sorted(devices, key =lambda dev : dev.z)
 
         #Add callback to device state change
-        map(lambda d : d.subscribe(self_device_moved,
-                                   event_type=d._SUB_DEV_CH,
-                                   run=False),
-            self.devices)
+        for d in self.devices:
+            d.subscribe(self_device_moved,
+                        event_type=d._SUB_DEV_CH,
+                        run=False)
+
+        #Add callback here!
+        self.mirrors = [d for d in self.devices if d.branching]
 
 
     @property
@@ -90,14 +93,28 @@ class BeamPath(OphydObject):
         A list of devices that are currently blocking the beam
         or are in unknown positions
         """
-        return [device for device in self.devices if device.blocking]
+        block = []
 
+        for pos, device in enumerate(self.devices):
+            if device.branching:
+                try:
+
+                    if self.devices[i+1].beamline != device.beamline:
+                        block.append(device)
+
+                except IndexError:
+                    logger.debug('Branching device is last in beamline')
+
+            elif device.blocking:
+                block.append(device)
+
+        return block
 
 
     def show_devices(self, state=None, file=sys.stdout):
         """
         Print a table of the devices along the beamline
- 
+
         Parameters
         ----------
         state : str
@@ -108,23 +125,24 @@ class BeamPath(OphydObject):
             File to place table
         """
         #Initialize Table
-        pt = PrettyTable(['Name', 'Prefix', 'Position', 'State'])
-    
+        pt = PrettyTable(['Name', 'Prefix', 'Position', 'Beamline','State'])
+
         #Adjust Table settings
         pt.align('r')
         pt.align['Name'] = 'l'
-        pt.float_format = '8.5'
+        pt.float_format  = '8.5'
 
         #Narrow to state
-        if state: 
+        if state:
             d_list = [d for d in self.devices if d.state == state]
 
         else:
             d_list = self.devices
 
         #Add info
-        map(lambda d : pt.add_row([p.name, p.prefix, p.z, p.state]), d_list)
-        
+        for d in d_list:
+            pt.add_row([d.name, d.prefix, d.z, d.beamline, d.state])
+
         #Show table
         print(pt, file=file)
 
@@ -152,11 +170,11 @@ class BeamPath(OphydObject):
         """
         First blocking device along the path
         """
-        if not self.inserted_devices:
+        if not self.blocking_devices:
             return None
 
         else:
-            return self.inserted_devices[0]
+            return self.blocking_devices[0]
 
 
     @property
@@ -164,7 +182,7 @@ class BeamPath(OphydObject):
         """
         Whether beamline is clear of any devices
         """
-        return any(self.inserted_devices)
+        return any(self.blocking_devices)
 
 
 #    def device_scan(self, timeout=None, reversed=False, ignore_devices=None):
@@ -213,7 +231,8 @@ class BeamPath(OphydObject):
 #            ignore_devices.pop(device)
 
 
-    def clear(self, wait=False, timeout=None, ignore_devices=None):
+    def clear(self, wait=False, timeout=None,
+              passive=False, ignore=None):
         """
         Clear the beampath of all obstructions
 
@@ -225,7 +244,7 @@ class BeamPath(OphydObject):
         timeout : float, optional
             Duration to wait for device movements
 
-        ignore_devices : LightDevice or iterable, optional
+        ignore: LightDevice or iterable, optional
             Leave devices in their current state without removing them
 
         Raises
@@ -237,10 +256,7 @@ class BeamPath(OphydObject):
         logger.info('Clearing beampath {} ...'.format(self))
 
         #Assemble device list
-        if ignore_devices:
-            target_devices, ignored = self._ignore(ignore_devices)
-        else:
-            target_devices = self.devices
+        target_devices, ignored = self._ignore(ignore, passive=)
 
         #Remove devices
         status = [device.remove(timeout=timeout) for device in target_devices]
@@ -250,15 +266,9 @@ class BeamPath(OphydObject):
             logger.debug('Waiting for all devices to be '\
                          'removed from the beampath {} ...'.format(self))
 
-            map(partial(wait,timeout=timeout), status)
-
-            if all([device.removed for device in target_devices]):
-                logger.info('{} has been successfully cleared.'.format(self))
-
-            else:
-                raise MotionError('Failed to remove all devices '\
-                                  'from the beampath in {}s.'.format(timeout))
-
+            for s in status:
+                print('Waiting for {} to be done ...'.format(s))
+                wait(s, timeout=timeout)
 
         return status
 
@@ -308,12 +318,9 @@ class BeamPath(OphydObject):
         if not z or device:
             raise ValueError("Must supply information where to split the path")
 
-
-        #If given a device, find z 
-        if not isinstance(device, LightDevice):
+        #Grab the z if given a device
+        if device:
             z = self._device_lookup(device).z
-        else:
-            z = device.z
 
         if z< self.range[0] and z<self.range[1]:
             raise ValueError("Split position  {} is not within the range of "
@@ -354,17 +361,25 @@ class BeamPath(OphydObject):
         return BeamPath(*set(devices))
 
 
-    def _ignore(self, ignore_devices):
+    def _ignore(self, ignore_devices, passive=False):
         """
         Assemble list of available devices with some exclusions
         """
-        if isinstance(ignore_devices, LightDevice):
-            ignore_devices = [ignore_devices]
+        #Always ignore mirrors
+        ignore = copy.copy(self.mirrors)
 
-        if any([not isinstance(device, LightDevice)
-                for device in ignore_devices]):
-            raise TypeError('Ignored devices must be a LightDevice object')
+        #Add passive devices to ignored
+        if not passive:
+            ignore.extend([d for d in self.devices if d.passive])
 
+        #Add ignored devices
+        if not isinstance(ignore_devices, (tuple, list, set)):
+            ignore.append(self._device_lookup(ignore_devices))
+
+        else:
+            ignore.extend([self._device_lookup(d) for d in ignored_devices])
+
+        #Grab target devices
         target_devices = [device for device in self.devices
                           if device not in ignore_devices]
 
@@ -375,19 +390,21 @@ class BeamPath(OphydObject):
         """
         Lookup a device by name or prefix
         """
+        #Check if given a device name
         if device in self.device_names:
-            pos = self.device_names.index(device)
-            dev   = self.devices.index(pos)
+            pos    = self.device_names.index(device)
+            device = self.devices[pos]
 
+        #Check if given a device prefix
         elif device in self.device_prefixes:
-            pos = self.device_prefixes.index(device)
-            dev   = self.devices.index(pos)
+            pos    = self.device_prefixes.index(device)
+            device = self.devices[pos]
 
-        else:
+
+        if device not in self.devices:
             raise ValueError("Could not find device {} in the path"
                              "".format(device))
-
-        return dev
+        return device
 
 
     def _device_moved(self, *args, obj=None):
