@@ -4,6 +4,7 @@ import logging
 import numpy as np
 
 from ophyd.ophydobj import OphydObject
+from ophyd.status import wait as status_wait
 from prettytable import PrettyTable
 
 from .device import LightDevice
@@ -95,27 +96,26 @@ class BeamPath(OphydObject):
         """
         block = []
 
-        for pos, device in enumerate(self.devices):
-            if device.branching and device.blocking:
-                try:
+        for i, device in enumerate(self.devices):
+            try:
 
-                    if self.devices[i+1].beamline != device.beamline:
-                        block.append(device)
+                if self.devices[i+1].beamline != device.destination:
+                    block.append(device)
 
-                except IndexError:
-                    logger.debug('Branching device is last in beamline')
+            except IndexError:
+                logger.debug('Branching device is last in beamline')
 
-            elif device.blocking and not device.passive:
+            if device.blocking and not (device.passive or device.branching):
                 block.append(device)
 
         return block
 
-    
+
     @property
     def state(self):
         """
         Current state of the path devices
-        
+
         .. todo::
 
             Both this and restore state should use ``configuration_attrs`` from
@@ -163,8 +163,9 @@ class BeamPath(OphydObject):
         pt = PrettyTable(['Name', 'Prefix', 'Position', 'Beamline','State'])
 
         #Adjust Table settings
-        pt.align('r')
+        pt.align = 'r'
         pt.align['Name'] = 'l'
+        pt.align['Prefix'] = 'l'
         pt.float_format  = '8.5'
 
         #Narrow to state
@@ -176,7 +177,7 @@ class BeamPath(OphydObject):
 
         #Add info
         for d in d_list:
-            pt.add_row([d.name, d.prefix, d.z, d.beamline, d.state])
+            pt.add_row([d.name, d.prefix, d.z, d.beamline, repr(d.state)])
 
         #Show table
         print(pt, file=file)
@@ -217,7 +218,7 @@ class BeamPath(OphydObject):
         """
         Whether beamline is clear of any devices
         """
-        return any(self.blocking_devices)
+        return not any(self.blocking_devices)
 
 
 #    def device_scan(self, timeout=None, reversed=False, ignore_devices=None):
@@ -290,7 +291,8 @@ class BeamPath(OphydObject):
         target_devices, ignored = self._ignore(ignore, passive=passive)
 
         #Remove devices
-        status = [device.remove(timeout=timeout) for device in target_devices]
+        status = [device.remove(timeout=timeout) for device in target_devices
+                  if device.blocking]
 
         #Wait parameters
         if wait:
@@ -299,7 +301,7 @@ class BeamPath(OphydObject):
 
             for s in status:
                 print('Waiting for {} to be done ...'.format(s))
-                wait(s, timeout=timeout)
+                status_wait(s, timeout=timeout)
                 print('Completed')
 
         return status
@@ -325,7 +327,7 @@ class BeamPath(OphydObject):
         TypeError:
             Raised if a non-BeamPath object is supplied
         """
-        return BeamPath.join(self,*beampaths)
+        return BeamPath.from_join(self, *beampaths)
 
 
     def split(self, z=None, device=None):
@@ -347,21 +349,20 @@ class BeamPath(OphydObject):
         BeamPath, BeamPath
             Two new beampath instances
         """
-        if not z or device:
+        if not z and not device:
             raise ValueError("Must supply information where to split the path")
 
         #Grab the z if given a device
         if device:
             z = self._device_lookup(device).z
 
-        if z< self.range[0] and z<self.range[1]:
+        if z<self.range[0] or z>self.range[1]:
             raise ValueError("Split position  {} is not within the range of "
                              "the path.".format(z))
 
-        return (BeamPath(*[d for d in devices if d.z <  z]),
-                BeamPath(*[d for d in devices if d.z >= z]),
+        return (BeamPath(*[d for d in self.devices if d.z <  z]),
+                BeamPath(*[d for d in self.devices if d.z >= z])
                )
-
 
     @classmethod
     def from_join(cls, *beampaths):
@@ -387,7 +388,7 @@ class BeamPath(OphydObject):
         if not all(isinstance(bp,BeamPath) for bp in beampaths):
             raise TypeError('Can not join non-BeamPath object')
 
-        devices = [device for device in path.devices for path in beampaths]
+        devices = [device for path in beampaths for device in path.devices]
 
 
         return BeamPath(*set(devices))
@@ -404,18 +405,19 @@ class BeamPath(OphydObject):
         if not passive:
             ignore.extend([d for d in self.devices if d.passive])
 
+        
         #Add ignored devices
-        if not isinstance(ignore_devices, (tuple, list, set)):
-            ignore.append(self._device_lookup(ignore_devices))
+        if isinstance(ignore_devices, (tuple, list, set)):
+            ignore.extend([self._device_lookup(d) for d in ignore_devices])
 
-        else:
-            ignore.extend([self._device_lookup(d) for d in ignored_devices])
+        elif ignore_devices:
+            ignore.append(self._device_lookup(ignore_devices))
 
         #Grab target devices
         target_devices = [device for device in self.devices
-                          if device not in ignore_devices]
+                          if device not in ignore]
 
-        return target_devices, ignore_devices
+        return target_devices, ignore
 
 
     def _device_lookup(self, device):
@@ -456,8 +458,12 @@ class BeamPath(OphydObject):
         yield('devices', len(self.devices))
 
 
-    def __cmp__(self, *args, **kwargs):
-        if arg[0] is NOne:
-            return 1
 
-        return cmp(self.devices, arg[0].devices)
+    __hash = object.__hash__
+
+    def __eq__(self, *args, **kwargs):
+        try:
+            return self.devices == args[0].devices
+
+        except AttributeError:
+            return super().__eq__(*args, **kwargs)

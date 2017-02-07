@@ -45,6 +45,7 @@ def test_complex_insert(complex_device):
     complex_device.insert()
     assert complex_device.state == 'inserted'
     assert complex_device.inserted
+    assert complex_device.blocking
 
 def test_complex_remove(complex_device):
     complex_device.insert()
@@ -59,9 +60,11 @@ def test_complex_no_change(complex_device):
 def test_conflicting_states(complex_device):
     complex_device.opn.put(0)
     assert complex_device.state == 'unknown'
+    assert complex_device.blocking
 
 def test_unknown_states(complex_device):
     complex_device.opn.put(10)
+    assert complex_device.blocking
     assert complex_device.state == 'unknown'
 
 def test_simple_output(simple_device):
@@ -106,3 +109,18 @@ def test_callback_status(simple_device):
     assert status.done
     assert status.success
     cb.assert_called_once_with()
+
+def test_callback_status_deleted(simple_device):
+    
+    cb = Mock()
+
+    status = simple_device._setup_move('inserted',
+                                       finished_cb=cb)
+    simple_device.component.put(0)
+    status = simple_device._setup_move('removed')
+    simple_device.component.put(1)
+    assert status.done
+    assert status.success
+    cb.assert_called_once_with()
+
+

@@ -240,7 +240,7 @@ class LightDevice(Device, LightInterface):
         Whether device has the potential to block the beam, this is True if
         either the state is ``unknown`` or ``inserted``
         """
-        return (self.state.is_inserted or self.state.is_unknown)
+        return (self.state == 'inserted' or self.state == 'unknown')
 
 
     @property
@@ -248,7 +248,7 @@ class LightDevice(Device, LightInterface):
         """
         Report if the device is inserted
         """
-        return self.state.is_inserted
+        return self.state == 'inserted'
 
 
     @property
@@ -256,7 +256,7 @@ class LightDevice(Device, LightInterface):
         """
         Report if the device is removed
         """
-        return self.state.is_removed
+        return self.state == 'removed'
 
 
     @property
@@ -291,7 +291,7 @@ class LightDevice(Device, LightInterface):
                 logger.debug('Device has completed the move')
                 status._finished(success=True)
                 if finished_cb is not None:
-                    print('function',finished_cb())
+                    finished_cb()
 
         self.subscribe(cb, event_type=self.SUB_DEV_CH, run=False)
         status.finished_cb = partial(self.clear_sub, cb)
@@ -308,7 +308,7 @@ class LightDevice(Device, LightInterface):
         -------
         DeviceStatus
         """
-        return self._setup_move(self.inserted,
+        return self._setup_move('inserted',
                                 timeout=timeout,
                                 finished_cb=finished_cb,
                                )
@@ -318,7 +318,7 @@ class LightDevice(Device, LightInterface):
         """
         Remove the device into the beam path
         """
-        return self._setup_move(self.removed,
+        return self._setup_move('removed',
                                 timeout=timeout,
                                 finished_cb=finished_cb,
                                )
@@ -374,7 +374,7 @@ class LightDevice(Device, LightInterface):
 
         #Change state machine if neccesary
         if state != self.state:
-            self.state = state
+            self.state, old_value = state, self.state
             self._run_subs(sub_type  = self.SUB_DEV_CH,
                            old_value = old_value,
                            value     = self.state)
@@ -383,3 +383,13 @@ class LightDevice(Device, LightInterface):
             logger.debug('Component states changed but overall '
                           'Device state remains {}'.format(self.state))
 
+
+    __hash__ = Device.__hash__
+
+    def __eq__(self, *args, **kwargs):
+        try:
+            return ((self.name, self.prefix, self.z)
+                    == (args[0].name, args[0].prefix, args[0].z))
+
+        except AttributeError:
+            return super().__eq__(*args, **kwargs)

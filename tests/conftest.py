@@ -70,6 +70,22 @@ class ComplexDevice(LightDevice):
         self.cls.put(1)
         return status
 
+class SimpleMirror(SimpleDevice):
+
+    _destination = 'HXR'
+    _branching   = ['SXR', 'HXR']
+    def __init__(self , *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.insert()
+
+    @property
+    def destination(self):
+        if self.inserted:
+            return self._destination
+        
+        else:
+            return None
+
 @pytest.fixture(scope='function')
 def simple_device():
     device = SimpleDevice('SIMPLE', name='simple', z = 4)
@@ -77,8 +93,7 @@ def simple_device():
 
 @pytest.fixture(scope='function')
 def simple_mirror():
-    device = SimpleDevice('MIRROR', name='mirror', z = 15.5)
-    device._branching = ['SXR', 'HXR']
+    device = SimpleMirror('MIRROR', name='mirror', z = 15.5)
     return device
 
 @pytest.fixture(scope='function')
@@ -99,4 +114,5 @@ def beampath(simple_device, complex_device, simple_mirror):
                simple_device,
                complex_device,
               ]
-    return BeamPath(*devices)
+    bp = BeamPath(*devices)
+    return bp
