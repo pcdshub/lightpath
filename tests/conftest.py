@@ -34,7 +34,7 @@ class SimpleDevice(LightDevice):
 
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, beamline='LCLS', **kwargs)
+        super().__init__(*args, **kwargs)
 
     def insert(self,timeout=None):
         status = super().insert(timeout=timeout)
@@ -70,26 +70,32 @@ class ComplexDevice(LightDevice):
         self.cls.put(1)
         return status
 
-
 @pytest.fixture(scope='function')
 def simple_device():
-    device = SimpleDevice('DEVICE', name='simple', z = 4)
+    device = SimpleDevice('SIMPLE', name='simple', z = 4)
+    return device
+
+@pytest.fixture(scope='function')
+def simple_mirror():
+    device = SimpleDevice('MIRROR', name='mirror', z = 15.5)
+    device._branching = ['SXR', 'HXR']
     return device
 
 @pytest.fixture(scope='function')
 def complex_device():
-    device = ComplexDevice('DEVICE', name='simple', z = 10)
+    device = ComplexDevice('COMPLEX', name='complex', z = 10)
     return device
 
 
 @pytest.fixture(scope='function')
-def beampath(simple_device, complex_device):
-    devices = [SimpleDevice('DEVICE_1', name='first',  z = 0.),
-               SimpleDevice('DEVICE_2', name='second', z = 2.),
-               SimpleDevice('DEVICE_3', name='third',  z = 9.),
-               SimpleDevice('DEVICE_4', name='fourth', z = 15.),
-               SimpleDevice('DEVICE_5', name='fifth',  z = 16.),
-               SimpleDevice('DEVICE_6', name='sixth',  z = 30.),
+def beampath(simple_device, complex_device, simple_mirror):
+    devices = [SimpleDevice('DEVICE_1', name='one',   z = 0.),
+               SimpleDevice('DEVICE_2', name='two',   z = 2.),
+               SimpleDevice('DEVICE_3', name='three', z = 9.),
+               SimpleDevice('DEVICE_4', name='four',  z = 15.),
+               SimpleDevice('DEVICE_5', name='five',  z = 16., beamline='HXR'),
+               SimpleDevice('DEVICE_6', name='six',   z = 30., beamline='HXR'),
+               simple_mirror,
                simple_device,
                complex_device,
               ]

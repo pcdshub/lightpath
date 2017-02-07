@@ -4,6 +4,7 @@ import logging
 
 from .path   import BeamPath
 from .device import LightDevice
+from .utils  import errors
 
 #Setup logger
 logger = logging.getLogger(__name__)

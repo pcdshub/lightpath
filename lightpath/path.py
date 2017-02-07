@@ -30,9 +30,9 @@ class BeamPath(OphydObject):
 
             #Ensure positioning is physical
             if np.isnan(dev.z) or dev.z < 0.:
-                CoordinateError('Device {!r} is reporting a non-existant beamline '\
-                                'position, its coordinate was not properly '\
-                                'initialized.'.format(dev))
+                raise CoordinateError('Device {!r} is reporting a non-existant beamline '\
+                                      'position, its coordinate was not properly '\
+                                      'initialized.'.format(dev))
 
         #Sort by position downstream to upstream
         self.devices = sorted(devices, key =lambda dev : dev.z)
@@ -96,7 +96,7 @@ class BeamPath(OphydObject):
         block = []
 
         for pos, device in enumerate(self.devices):
-            if device.branching:
+            if device.branching and device.blocking:
                 try:
 
                     if self.devices[i+1].beamline != device.beamline:
