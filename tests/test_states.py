@@ -73,6 +73,7 @@ def test_simple_output(simple_device):
 
 def test_passive(simple_device):
     simple_device._passive = True
+    simple_device.insert()
     assert simple_device.output == ('LCLS', 1.)
 
 def test_done_status(simple_device):

@@ -347,8 +347,6 @@ class LightDevice(Device, LightInterface):
         #Assume unknown state
         state = 'unknown'
 
-        print(states)
-
         #Single unknown state
         if 'unknown' in [state for (attr, state) in states]:
             reason  = 'One or more components reporting unknown states'
@@ -373,18 +371,15 @@ class LightDevice(Device, LightInterface):
                                                                     state)
         #Log reasoning
         logger.debug(reason)
-        
-        try:
-            #Change state machine if neccesary
-            if state != self.state:
-                self.state = state
-                self._run_subs(sub_type  = self.SUB_DEV_CH,
-                               old_value = old_value,
-                               value     = self.state)
 
-            else:
-                logger.debug('Component states changed but overall '
-                              'Device state remains {}'.format(self.state))
-        except e:
-            print(e)
+        #Change state machine if neccesary
+        if state != self.state:
+            self.state = state
+            self._run_subs(sub_type  = self.SUB_DEV_CH,
+                           old_value = old_value,
+                           value     = self.state)
+
+        else:
+            logger.debug('Component states changed but overall '
+                          'Device state remains {}'.format(self.state))
 

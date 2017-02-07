@@ -16,10 +16,6 @@ class DeviceStateMachine(StateMachine):
         UNKNOWN    = 'unknown'
 
 
-    @classmethod
-    def states(cls):
-        return [state.value for state in cls]
-
     class Meta:
         allow_empty   = False
         initial_state = 'unknown'
