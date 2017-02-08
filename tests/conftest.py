@@ -2,10 +2,11 @@ import pytest
 import logging
 import numpy as np
 from ophyd import Signal
+from ophyd.device import Component
 
 import lightpath
-from   lightpath import BeamPath, LightDevice
-from   lightpath.device import StateComponent
+from lightpath import BeamPath, LightDevice
+from lightpath.device import StateComponent
 
 lightpath.device.logger.setLevel(logging.DEBUG)
 
@@ -55,8 +56,14 @@ class ComplexDevice(LightDevice):
                                             1 : 'defer',
                             })
 
+    basic = Component(Signal, value=4,)
+
     _transmission = .5
     _beamline = 'LCLS'
+
+    def __init__(self, *args, **kwargs):
+        kwargs['configuration_attrs'] = ['basic']
+        super().__init__(*args, **kwargs)
 
     def insert(self, timeout=None):
         status = super().insert(timeout=timeout)
@@ -72,8 +79,10 @@ class ComplexDevice(LightDevice):
 
 class SimpleMirror(SimpleDevice):
 
-    _destination = 'HXR'
-    _branching   = ['SXR', 'HXR']
+    _destination  = 'HXR'
+    _branching    = ['SXR', 'HXR']
+    _transmission = 1.
+
     def __init__(self , *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.insert()
@@ -85,6 +94,8 @@ class SimpleMirror(SimpleDevice):
         
         else:
             return None
+
+
 
 @pytest.fixture(scope='function')
 def simple_device():

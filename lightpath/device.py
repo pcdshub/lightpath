@@ -100,7 +100,7 @@ class LightInterface:
     _beamline     = None
     _z            = -1.0
     _transmission = 0.
-    _branching    = None
+    _branching    = []
     _passive      = False
 
     def __init__(self, *args, **kwargs):
@@ -181,7 +181,7 @@ class LightDevice(Device, LightInterface):
     The main function of this class is to define a standard API for further
     device classes to reuse based on their individual states. Each class that
     inherits this as its base should reimplement the following methods;
-    :meth:`.insert`, :meth:`.remove`, :attr:`.destination and :meth:`.home`.
+    :meth:`.insert`, :meth:`.remove`, :attr:`.destination` and :meth:`.home`.
     Also, if the device has a more complex relationship with the beam than
     blocking or not, it may be neccesary to reimplement :attr:`.transmission`.
     Finally, if the device is capable of measuring the presence of beam,
@@ -201,6 +201,11 @@ class LightDevice(Device, LightInterface):
 
     beamline : str, optional
         Three character abbreviation for the specific beamline the device is on
+
+    Attributes
+    ----------
+    state : str
+        Either ``inserted``, ``unknown`` or ``removed``
     """
     state = LoggingPropertyMachine(DeviceStateMachine)
 

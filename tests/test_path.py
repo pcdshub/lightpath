@@ -1,5 +1,7 @@
 import io
 import pytest
+from collections import OrderedDict
+from unittest.mock import Mock
 
 import lightpath
 from   lightpath import BeamPath
@@ -30,6 +32,10 @@ def test_reject_z_less_device(simple_device):
     with pytest.raises(lightpath.errors.CoordinateError):
         bp = BeamPath(simple_device)
 
+def test_reject_uncontiguous(simple_device, complex_device):
+    simple_device._beamline='HDF'
+    with pytest.raises(lightpath.errors.PathError):
+        BeamPath(simple_device, complex_device)
 
 def test_mirror_finding(beampath, simple_mirror):
     assert beampath.mirrors  == [simple_mirror]
@@ -60,6 +66,7 @@ def test_clear_beamline(beampath):
     assert beampath.blocking_devices == []
     assert beampath.impediment == None
     assert beampath.cleared
+    assert beampath.output == ('HXR',  1.)
 
 def test_single_insert_beamline(beampath):
     dev = beampath.devices[4]
@@ -67,12 +74,14 @@ def test_single_insert_beamline(beampath):
     assert beampath.impediment == dev
     assert beampath.blocking_devices == [dev]
     assert beampath.cleared == False
+    assert beampath.output == ('LCLS',  0.5)
     dev.remove()
     dev = beampath.devices[8]
     dev.insert()
     assert beampath.impediment == dev
     assert beampath.blocking_devices == [dev]
     assert beampath.cleared == False
+    assert beampath.output == ('HXR',  0.)
 
 def test_multiple_insert_beamline(beampath):
     dev = beampath.devices[1]
@@ -82,6 +91,7 @@ def test_multiple_insert_beamline(beampath):
     assert beampath.impediment == dev
     assert beampath.blocking_devices == [dev, dev2]
     assert beampath.cleared == False
+    assert beampath.output == ('LCLS',  0.)
 
 def test_mirror_out(beampath):
     dev = beampath.devices[6]
@@ -89,6 +99,7 @@ def test_mirror_out(beampath):
     assert beampath.impediment == dev
     assert beampath.blocking_devices == [dev]
     assert beampath.cleared == False
+    assert beampath.output == ('LCLS',  0.)
 
 def test_show_device(beampath):
     f = io.StringIO()
@@ -100,6 +111,7 @@ def test_show_device(beampath):
     beampath.show_devices(file=f, state='inserted')
     f.seek(0)
     assert f.read() == small_table
+
 known_table = """\
 +---------+----------+----------+----------+------------+
 | Name    | Prefix   | Position | Beamline |      State |
@@ -154,6 +166,7 @@ def test_clear(beampath, simple_mirror):
     dev.insert()
     status = beampath.clear(wait=True, timeout=1.)
     assert beampath.cleared
+    assert beampath.output == ('HXR',  1.)
 
     assert all([lambda s : s.done for s in status])
 
@@ -182,3 +195,78 @@ def test_split(simple_device, simple_mirror, complex_device):
 
     with pytest.raises(ValueError):
         bp1.split(400)
+
+def test_configuration(simple_device, complex_device):
+    bp = BeamPath(simple_device, complex_device)
+    d = bp.read_configuration()
+    assert 'simple' in d.keys()
+    simple = d['simple']
+    assert simple['state'] == 'removed'
+    assert simple['config'] == OrderedDict()
+    
+    assert 'complex' in d.keys()
+    cmplx = d['complex']
+    assert cmplx['state'] == 'removed'
+    assert cmplx['config']['complex_basic']['value'] == 4
+
+def test_configuration_restore(simple_device, complex_device):
+    bp      = BeamPath(simple_device, complex_device)
+    initial = bp.read_configuration()
+    bp.devices[0].insert()
+    assert bp.devices[0].inserted
+    bp.devices[1].basic.put(2)
+    assert bp.devices[1].basic.get() == 2
+    d = bp.read_configuration()
+    
+    assert 'simple' in d.keys()
+    simple = d['simple']
+    assert simple['state'] == 'inserted'
+    assert simple['config'] == OrderedDict()
+
+    assert 'complex' in d.keys()
+    cmplx = d['complex']
+    assert cmplx['state'] == 'removed'
+    assert cmplx['config']['complex_basic']['value'] == 2
+
+    bp.configure(initial)
+
+
+    d = bp.read_configuration()
+    assert 'simple' in d.keys()
+    simple = d['simple']
+    assert simple['state'] == 'removed'
+    assert simple['config'] == OrderedDict()
+
+    assert 'complex' in d.keys()
+    cmplx = d['complex']
+    assert cmplx['state'] == 'removed'
+    print(cmplx)
+    assert cmplx['config']['complex_basic']['value'] == 4
+
+
+def test_unknown_configure(simple_device):
+    simple_device.component.put(4)
+    bp = BeamPath(simple_device)
+    d = bp.read_configuration()
+    bp.configure(d)
+    assert simple_device.component.get() == 4
+    simple_device.insert()
+    bp.configure({'simple' : {'state' : 'unknown'}})
+    assert simple_device.inserted
+
+
+def test_insert_configure(simple_device):
+    simple_device.insert()
+    bp = BeamPath(simple_device)
+    d = bp.read_configuration()
+    simple_device.remove()
+    bp.configure(d)
+    assert simple_device.inserted
+
+
+def test_callback(beampath):
+    cb = Mock()
+    beampath.subscribe(cb, event_type=beampath.SUB_PTH_CHNG, run=False)
+    beampath.devices[4].insert()
+    assert cb.called
+

@@ -8,7 +8,7 @@ from ophyd.status import wait as status_wait
 from prettytable import PrettyTable
 
 from .device import LightDevice
-from .utils  import CoordinateError, MotionError
+from .utils  import CoordinateError, PathError
 
 logger = logging.getLogger(__name__)
 
@@ -16,35 +16,69 @@ class BeamPath(OphydObject):
     """
     Represents a straight line of devices along the beamline
 
+    The devices given must be a continuous set all along the same beamline, or,
+    multiple beamlines with appropriate reflecting devices in between. 
+
     Parameters
     ----------
     devices : :class:`.LightDevice`
         Arguments are interpreted as LightDevices along a common beamline.
+
+    name = str, optional
+        Name of the BeamPath
+
+    Raises
+    ------
+    TypeError : 
+        If a non-LightDevice object is supplied
+
+    CoordinateError:
+        If a coordinate is not properly specified
+
+    PathError:
+        If multiple beamlines are present, with no reflecting device
     """
     SUB_PTH_CHNG = 'beampath_changed'
 
-    def __init__(self, *devices):
+    def __init__(self, *devices, name=None):
+        super().__init__(name=name)
+
+        #Sort by position downstream to upstream
+        try:
+            self.devices = sorted(devices, key =lambda dev : dev.z)
+
+        except AttributeError as e:
+                raise TypeError('Not a valid LightDevice')
+
         #Check types and positions
-        for dev in devices:
-            if not isinstance(dev, LightDevice):
-                raise TypeError('{!r} is not a valid LightDevice'.format(dev))
+        prior = None
+
+        for dev in self.devices:
 
             #Ensure positioning is physical
             if np.isnan(dev.z) or dev.z < 0.:
-                raise CoordinateError('Device {!r} is reporting a non-existant beamline '\
-                                      'position, its coordinate was not properly '\
-                                      'initialized.'.format(dev))
+                raise CoordinateError('Device {!r} is reporting a non-existant '
+                                      'beamline position, its coordinate was '
+                                      'not properly initialized.'
+                                      ''.format(dev))
+        
 
-        #Sort by position downstream to upstream
-        self.devices = sorted(devices, key =lambda dev : dev.z)
+            #Ensure beampath is possible
+            if prior and (prior.beamline != dev.beamline
+                          and dev.beamline not in prior.branching):
+                raise PathError('Given set of devices are not contiguous, '
+                                'path must either be on the same beamline or '
+                            'have reflecting device.')
 
-        #Add callback to device state change
-        for d in self.devices:
-            d.subscribe(self._device_moved,
-                        event_type=d.SUB_DEV_CH,
-                        run=False)
 
-        #Add callback here!
+            #Add callback here!
+            dev.subscribe(self._device_moved,
+                          event_type=dev.SUB_DEV_CH,
+                          run=False)
+
+            prior = dev
+
+        #Grab mirrors
         self.mirrors = [d for d in self.devices if d.branching]
 
 
@@ -111,25 +145,78 @@ class BeamPath(OphydObject):
         return block
 
 
-    @property
-    def state(self):
+    
+    def read_configuration(self):
         """
         Current state of the path devices
 
-        .. todo::
+        Included information is the :attr:`.LightDevice.state` as well as the
+        attributes specified in :attr:`.LightDevice.configuration_attrs`
 
-            Both this and restore state should use ``configuration_attrs`` from
-            Ophyd
+        Returns
+        -------
+        config :
+            Dictionary of both device stat
         """
-        return dict([(device.name, device.state) for device in self.devices])
+        return dict([(device.name, {'state'  : device.state,
+                                    'config' : device.read_configuration()})
+                     for device in self.devices])
 
 
-    def restore_state(self, state):
+    def configure(self, state):
         """
         Restore a beampath configuration from state
+
+        Parameters
+        ----------
+        state : dict
+            Dictionary of devices, with smaller dictionaries specifying states
+            and configuration_attrs. See the below example for accepted
+            patterns
+
+        Example
+        -------
+        .. code::
+
+            bp.configure({'my_device': {'state'  : 'inserted',
+                                        'config' :  4}
+                        })
+
+            bp.configure({'my_device' : {'config':
+                                            {'timestamp' : 1223445.8,
+                                             'value'     : 3}
+                                        }
+                        })
         """
-        def restore(dev, st):
-            if state == 'unknown':
+        for dev,config in state.items():
+
+            logger.debug('Configuring device {} ...'.format(dev))
+
+            #Restore configuration
+            dev = self._device_lookup(dev)
+
+            sig_cpts = dict((s.name, cpt) for cpt, s in dev._signals.items())
+
+            if config.get('config'):
+                for sig, info in config['config'].items():
+                    logger.debug('Reconfiguring signal {} to {}'
+                                 ''.format(sig,info))
+
+                    if isinstance(info, dict):
+                        value = info['value']
+
+                    else:
+                        value = info
+
+                    dev.configure({sig_cpts[sig] : value})
+
+            #Store state
+            st = config.get('state')
+
+            if not st:
+                pass
+
+            elif st == 'unknown':
                 logger.error('Can not restore {} to an unknown state'
                              ''.format(dev))
                 status = None
@@ -137,13 +224,12 @@ class BeamPath(OphydObject):
             elif st == 'removed':
                 status = dev.remove()
 
-            elif st == 'unknown':
+            elif st == 'inserted':
                 status = dev.insert()
 
             else:
                 raise ValueError('Unrecognized state {}'.format(st))
 
-        return [restore(d,s) for d,s in state.items()]
 
 
     def show_devices(self, state=None, file=sys.stdout):
@@ -157,7 +243,7 @@ class BeamPath(OphydObject):
             'unknown'
 
         file : file-like object
-            File to place table
+            File to writable
         """
         #Initialize Table
         pt = PrettyTable(['Name', 'Prefix', 'Position', 'Beamline','State'])
@@ -283,12 +369,21 @@ class BeamPath(OphydObject):
         ignore: LightDevice or iterable, optional
             Leave devices in their current state without removing them
 
-        passive : If True, passive devices will also be reviewed 
+        passive : bool, optional
+            If True, passive devices will also be reviewed 
+
+        Returns
+        -------
+        statuses :
+            Returns list of status objects returned by
+            :meth:`.LightDevice.remove`
         """
         logger.info('Clearing beampath {} ...'.format(self))
 
         #Assemble device list
         target_devices, ignored = self._ignore(ignore, passive=passive)
+
+        logger.info('Removing devices along the beampath ...')
 
         #Remove devices
         status = [device.remove(timeout=timeout) for device in target_devices
@@ -296,15 +391,39 @@ class BeamPath(OphydObject):
 
         #Wait parameters
         if wait:
-            logger.debug('Waiting for all devices to be '\
-                         'removed from the beampath {} ...'.format(self))
+            logger.info('Waiting for all devices to be '\
+                        'removed from the beampath {} ...'.format(self))
 
             for s in status:
-                print('Waiting for {} to be done ...'.format(s))
+                logger.debug('Waiting for {} to be done ...'.format(s))
                 status_wait(s, timeout=timeout)
-                print('Completed')
+                logger.info('Completed')
 
         return status
+
+
+    @property
+    def output(self):
+        """
+        Output of the beampath in form (beamline, transmission)
+        """
+
+        #Find endpoint
+        if not self.impediment:
+            end = self.finish
+
+        else:
+            end = self.impediment
+
+        #If the end is a misaligned mirror / transmission will be zero
+        if end.branching:
+            transmission = 0.
+
+        #Calculate transmission
+        else:
+            transmission = np.prod([d.output[1] for d in self.devices])
+
+        return (end.beamline, transmission)
 
 
     def join(self, *beampaths):
@@ -403,6 +522,7 @@ class BeamPath(OphydObject):
 
         #Add passive devices to ignored
         if not passive:
+            logger.debug("Passive devices will be ignored ...")
             ignore.extend([d for d in self.devices if d.passive])
 
         
@@ -416,6 +536,8 @@ class BeamPath(OphydObject):
         #Grab target devices
         target_devices = [device for device in self.devices
                           if device not in ignore]
+
+        logger.debug('Ignoring devices {} ...'.format(ignore))
 
         return target_devices, ignore
 
@@ -438,18 +560,17 @@ class BeamPath(OphydObject):
         if device not in self.devices:
             raise ValueError("Could not find device {} in the path"
                              "".format(device))
+
         return device
 
 
-    def _device_moved(self, *args, obj=None):
+    def _device_moved(self, *args, obj=None, **kwargs):
         """
         Run when a device changes state
         """
         #Maybe this should introspect and see if beampath state changes
-        self._run_subs(*args, 
-                       sub_type=self.SUB_PTH_CHNG,
-                       device = obj,
-                       **kwargs)
+        self._run_subs(sub_type = self.SUB_PTH_CHNG,
+                         device = obj)
 
 
     def _repr_info(self):

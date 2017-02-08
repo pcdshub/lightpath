@@ -123,4 +123,3 @@ def test_callback_status_deleted(simple_device):
     assert status.success
     cb.assert_called_once_with()
 
-
