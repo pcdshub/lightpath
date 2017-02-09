@@ -4,6 +4,7 @@ import logging
 
 from .path   import BeamPath
 from .device import LightDevice
+from .mps    import MPS
 from .utils  import errors
 
 #Setup logger

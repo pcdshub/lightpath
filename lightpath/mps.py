@@ -6,12 +6,11 @@
 #    Third Party   #
 ####################
 from ophyd import Device, EpicsSignalRO, Component
-from ophyd.utils.epics_pvs import raised_if_disconnected, AlarmSeverity
+from ophyd.utils.epics_pvs import raise_if_disconnected, AlarmSeverity
 
 ####################
 #     Package      #
 ####################
-from .device import LightDevice
 
 
 class MPS(Device):

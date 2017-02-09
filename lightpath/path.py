@@ -365,9 +365,35 @@ class BeamPath(OphydObject):
 #            ignore_devices.pop(device)
 
 
-    def insert(self, device, wait=False, force=False):
+    def insert(self, device, wait=False, timeout=None, force=False):
         """
         Insert a device into the beampath
+        
+        Parameters
+        ----------
+        device : str or :class:`.LightDevice`
+            Either a string of the device base or name, or the device itself
+
+        wait : bool , optional
+            Block the thread until move has completed
+
+        timeout : float, optional
+            Time to wait for completion
+
+        force : bool, optional
+            Ignore MPS system warnings
+
+        Returns
+        -------
+        Status
+
+        Raises
+        ------
+        MPSFault:
+            If the move would cause an MPS fault
+
+        ValueError:
+            If the device is not found in the path
         """
         d  = self._device_lookup(device)
 
@@ -384,12 +410,44 @@ class BeamPath(OphydObject):
                     raise MPSError('The requested motion will cause an MPS '
                                    'Fault.')
 
-        return d.insert(wait=wait)
+        s = d.insert(timeout=timeout)
+        if wait:
+            logger.debug('Waiting for {} to be done ...'.format(s))
+            status_wait(s, timeout=timeout)
+            logger.info('Completed')
+
+        return s
 
 
-    def remove(self, device, wait=False, force=False):
+    def remove(self, device, wait=False, timeout=None, force=False):
         """
         Remove a device from the beampath
+        
+        Parameters
+        ----------
+        device : str or :class:`.LightDevice`
+            Either a string of the device base or name, or the device itself
+
+        wait : bool , optional
+            Block the thread until move has completed
+
+        timeout : float, optional
+            Time to wait for completion
+
+        force : bool, optional
+            Ignore MPS system warnings
+
+        Returns
+        -------
+        Status
+
+        Raises
+        ------
+        MPSFault:
+            If the move would cause an MPS fault
+
+        ValueError:
+            If the device is not found in the path
         """
         d = self._device_lookup(device)
 
@@ -410,8 +468,14 @@ class BeamPath(OphydObject):
                     raise MPSFault('The requested motion will cause an MPS '
                                    'Fault due to {}'
                                    ''.format(down.faulted_devices))
+        s = d.remove(timeout=timeout)
+        if wait:
+            logger.debug('Waiting for {} to be done ...'.format(s))
+            status_wait(s, timeout=timeout)
+            logger.info('Completed')
 
-        return d.remove(wait=wait)
+        return s
+
 
 
     def clear(self, wait=False, timeout=None,

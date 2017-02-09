@@ -251,7 +251,7 @@ class LightDevice(Device, LightInterface):
         """
         An MPS object associated with device otherwise return None
         """
-        mps = [isinstance(d, MPS) for d in self.devices]
+        mps = [isinstance(d, MPS) for d in self._sub_devices]
 
         if not any(mps):
             return None
@@ -335,7 +335,7 @@ class LightDevice(Device, LightInterface):
         -------
         DeviceStatus
         """
-        if mps and not mps.veto:
+        if self.mps and not self.mps.veto:
             logger.warning('Inserting an MPS protected device, this may trip '
                            'the beam if the device is not protected')
         return self._setup_move('inserted',
@@ -349,7 +349,7 @@ class LightDevice(Device, LightInterface):
         """
         Remove the device into the beam path
         """
-        if mps and mps.veto:
+        if self.mps and self.mps.veto:
             logger.warning('Removing a device MPS considers capable of '
                            'protecting downstream devices. This may cause a '
                            'fault in the MPS system depending on downstream '
