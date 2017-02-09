@@ -1,16 +1,28 @@
+####################
+# Standard Library #
+####################
 import sys
 import copy
 import logging
+
+####################
+#    Third Party   #
+####################
 import numpy as np
-
+from prettytable    import PrettyTable
 from ophyd.ophydobj import OphydObject
-from ophyd.status import wait as status_wait
-from prettytable import PrettyTable
+from ophyd.status   import wait as status_wait
+from ophyd.utils.epics_pvs    import raise_if_disconnected
 
+####################
+#     Package      #
+####################
 from .device import LightDevice
 from .utils  import CoordinateError, PathError
 
+
 logger = logging.getLogger(__name__)
+
 
 class BeamPath(OphydObject):
     """

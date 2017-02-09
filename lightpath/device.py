@@ -1,14 +1,21 @@
+####################
+# Standard Library #
+####################
 import logging
-from threading import RLock
+from   threading import RLock
+from   functools import partial
 
+####################
+#    Third Party   #
+####################
 import numpy as np
-from functools import partial
-
-from ophyd        import Device
-from ophyd.device import Component
-from ophyd.signal import EpicsSignal, EpicsSignalRO
+from ophyd        import Device, Component, EpicsSignal, EpicsSignalRO
 from ophyd.status import DeviceStatus
+from ophyd.utils.epics_pvs    import raise_if_disconnected
 
+####################
+#     Package      #
+####################
 from .utils import DeviceStateMachine, LoggingPropertyMachine
 
 logger = logging.getLogger(__name__)
@@ -305,6 +312,7 @@ class LightDevice(Device, LightInterface):
 
 
 
+    @raise_if_disconnected
     def insert(self, timeout=None, finished_cb=None):
         """
         Insert the device into the beam path
@@ -319,6 +327,7 @@ class LightDevice(Device, LightInterface):
                                )
 
 
+    @raise_if_disconnected
     def remove(self, timeout=None, finished_cb=None):
         """
         Remove the device into the beam path
