@@ -17,6 +17,7 @@ from ophyd.utils.epics_pvs    import raise_if_disconnected
 #     Package      #
 ####################
 from .utils import DeviceStateMachine, LoggingPropertyMachine
+from .mps import MPS
 
 logger = logging.getLogger(__name__)
 
@@ -245,6 +246,19 @@ class LightDevice(Device, LightInterface):
 
 
 
+    @property
+    def mps(self):
+        """
+        An MPS object associated with device otherwise return None
+        """
+        mps = [isinstance(d, MPS) for d in self.devices]
+
+        if not any(mps):
+            return None
+
+        else:
+            return self.devices[mps.index(True)]
+
 
     @property
     def blocking(self):
@@ -321,6 +335,9 @@ class LightDevice(Device, LightInterface):
         -------
         DeviceStatus
         """
+        if mps and not mps.veto:
+            logger.warning('Inserting an MPS protected device, this may trip '
+                           'the beam if the device is not protected')
         return self._setup_move('inserted',
                                 timeout=timeout,
                                 finished_cb=finished_cb,
@@ -332,6 +349,11 @@ class LightDevice(Device, LightInterface):
         """
         Remove the device into the beam path
         """
+        if mps and mps.veto:
+            logger.warning('Removing a device MPS considers capable of '
+                           'protecting downstream devices. This may cause a '
+                           'fault in the MPS system depending on downstream '
+                           'configuration.')
         return self._setup_move('removed',
                                 timeout=timeout,
                                 finished_cb=finished_cb,

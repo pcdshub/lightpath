@@ -18,7 +18,7 @@ from ophyd.utils.epics_pvs    import raise_if_disconnected
 #     Package      #
 ####################
 from .device import LightDevice
-from .utils  import CoordinateError, PathError
+from .utils  import MPSFault, CoordinateError, PathError
 
 
 logger = logging.getLogger(__name__)
@@ -281,22 +281,22 @@ class BeamPath(OphydObject):
         print(pt, file=file)
 
 
-#    @property
-#    def faulted_devices(self):
-#        """
-#        A list of faulted MPS devices
-#        """
-#        return [device for device in self.devices
-#                if isinstance(device,MPSDevice) and device.faulted]
-#
-#
-#    @property
-#    def veto_devices(self):
-#        """
-#        A list of MPS veto devices along the path
-#        """
-#        return [device for device in self.devices
-#                if isinstance(device,MPSDevice) and device.vetoable]
+    @property
+    def faulted_devices(self):
+        """
+        A list of faulted MPS devices
+        """
+        return [device for device in self.devices
+                if device.mps and device.mps.faulted]
+
+
+    @property
+    def veto_devices(self):
+        """
+        A list of MPS veto devices along the path
+        """
+        return [device for device in self.devices
+                if device.mps and device.mps.veto_capable]
 
 
     @property
@@ -365,6 +365,55 @@ class BeamPath(OphydObject):
 #            ignore_devices.pop(device)
 
 
+    def insert(self, device, wait=False, force=False):
+        """
+        Insert a device into the beampath
+        """
+        d  = self._device_lookup(device)
+
+        #Check if an MPS protected device
+        if d.mps and not d.mps.veto_capable:
+
+            upstream, downstream  = self.split(device)
+
+            #Check if protetected by upstream device  
+            if not any(upstream.veto_devices):
+                logger.warning('Inserting MPS protected device with no '
+                               'upstream veto devices found')
+                if not force:
+                    raise MPSError('The requested motion will cause an MPS '
+                                   'Fault.')
+
+        return d.insert(wait=wait)
+
+
+    def remove(self, device, wait=False, force=False):
+        """
+        Remove a device from the beampath
+        """
+        d = self._device_lookup(device)
+
+        #If device is veto device
+        if d.mps and d.mps.veto_capable:
+
+            up, down  = self.split(device)
+            
+            #Remove devices protected by an additional veto
+            if len(down.veto_devices) > 1:
+                down, protected = down.split(down.veto_devices[1])
+
+            #Check for faults downstream
+            if any(down.faulted_devices):
+                logger.warning('Removing this device will expose '
+                               'upstream MPS faults')
+                if not force:
+                    raise MPSFault('The requested motion will cause an MPS '
+                                   'Fault due to {}'
+                                   ''.format(down.faulted_devices))
+
+        return d.remove(wait=wait)
+
+
     def clear(self, wait=False, timeout=None,
               passive=False, ignore=None):
         """
@@ -398,8 +447,8 @@ class BeamPath(OphydObject):
         logger.info('Removing devices along the beampath ...')
 
         #Remove devices
-        status = [device.remove(timeout=timeout) for device in target_devices
-                  if device.blocking]
+        status = [self.remove(device, timeout=timeout, force=True)
+                  for device in target_devices if device.blocking]
 
         #Wait parameters
         if wait:

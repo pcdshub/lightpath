@@ -7,5 +7,5 @@ class MotionError(Exception):
 class PathError(Exception):
     pass
 
-class TimeoutError(Exception):
+class MPSFault(Exception):
     pass
