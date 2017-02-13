@@ -13,5 +13,5 @@ Contents:
 
    device.rst
    path.rst
-
+   mps.rst
 

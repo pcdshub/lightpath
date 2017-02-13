@@ -28,10 +28,12 @@ class MPS(Device):
 
     def __init__(self, *args, veto=False, **kwargs):
 
-        super().__init__(*args, **kwargs)
+        self._veto = veto
 
+        super().__init__(*args, **kwargs)
+        
         #Subscribe to changes of state 
-        self.safe.subscribe(self._mps_change)
+        self.alarm.subscribe(self._mps_change)
         self.bypass.subscribe(self._mps_change)
 
 

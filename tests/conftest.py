@@ -5,9 +5,8 @@ from ophyd import Signal
 from ophyd.device import Component
 
 import lightpath
-from lightpath import BeamPath, LightDevice
+from lightpath import MPS, BeamPath, LightDevice
 from lightpath.device import StateComponent
-
 lightpath.device.logger.setLevel(logging.DEBUG)
 
 class FakeStateComponent(StateComponent):
@@ -95,6 +94,26 @@ class SimpleMirror(SimpleDevice):
         else:
             return None
 
+class SimpleMPS(MPS):
+
+    bypass = Component(Signal, value=0)
+    alarm  = Component(Signal, value=0)
+
+class MPSDevice(SimpleDevice):
+
+    switches = Component(SimpleMPS,'basic', veto=False)
+
+    def insert(self, timeout=None):
+        self.mps.alarm.put(2)
+        return super().insert(timeout=None)
+
+    def remove(self, timeout=None):
+        self.mps.alarm.put(0)
+        return super().remove(timeout=None)
+
+class VetoDevice(SimpleDevice):
+
+    switches = Component(SimpleMPS,'basic', veto=True)
 
 
 @pytest.fixture(scope='function')
@@ -127,3 +146,16 @@ def beampath(simple_device, complex_device, simple_mirror):
               ]
     bp = BeamPath(*devices)
     return bp
+
+@pytest.fixture(scope='function')
+def mps():
+    return SimpleMPS('basic', veto=False)
+
+@pytest.fixture(scope='function')
+def mps_path(mps):
+    first_veto  = VetoDevice('veto_1', z=8.3,  beamline='LCLS')
+    second_veto = VetoDevice('veto_2', z=14.3, beamline='LCLS')
+    first_mps   = MPSDevice('mps_1',   z=8.8, beamline='LCLS')
+    second_mps  = MPSDevice('mps_2',   z=18.8, beamline='LCLS')
+
+    return BeamPath(first_veto, second_veto, second_mps, first_mps)
