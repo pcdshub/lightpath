@@ -19,6 +19,9 @@ class MPS(Device):
     ----------
     prefix : str
         Base PV address for all related records
+
+    veto : bool, optional
+        Whether the device is considered a veto device in MPS
     """
     bypass = Component(EpicsSignalRO, '_BYPS')
     alarm  = Component(EpicsSignalRO, '_MPSC.SEVR')

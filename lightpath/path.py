@@ -579,7 +579,7 @@ class BeamPath(OphydObject):
         TypeError:
             Raised if a non-BeamPath object is supplied
         """
-        return BeamPath.from_join(self, *beampaths)
+        return BeamPath.from_join(self, *beampaths, name=self.name)
 
 
     def split(self, z=None, device=None):
@@ -617,7 +617,7 @@ class BeamPath(OphydObject):
                )
 
     @classmethod
-    def from_join(cls, *beampaths):
+    def from_join(cls, *beampaths, name=None):
         """
         Join other beampaths with the current one
 
@@ -626,6 +626,9 @@ class BeamPath(OphydObject):
         beampaths : arguments
             A list of beampaths to join into a complete path, order is
             irrelavant
+
+        name : str, optional
+            New name for created beampath
 
         Returns
         -------
@@ -643,7 +646,7 @@ class BeamPath(OphydObject):
         devices = [device for path in beampaths for device in path.devices]
 
 
-        return BeamPath(*set(devices))
+        return BeamPath(*set(devices), name=name)
 
 
     def _ignore(self, ignore_devices, passive=False):
