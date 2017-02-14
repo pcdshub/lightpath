@@ -1,9 +1,28 @@
+####################
+# Standard Library #
+####################
 import logging
+
+####################
+#    Third Party   #
+####################
 from happi import Client
+
+####################
+#     Package      #
+####################
+from .utils import PathError
 
 class LightController:
     """
     Controller for the LCLS Lightpath
+
+
+    Attributes
+    ----------
+    paths
+    devices
+    beamlines
 
     """
     conn = None
@@ -16,17 +35,17 @@ class LightController:
         #Load devices and beamlines
         #TODO Mapping of containers to devices
         self.devices   =  self.conn.all_devices()
+        self.paths     = []
         self.beamlines = dict.from_keys(set([d.beamline
                                              for d in self.devices]),
                                              {'parents' : list(),
                                               'beampath' : None})
 
-
         #Create beampaths
         for line in self.beamlines.keys():
             self.beamlines[line]['beampath'] = BeamPath([d
-                                                         for d  in self.devices
-                                                         if d.beamline ==line],
+                                                         for d in self.devices
+                                                         if d.beamline==line],
                                                          name=line)
         #Map branches
         #TODO catch bad branches
@@ -34,8 +53,12 @@ class LightController:
                                   for d in self.devices
                                   if d.branching]:
             for branch in branches:
-                self.beamlines[branch]['branches'].append(line)
+                try:
+                    self.beamlines[branch]['branches'].append(line)
 
+                except KeyError:
+                    raise PathError('No beamline found with name '
+                                    '{}'.format(branch))
 
         #Create joined beampaths
         for line, info in beamlines.items():
@@ -46,3 +69,23 @@ class LightController:
                     path.join(self.beamline[source]['beampath'])
 
             setattr(self, line, path)
+
+
+    @property
+    def destinations(self):
+        """
+        Current beam destinations
+        """
+        d = set([p.impediment for p in self.paths if p.impediment])
+
+        if not d:
+            return None
+
+        else:
+            return d
+
+
+
+#    def is_incident(self, device):
+
+#    def find_device(self, *args, **kwargs):

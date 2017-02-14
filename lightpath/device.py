@@ -2,22 +2,22 @@
 # Standard Library #
 ####################
 import logging
-from   threading import RLock
-from   functools import partial
+from threading import RLock
+from functools import partial
 
 ####################
 #    Third Party   #
 ####################
 import numpy as np
-from ophyd        import Device, Component, EpicsSignal, EpicsSignalRO
+from ophyd import Device, Component, EpicsSignal, EpicsSignalRO
 from ophyd.status import DeviceStatus
-from ophyd.utils.epics_pvs    import raise_if_disconnected
+from ophyd.utils.epics_pvs import raise_if_disconnected
 
 ####################
 #     Package      #
 ####################
-from .utils import DeviceStateMachine, LoggingPropertyMachine
 from .mps import MPS
+from .utils import DeviceStateMachine, LoggingPropertyMachine
 
 logger = logging.getLogger(__name__)
 

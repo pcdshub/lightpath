@@ -3,13 +3,13 @@ from enum import Enum
 from psp import PV
 
 
-class Frequency(Enum):
-    120Hz = 0
-    30Hz  = 1
-    10Hz  = 2
-    5Hz   = 3
-    1Hz   = 4
-    0.5Hz = 
+#class Frequency(Enum):
+#    120Hz = 0
+#    30Hz  = 1
+#    10Hz  = 2
+#    5Hz   = 3
+#    1Hz   = 4
+#    1_2Hz = 5 
 
 class Beam(object):
     """
@@ -29,27 +29,27 @@ class Beam(object):
         return self._transmission
 
 
-    @propety
-    def is_produced(self):
-        """
-        Whether beam is being produced at the beginning of the FEE
-        """
-        return 
-
-
-    @property
-    def energy
-        """
-        Current reported energy of the XFEL
-        """
-        return 
-
-
-    @property
-    def repetition_rate
-
-
-    def attenuate
-
-
-    def __copy__
+#    @propety
+#    def is_produced(self):
+#        """
+#        Whether beam is being produced at the beginning of the FEE
+#        """
+#        return 
+#
+#
+#    @property
+#    def energy
+#        """
+#        Current reported energy of the XFEL
+#        """
+#        return 
+#
+#
+#    @property
+#    def repetition_rate
+#
+#
+#    def attenuate
+#
+#
+#    def __copy__

@@ -49,6 +49,11 @@ class BeamPath(OphydObject):
 
     PathError:
         If multiple beamlines are present, with no reflecting device
+
+    Attributes
+    ----------
+    devices
+    mirrors
     """
     SUB_PTH_CHNG = 'beampath_changed'
 
@@ -157,7 +162,23 @@ class BeamPath(OphydObject):
         return block
 
 
-    
+    @property
+    def incident_devices(self):
+        """
+        A list of devices the beam is incident on
+        """
+        inserted = [d for d in self.devices if d.inserted]
+
+        if not inserted:
+            return None
+
+        elif not self.impediment:
+            return inserted
+
+        else:
+            [d for d in inserted if d.z < self.impediment.z]
+
+
     def read_configuration(self):
         """
         Current state of the path devices
