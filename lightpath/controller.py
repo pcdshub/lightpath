@@ -55,7 +55,7 @@ class LightController:
                 cls = LightDevice
 
             finally:
-                devices.append(cls(**info))
+                devices.append(cls(info.pop('base'), **info))
 
         #Temporary Data Structure before instantiating paths
         beamlines = dict.from_keys(set([d.beamline
