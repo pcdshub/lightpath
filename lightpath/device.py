@@ -201,7 +201,7 @@ class LightDevice(Device, LightInterface):
     prefix : str
         Base PV address for all related records
     
-    name : str
+    alias : str
         Alias for the device
 
     z : float, optional
@@ -222,11 +222,12 @@ class LightDevice(Device, LightInterface):
 
     _default_sub = SUB_DEV_CH
 
-    def __init__(self, prefix, name=None, read_attrs=None,
-            configuration_attrs=None, z=np.nan, beamline=None):
+    def __init__(self, prefix, alias=None, read_attrs=None,
+            configuration_attrs=None, z=np.nan, beamline=None,
+            **kwargs):
 
         #Instantiate all Opyhd signals
-        super().__init__(prefix, name=name,
+        super().__init__(prefix, name=alias,
                          read_attrs=read_attrs,
                          configuration_attrs=configuration_attrs)
 

@@ -118,28 +118,28 @@ class VetoDevice(SimpleDevice):
 
 @pytest.fixture(scope='function')
 def simple_device():
-    device = SimpleDevice('SIMPLE', name='simple', z = 4)
+    device = SimpleDevice('SIMPLE', alias='simple', z = 4)
     return device
 
 @pytest.fixture(scope='function')
 def simple_mirror():
-    device = SimpleMirror('MIRROR', name='mirror', z = 15.5)
+    device = SimpleMirror('MIRROR', alias='mirror', z = 15.5)
     return device
 
 @pytest.fixture(scope='function')
 def complex_device():
-    device = ComplexDevice('COMPLEX', name='complex', z = 10)
+    device = ComplexDevice('COMPLEX', alias='complex', z = 10)
     return device
 
 
 @pytest.fixture(scope='function')
 def beampath(simple_device, complex_device, simple_mirror):
-    devices = [SimpleDevice('DEVICE_1', name='one',   z = 0.),
-               SimpleDevice('DEVICE_2', name='two',   z = 2.),
-               SimpleDevice('DEVICE_3', name='three', z = 9.),
-               SimpleDevice('DEVICE_4', name='four',  z = 15.),
-               SimpleDevice('DEVICE_5', name='five',  z = 16., beamline='HXR'),
-               SimpleDevice('DEVICE_6', name='six',   z = 30., beamline='HXR'),
+    devices = [SimpleDevice('DEVICE_1', alias='one',   z = 0.),
+               SimpleDevice('DEVICE_2', alias='two',   z = 2.),
+               SimpleDevice('DEVICE_3', alias='three', z = 9.),
+               SimpleDevice('DEVICE_4', alias='four',  z = 15.),
+               SimpleDevice('DEVICE_5', alias='five',  z = 16., beamline='HXR'),
+               SimpleDevice('DEVICE_6', alias='six',   z = 30., beamline='HXR'),
                simple_mirror,
                simple_device,
                complex_device,

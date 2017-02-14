@@ -1,6 +1,5 @@
 import logging
 from enum import Enum
-from psp import PV
 
 
 #class Frequency(Enum):
