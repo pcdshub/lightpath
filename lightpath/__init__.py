@@ -6,6 +6,7 @@ from .path   import BeamPath
 from .device import LightDevice
 from .mps    import MPS
 from .utils  import errors
+from .controller import LightController
 
 #Setup logger
 logger = logging.getLogger(__name__)

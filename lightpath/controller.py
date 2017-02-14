@@ -12,8 +12,9 @@ from happi import Client
 ####################
 #     Package      #
 ####################
-import .subtypes
+from . import subtypes
 from .utils import PathError
+from .device import LightDevice
 
 class LightController:
     """
