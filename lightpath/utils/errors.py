@@ -9,3 +9,6 @@ class PathError(Exception):
 
 class MPSFault(Exception):
     pass
+
+class InterlockError(Exception):
+    pass
