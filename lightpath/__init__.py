@@ -16,3 +16,7 @@ logger.setLevel(logging.CRITICAL)
 #For development
 def DEBUG():
     logger.setLevel(logging.DEBUG)
+
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
