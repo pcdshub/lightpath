@@ -148,16 +148,18 @@ class BeamPath(OphydObject):
         block = []
 
         for i, device in enumerate(self.devices):
-            try:
-
-                if self.devices[i+1].beamline != device.destination:
-                    block.append(device)
-
-            except IndexError:
-                logger.debug('Branching device is last in beamline')
-
+            
             if device.blocking and not (device.passive or device.branching):
                 block.append(device)
+            
+            elif device.branching:
+                try:
+                    if self.devices[i+1].beamline != device.destination:
+                        block.append(device)
+
+                except IndexError:
+                    logger.debug('Branching device is last in beamline')
+
 
         return block
 
