@@ -16,8 +16,7 @@ from ophyd.utils.epics_pvs import raise_if_disconnected
 ####################
 #     Package      #
 ####################
-from .mps import MPS
-from .utils import DeviceStateMachine, LoggingPropertyMachine
+from .utils import MPS, DeviceStateMachine, LoggingPropertyMachine
 
 logger = logging.getLogger(__name__)
 
