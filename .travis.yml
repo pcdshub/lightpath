@@ -1,4 +1,5 @@
 language: python
+
 python:
   # We don't actually use the Travis Python, but this keeps it organized.
   - "3.4"
@@ -23,12 +24,7 @@ install:
   #Grab all dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION coverage pip wheel ophyd pytest -c conda-forge -c lightsource2-tag 
   - source activate test-environment
-  - pip install codecov
-  - pip install mongomock
-  - pip install prettytable
-  - pip install super_state_machine
-  - pip install epics
-    pip install pcaspy
+  - pip install -r requirements.txt
 
   #Grab latest happi and install
   - git clone https://github.com/slaclab/happi --branch master
