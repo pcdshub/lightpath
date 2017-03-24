@@ -15,3 +15,4 @@ Contents:
    path.rst
    mps.rst
    controller.rst
+   broadcast.rst
