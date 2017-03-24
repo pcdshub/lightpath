@@ -1,6 +1,0 @@
-codecov
-mongomock
-prettytable
-super_state_machine
-pyepics
-pcaspy
