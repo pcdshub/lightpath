@@ -144,7 +144,7 @@ def beampath(simple_device, complex_device, simple_mirror):
                simple_device,
                complex_device,
               ]
-    bp = BeamPath(*devices)
+    bp = BeamPath(*devices, name='TST')
     return bp
 
 @pytest.fixture(scope='function')
@@ -152,7 +152,12 @@ def mps():
     return SimpleMPS('basic', veto=False)
 
 @pytest.fixture(scope='function')
-def mps_path(mps):
+def mps_device():
+    mps= MPSDevice('basic', z=8.3,  beamline='LCLS')
+    return mps
+
+@pytest.fixture(scope='function')
+def mps_path():
     first_veto  = VetoDevice('veto_1', z=8.3,  beamline='LCLS')
     second_veto = VetoDevice('veto_2', z=14.3, beamline='LCLS')
     first_mps   = MPSDevice('mps_1',   z=8.8, beamline='LCLS')
