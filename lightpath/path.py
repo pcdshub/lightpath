@@ -18,7 +18,7 @@ from ophyd.utils.epics_pvs    import raise_if_disconnected
 #     Package      #
 ####################
 from .device import LightDevice
-from .utils  import MPSFault, CoordinateError, PathError
+from .errors import MPSFault, CoordinateError, PathError
 
 
 logger = logging.getLogger(__name__)
