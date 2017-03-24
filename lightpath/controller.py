@@ -13,7 +13,7 @@ from happi import Client
 #     Package      #
 ####################
 from . import subtypes
-from .utils import PathError
+from .errors import PathError
 from .device import LightDevice
 
 class LightController:
@@ -29,11 +29,15 @@ class LightController:
     """
     conn = None
 
-    def __init__(self, host, port):
+    def __init__(self, host=None, port=None):
 
         #Connect to Happi Database
         self.conn    = Client(host=host, port=port)
         self.paths   = []
+        
+        #Load devices and beamlines
+        raw = [d for d in self.conn.search({}, as_dict=True)]
+#               if d.get('lightpath', False)]
 
         #Gather device mapping
         self.device_types = dict((cls.container, cls)
@@ -41,9 +45,6 @@ class LightController:
                                                                inspect.isclass)
                                  if issubclass(cls, LightDevice))
 
-        #Load devices and beamlines
-        raw = [d for d in self.conn.search({}, as_dict=True).values()
-               if d.get('lightpath', False)]
 
         devices = []
         for info in raw:
@@ -59,7 +60,7 @@ class LightController:
                 devices.append(cls(info.pop('base'), **info))
 
         #Temporary Data Structure before instantiating paths
-        beamlines = dict.from_keys(set([d.beamline
+        beamlines = dict.fromkeys(set([d.beamline
                                         for d in devices]),
                                         {'parents'  : list(),
                                          'beampath' : None})
@@ -96,7 +97,7 @@ class LightController:
             setattr(self, line, path)
 
         #Organize devices
-        self.devices = list(set([d for d in p.devices for p in self.paths]))
+        self.devices = list(set([d for p in self.paths for d in p.devices]))
 
 
     @property
