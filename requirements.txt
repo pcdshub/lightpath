@@ -1,0 +1,6 @@
+codecov
+mongomock
+prettytable
+super_state_machine
+epics
+pcaspy
