@@ -2,10 +2,9 @@ __all__ = ['device']
 
 import logging
 
-from .path   import BeamPath
-from .device import LightDevice
-from .mps    import MPS
-from .utils  import errors
+from .path       import BeamPath
+from .device     import LightDevice
+from .utils      import MPS
 from .controller import LightController
 
 #Setup logger
