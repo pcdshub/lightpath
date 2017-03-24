@@ -1,0 +1,30 @@
+{% set data = load_setup_py_data() %}
+
+package:
+    name    : lightpath
+    version : {{ data.get('version') }}
+
+source:
+    path: ..
+
+requirements:
+    build:
+       - python
+
+
+    run:
+      - ophyd
+      - happi
+      - numpy
+      - super_state_machine
+      - prettytable
+      - pcaspy 
+      - python
+
+test:
+    imports:
+      - happi
+
+    requires: 
+      - mongomock
+      - pyepics
