@@ -24,7 +24,7 @@ install:
   #Grab all dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION super_state_machine coverage pip wheel ophyd pytest -c conda-forge -c lightsource2-tag 
   - conda install -c https://conda.anaconda.org/paulscherrerinstitute pcaspy
-  - conda install -c trendahl happi=0.3.0+0.g6c9aea9.dirty
+  - conda install -c trendahl happi
   - source activate test-environment
   - pip install mongomock 
   - pip install codecov
