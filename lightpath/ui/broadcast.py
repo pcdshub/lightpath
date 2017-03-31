@@ -56,14 +56,33 @@ from pcaspy.tools import ServerThread
 # Module #
 ##########
 
+prefix = 'LCLS:LIGHT:'
 logger = logging.getLogger(__name__)
 
-def convert(device):
+def convert(device, with_prefix=False):
     """
     Convert a device alias into a PV name
-    """
-    return device.name.upper().replace(' ','_')
 
+    Parameters
+    ----------
+    device : BeamPath or LightDevice
+        Device to have name converted
+
+    with_prefix : bool , optional
+        Choice to append the IOC prefix
+
+    Returns
+    -------
+    pv : str
+        Cleaned PV name to be added to database
+    """
+    nm = device.name.upper().replace(' ','_')
+    
+    #Add prefix if neccesary
+    if with_prefix:
+        return prefix + nm
+
+    return nm
 
 class DeviceState(Enum):
     """
@@ -102,7 +121,6 @@ class Broadcaster:
         A database of each subscription that updates server PVs based on device
         state changes
     """
-    prefix    = 'LCLS:LIGHT:'
     _thread = None
 
     def __init__(self):
@@ -145,7 +163,7 @@ class Broadcaster:
             logger.debug('Creating server for given database ...')
             #Create server
             self.server = SimpleServer()
-            self.server.createPV(self.prefix, self.db)
+            self.server.createPV(prefix, self.db)
 
             #Create driver
             self.driver = LightDriver(self.cmds)
