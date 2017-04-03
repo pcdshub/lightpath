@@ -55,7 +55,8 @@ class Illustrator:
                                     name=device.name))
             #Draw beampipe if not last in line
             if device != beampath.devices[-1]:
-                l.addLayout(PipeWidget(convert(beampath, with_prefix=True),i))
+                l.addLayout(PipeWidget(convert(beampath, with_prefix=True),
+                                       i+1, len(beampath.devices)+1))
 
         return l
 
