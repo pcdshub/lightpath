@@ -27,7 +27,7 @@ class LightWidget(pedl.StackedLayout):
     """
     #Default Widget sizes
     shape_size   = (30,  30)
-    button_size  = (30,  15)
+    button_size  = (50,  15)
     label_size   = (100, 10)
     frame_margin = 10
     control_drop = 10 
@@ -62,7 +62,8 @@ class LightWidget(pedl.StackedLayout):
         """
         r = Rectangle(w=self.shape_size[0],
                       h=self.shape_size[1],
-                      fill=ColorChoice.Green,
+                      colorPV=self.prefix,
+                      alarm=True,
                       lineWidth=3)
         return r
 
@@ -87,6 +88,11 @@ class LightWidget(pedl.StackedLayout):
                       h=lay.h+self.frame_margin,
                       lineColor=ColorChoice.Red,
                       lineWidth=3)
+
+        r.visibility.pv  = self.prefix
+        r.visibility.max = 1
+        r.visibility.inverted = True
+
         return r
 
     @property
@@ -95,13 +101,19 @@ class LightWidget(pedl.StackedLayout):
         Control box for insert / remove control
         """
         #Button layout
-        l    = pedl.VBoxLayout(spacing=1)
+        l    = pedl.VBoxLayout(spacing=2)
 
         #Create buttons
-        _in  = MessageButton(w=self.button_size[0],
+        _in  = MessageButton(value='insert',
+                             text='Insert',
+                             controlPv=self.prefix+':CMD',
+                             w=self.button_size[0],
                              h=self.button_size[1])
-        _out = MessageButton(w=self.button_size[0],
-                             h=self.button_size[1])
+        _out  = MessageButton(value='remove',
+                              text='Remove',
+                              controlPv=self.prefix+':CMD',
+                              w=self.button_size[0],
+                              h=self.button_size[1])
         #Add to layout
         l.addWidget(_in)
         l.addWidget(_out)
@@ -114,10 +126,11 @@ class PipeWidget(pedl.StackedLayout):
     width  = 100
     height = 20
 
-    def __init__(self, index, **kwargs):
+    def __init__(self, prefix, index, **kwargs):
         super().__init__(**kwargs)
         #Store index of beampipe
-        self.index = index
+        self.prefix = prefix
+        self.index  = index
 
         #Draw layered beampipes 
         self.addWidget(self.empty)
@@ -152,4 +165,7 @@ class PipeWidget(pedl.StackedLayout):
         """
         r = self.beampipe
         r.fill = ColorChoice.Cyan
+        r.visibility.pv  = self.prefix
+        r.visibility.min = self.index 
+        
         return r
