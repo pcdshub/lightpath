@@ -163,4 +163,6 @@ def mps_path():
     first_mps   = MPSDevice('mps_1',   z=8.8, beamline='LCLS')
     second_mps  = MPSDevice('mps_2',   z=18.8, beamline='LCLS')
 
-    return BeamPath(first_veto, second_veto, second_mps, first_mps)
+    return BeamPath(first_veto, second_veto,
+                    second_mps, first_mps,
+                    name='TST')
