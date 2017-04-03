@@ -62,8 +62,9 @@ class LightWidget(pedl.StackedLayout):
         """
         r = Rectangle(w=self.shape_size[0],
                       h=self.shape_size[1],
-                      colorPV=self.prefix,
+                      alarmPv=self.prefix,
                       alarm=True,
+                      fill=ColorChoice.Green,
                       lineWidth=3)
         return r
 
@@ -89,7 +90,7 @@ class LightWidget(pedl.StackedLayout):
                       lineColor=ColorChoice.Red,
                       lineWidth=3)
 
-        r.visibility.pv  = self.prefix
+        r.visibility.pv  = self.prefix+'.MPS'
         r.visibility.max = 1
         r.visibility.inverted = True
 
@@ -105,12 +106,14 @@ class LightWidget(pedl.StackedLayout):
 
         #Create buttons
         _in  = MessageButton(value='insert',
-                             text='Insert',
+                             label='Insert',
+                             font=pedl.Font(size=12),
                              controlPv=self.prefix+':CMD',
                              w=self.button_size[0],
                              h=self.button_size[1])
         _out  = MessageButton(value='remove',
-                              text='Remove',
+                              label='Remove',
+                              font=pedl.Font(size=12),
                               controlPv=self.prefix+':CMD',
                               w=self.button_size[0],
                               h=self.button_size[1])
@@ -126,11 +129,12 @@ class PipeWidget(pedl.StackedLayout):
     width  = 100
     height = 20
 
-    def __init__(self, prefix, index, **kwargs):
+    def __init__(self, prefix, index, _max,  **kwargs):
         super().__init__(**kwargs)
         #Store index of beampipe
         self.prefix = prefix
         self.index  = index
+        self.max    = _max
 
         #Draw layered beampipes 
         self.addWidget(self.empty)
@@ -167,5 +171,6 @@ class PipeWidget(pedl.StackedLayout):
         r.fill = ColorChoice.Cyan
         r.visibility.pv  = self.prefix
         r.visibility.min = self.index 
+        r.visibility.max = self.max 
         
         return r
