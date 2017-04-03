@@ -10,7 +10,7 @@ import logging
 # Third Party #
 ###############
 import pedl
-
+from pedl.choices import AlignmentChoice
 ##########
 # Module #
 ##########
@@ -51,12 +51,11 @@ class Illustrator:
         #Draw all the beampipes but the final path
         for i, device in enumerate(beampath.devices):
             #Add LightWidget
-            l.addLayout(LightWidget(convert(device.prefix, with_prefix=True),
+            l.addLayout(LightWidget(convert(device, with_prefix=True),
                                     name=device.name))
             #Draw beampipe if not last in line
             if device != beampath.devices[-1]:
-                l.addLayout(PipeWidget(convert(beampath.prefix,
-                                               with_prefix=True),i))
+                l.addLayout(PipeWidget(convert(beampath, with_prefix=True),i))
 
         return l
 
