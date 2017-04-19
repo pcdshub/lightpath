@@ -44,9 +44,15 @@ def test_bypass_callback(mps):
 
 def test_path_faults(mps_path):
     assert mps_path.faulted_devices == []
+    assert mps_path.tripped_devices == []
     d = mps_path.devices[1]
     d.insert()
     assert mps_path.faulted_devices == [d]
+    assert mps_path.tripped_devices == [d]
+    #Insert first stopper
+    mps_path.devices[0].insert()
+    assert mps_path.faulted_devices == [d]
+    assert mps_path.tripped_devices == []
 
 def test_veto_device(mps_path):
     assert mps_path.veto_devices == [mps_path.devices[0], mps_path.devices[2]]

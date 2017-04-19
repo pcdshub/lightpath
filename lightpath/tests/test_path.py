@@ -63,16 +63,20 @@ def test_device_bases(beampath):
     assert 'COMPLEX'   in beampath.device_prefixes
 
 def test_clear_beamline(beampath):
+    mirror = beampath.devices[6]
     assert beampath.blocking_devices == []
     assert beampath.impediment == None
+    assert beampath.incident_devices == [mirror]
     assert beampath.cleared
     assert beampath.output == ('HXR',  1.)
 
 def test_single_insert_beamline(beampath):
     dev = beampath.devices[4]
+    mirror = beampath.devices[6]
     dev.insert()
     assert beampath.impediment == dev
     assert beampath.blocking_devices == [dev]
+    assert beampath.incident_devices == [dev]
     assert beampath.cleared == False
     assert beampath.output == ('LCLS',  0.5)
     dev.remove()
@@ -80,6 +84,7 @@ def test_single_insert_beamline(beampath):
     dev.insert()
     assert beampath.impediment == dev
     assert beampath.blocking_devices == [dev]
+    assert beampath.incident_devices == [mirror, dev]
     assert beampath.cleared == False
     assert beampath.output == ('HXR',  0.)
 
