@@ -55,7 +55,8 @@ class BeamPath(OphydObject):
     devices
     mirrors
     """
-    SUB_PTH_CHNG = 'beampath_changed'
+    SUB_PTH_CHNG     = 'beampath_changed'
+    SUB_MPSPATH_CHNG = 'mpspath_changed'
 
     def __init__(self, *devices, name=None):
         super().__init__(name=name)
@@ -85,7 +86,7 @@ class BeamPath(OphydObject):
                           and dev.beamline not in prior.branching):
                 raise PathError('Given set of devices are not contiguous, '
                                 'path must either be on the same beamline or '
-                            'have reflecting device.')
+                                'have reflecting device.')
 
 
             #Add callback here!
@@ -178,7 +179,7 @@ class BeamPath(OphydObject):
             return inserted
 
         else:
-            [d for d in inserted if d.z < self.impediment.z]
+            return [d for d in inserted if d.z <= self.impediment.z]
 
 
     def read_configuration(self):
@@ -305,9 +306,24 @@ class BeamPath(OphydObject):
 
 
     @property
+    def tripped_devices(self):
+        """
+        Devices who are both faulted and unprotected from the beam
+        """
+        ins_veto = [veto for veto in self.veto_devices if veto.inserted]
+
+        if not ins_veto:
+            return self.faulted_devices
+
+        return [d for d in self.faulted_devices
+                  if ins_veto[0].z > d.z]
+
+
+    @property
     def faulted_devices(self):
         """
-        A list of faulted MPS devices
+        A list of faulted MPS devices, this includes those protected by veto
+        devices
         """
         return [device for device in self.devices
                 if device.mps and device.mps.faulted]
@@ -345,7 +361,7 @@ class BeamPath(OphydObject):
     def insert(self, device, wait=False, timeout=None, force=False):
         """
         Insert a device into the beampath
-        
+
         Parameters
         ----------
         device : str or :class:`.LightDevice`
@@ -680,7 +696,10 @@ class BeamPath(OphydObject):
         #Maybe this should introspect and see if beampath state changes
         self._run_subs(sub_type = self.SUB_PTH_CHNG,
                          device = obj)
-
+        #Alert that an MPS system has moved
+        if obj.mps:
+            self._run_subs(sub_type=self.SUB_MPSPATH_CHNG,
+                          device=obj)
 
     def _repr_info(self):
         yield('start',  self.start.z)
