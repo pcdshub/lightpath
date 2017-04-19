@@ -47,7 +47,7 @@ def test_add_device(server, mps_device):
     server.run()
 
     pvc = client_pv('LCLS:LIGHT:BASIC')
-    mps = client_pv('LCLS:LIGHT:BASIC.MPS')
+    mps = client_pv('LCLS:LIGHT:BASIC.MPS_WARN')
 
 
     #Check proper initialization of state
