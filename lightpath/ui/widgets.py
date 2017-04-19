@@ -27,8 +27,8 @@ class LightWidget(pedl.StackedLayout):
     """
     #Default Widget sizes
     shape_size   = (30,  30)
-    button_size  = (50,  15)
-    label_size   = (100, 10)
+    button_size  = (60,  15)
+    label_size   = (100, 12)
     frame_margin = 10
     control_drop = 10 
 
@@ -49,7 +49,7 @@ class LightWidget(pedl.StackedLayout):
         l.addLayout(self.control)
         
         #Add background MPS frame
-        self.addWidget(self.frame(l))
+        self.addLayout(self.frame(l))
 
         #Add to stack
         self.addLayout(l)
@@ -76,7 +76,7 @@ class LightWidget(pedl.StackedLayout):
         l = StaticText(text=self.name,
                        w=self.label_size[0],
                        h=self.label_size[1],
-                       font = pedl.Font(size=12),
+                       font = pedl.Font(size=12, bold=True),
                        alignment=AlignmentChoice.Center)
         return l
 
@@ -85,16 +85,27 @@ class LightWidget(pedl.StackedLayout):
         """
         Frame for MPS alert
         """
+        l = pedl.StackedLayout()
+
         r = Rectangle(w=lay.w+self.frame_margin,
                       h=lay.h+self.frame_margin,
-                      lineColor=ColorChoice.Red,
                       lineWidth=3)
+        #Add warning frame
+        warn = copy.copy(r)
+        warn.lineColor  = ColorChoice.Yellow
+        warn.visibility = pedl.Visibility(pv=self.prefix+'.MPS_WARN',
+                                          max=1, inverted=True)
+        l.addWidget(warn)
 
-        r.visibility.pv  = self.prefix+'.MPS'
-        r.visibility.max = 1
-        r.visibility.inverted = True
+        #Add tripped frame
+        trip = copy.copy(r)
+        trip.lineColor  = ColorChoice.Red
+        trip.visibility = pedl.Visibility(pv=self.prefix+'.MPS_TRIP',
+                                          max=1, inverted=True)
+        l.addWidget(trip)
 
-        return r
+
+        return l
 
     @property
     def control(self):
@@ -104,19 +115,21 @@ class LightWidget(pedl.StackedLayout):
         #Button layout
         l    = pedl.VBoxLayout(spacing=2)
 
+        
+        button  = MessageButton(font=pedl.Font(size=12, bold=True),
+                                fontColor=ColorChoice.Blue,
+                                controlPv=self.prefix+':CMD',
+                                lineColor=ColorChoice.Black,
+                                w=self.button_size[0],
+                                h=self.button_size[1])
+       
         #Create buttons
-        _in  = MessageButton(value='insert',
-                             label='Insert',
-                             font=pedl.Font(size=12),
-                             controlPv=self.prefix+':CMD',
-                             w=self.button_size[0],
-                             h=self.button_size[1])
-        _out  = MessageButton(value='remove',
-                              label='Remove',
-                              font=pedl.Font(size=12),
-                              controlPv=self.prefix+':CMD',
-                              w=self.button_size[0],
-                              h=self.button_size[1])
+        _in  =  copy.copy(button)
+        _in.value, _in.label = 'insert','Insert'
+        
+        _out  =  copy.copy(button)
+        _out.value, _out.label = 'remove','Remove'
+        
         #Add to layout
         l.addWidget(_in)
         l.addWidget(_out)
