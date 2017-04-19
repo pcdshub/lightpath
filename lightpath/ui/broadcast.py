@@ -11,14 +11,15 @@ paths to assemble a complete IOC.
 The produced Channel Access serer is  simple to understand with only four unique classes of PVs
 created.
 
-=========================  =========================== =============
-PV                         Purpose                     Type
-=========================  =========================== =============
-LCLS:LIGHT:{PATH}          Location of beam along path int 
-LCLS:LIGHT:{DEVICE}        State of device             enum
-LCLS:LIGHT:{DEVICE}.MPS    State of associated MPS PVs binary
-LCLS:LIGHT:{DEVICE}:CMD    Command for insert/remove   binary
-=========================  =========================== =============
+============================   ===========================  =============
+PV                             Purpose                      Type
+============================   ===========================  =============
+LCLS:LIGHT:{PATH}              Location of beam along path  int
+LCLS:LIGHT:{DEVICE}            State of device              enum
+LCLS:LIGHT:{DEVICE}.MPS_WARN   MPS faulted, but not exposed binary
+LCLS:LIGHT:{DEVICE}.MPS_TRIP   MPS faulted and exposed      binary
+LCLS:LIGHT:{DEVICE}:CMD        Command for insert/remove    binary
+=========================      ===========================  =============
 
 Each beamline gets a single PV that communicates where the beam is reaching
 along the path. Instead of, as in past iterations of the lightpath, creating a
@@ -211,6 +212,15 @@ class Broadcaster:
 
         self.add_subscription(path, sync, event_type=path.SUB_PTH_CHNG)
 
+        #Monitor MPS System faults
+        def mps(*args, **kwargs):
+            for device in [d for d in path.devices if d.mps]:
+                val = int(device in path.tripped_devices)
+                #Communicate
+                self.driver.write(convert(device)+'.MPS_TRIP', val)
+
+        #Create trip 
+        self.add_subscription(path, mps, event_type=path.SUB_MPSPATH_CHNG)
 
     def add_device(self, device):
         """
@@ -245,17 +255,24 @@ class Broadcaster:
         self.add_subscription(device, sync, event_type=device.SUB_DEV_CH)
 
         #Add MPS and CMD structure to database
-        mps_pv = pv + '.MPS'
-        cmd_pv = pv + ':CMD'
+        warn_pv = pv + '.MPS_WARN'
+        trip_pv = pv + '.MPS_TRIP'
+        cmd_pv  = pv + ':CMD'
 
         self.db[cmd_pv] = {'type'   : 'enum',
                            'enums'  : ['remove', 'insert']}
 
-        self.db[mps_pv] = {'type'   : 'enum',
-                           'value'  : 'safe',
-                           'enums'  : ['safe', 'faulted'],
-                           'states' : [Severity.NO_ALARM,
+        self.db[trip_pv] = {'type'   : 'enum',
+                            'value'  : 'safe',
+                            'enums'  : ['safe', 'faulted'],
+                            'states' : [Severity.NO_ALARM,
                                        Severity.MAJOR_ALARM]}
+
+        self.db[warn_pv] = {'type'   : 'enum',
+                            'value'  : 'safe',
+                            'enums'  : ['safe', 'faulted'],
+                            'states' : [Severity.NO_ALARM,
+                                        Severity.MAJOR_ALARM]}
 
         #Register command
         self.register_cmd(cmd_pv, device)
@@ -266,7 +283,7 @@ class Broadcaster:
             def mps_sync(*args, **kwargs):
                 logger.debug('Device {} MPS state has changed, syncing '
                              'PV'.format(device.name))
-                self.driver.write(mps_pv, int(device.mps.faulted))
+                self.driver.write(warn_pv, int(device.mps.faulted))
 
             #Create subscription
             self.add_subscription(device.mps, mps_sync, event_type=device.mps.SUB_MPS)
