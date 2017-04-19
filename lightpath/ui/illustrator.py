@@ -61,11 +61,21 @@ class Illustrator:
         return l
 
 
-    def show(self):
+    def show(self, wait=True):
         """
         Show the Lightpath UI
+
+        Parameters
+        ----------
+        wait : bool, optional
+           Choice to block the thread while the window is open
+        
+        Returns
+        -------
+        proc : subprocess.Popen
+            Main window process
         """
-        self.app.exec_()
+        return self.app.exec_(wait=wait)
 
 
     def save(self, path):
