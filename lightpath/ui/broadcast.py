@@ -11,15 +11,15 @@ paths to assemble a complete IOC.
 The produced Channel Access serer is  simple to understand with only four unique classes of PVs
 created.
 
-============================   ===========================  =============
-PV                             Purpose                      Type
-============================   ===========================  =============
-LCLS:LIGHT:{PATH}              Location of beam along path  int
-LCLS:LIGHT:{DEVICE}            State of device              enum
-LCLS:LIGHT:{DEVICE}.MPS_WARN   MPS faulted, but not exposed binary
-LCLS:LIGHT:{DEVICE}.MPS_TRIP   MPS faulted and exposed      binary
-LCLS:LIGHT:{DEVICE}:CMD        Command for insert/remove    binary
-=========================      ===========================  =============
+============================   ============================  =============
+PV                             Purpose                       Type
+============================   ============================  =============
+LCLS:LIGHT:{PATH}              Location of beam along path   int
+LCLS:LIGHT:{DEVICE}            State of device               enum
+LCLS:LIGHT:{DEVICE}.MPS_WARN   MPS faulted, but not exposed  binary
+LCLS:LIGHT:{DEVICE}.MPS_TRIP   MPS faulted and exposed       binary
+LCLS:LIGHT:{DEVICE}:CMD        Command for insert/remove     binary
+============================   ============================  =============
 
 Each beamline gets a single PV that communicates where the beam is reaching
 along the path. Instead of, as in past iterations of the lightpath, creating a
