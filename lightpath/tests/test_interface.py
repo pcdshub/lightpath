@@ -10,7 +10,7 @@ from ophyd import Device
 ##########
 # Module #
 ##########
-from lightpath.interface import LightInterface
+from lightpath.interface import BranchingInterface, LightInterface
 
 class BasicDevice(Device, metaclass=LightInterface):
 
@@ -67,7 +67,7 @@ class BasicDevice(Device, metaclass=LightInterface):
         pass
 
 
-class BasicBranching(Device, metaclass=LightInterface):
+class BasicBranching(Device, metaclass=BranchingInterface):
     @property
     def z(self):
         """
@@ -141,6 +141,6 @@ def test_basic_interface():
 def test_branching_interface():
     device = BasicBranching("base")
     #Check that our class is a LightInterface type 
-    assert type(BasicBranching) == LightInterface
+    assert type(BasicBranching) == BranchingInterface
     #Check that the device is an ophyd device
     assert isinstance(device, BasicBranching)
