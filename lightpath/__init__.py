@@ -6,6 +6,7 @@ from .path       import BeamPath
 from .device     import LightDevice
 from .utils      import MPS
 from .controller import LightController
+from .interface  import LightInterface, BranchingInterface
 
 #Setup logger
 logger = logging.getLogger(__name__)
