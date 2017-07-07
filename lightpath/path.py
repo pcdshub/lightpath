@@ -4,6 +4,7 @@
 import sys
 import copy
 import logging
+from collections import Iterable
 
 ####################
 #    Third Party   #
@@ -41,7 +42,7 @@ class BeamPath(OphydObject):
 
     Raises
     ------
-    TypeError : 
+    TypeError: 
         If a non-LightDevice object is supplied
 
     CoordinateError:
@@ -57,63 +58,61 @@ class BeamPath(OphydObject):
     """
     SUB_PTH_CHNG     = 'beampath_changed'
     SUB_MPSPATH_CHNG = 'mpspath_changed'
-
+    attenuation_threshold = 0.1
     def __init__(self, *devices, name=None):
         super().__init__(name=name)
 
         #Sort by position downstream to upstream
         try:
-            self.devices = sorted(devices, key =lambda dev : dev.z)
+            self.devices = sorted(devices, key=lambda dev : dev.z)
+
+
+            #Check types and positions
+            prior = None
+
+            for dev in self.devices:
+
+                #Ensure positioning is physical
+                if np.isnan(dev.z) or dev.z < 0.:
+                    raise CoordinateError('Device {!r} is reporting a non-existant '
+                                          'beamline position, its coordinate was '
+                                          'not properly initialized.'
+                                          ''.format(dev))
+            
+                #Ensure beampath is possible
+                if prior and (prior.beamline != dev.beamline
+                              or dev.beamline not in getattr(prior,
+                                                              'branches',
+                                                              [prior.beamline])):
+                    raise PathError('Given set of devices are not contiguous, '
+                                    'path must either be on the same beamline or '
+                                    'have branching device.')
+
+
+                #Add callback here!
+                dev.subscribe(self._device_moved,
+                              event_type=dev.SUB_DEV_CH,
+                              run=False)
+                
+                #Add as attribute
+                setattr(self, dev.name.replace(' ','_'), dev)
+
+                #Ready for next iteration
+                prior = dev
 
         except AttributeError as e:
-                raise TypeError('Not a valid LightDevice')
+            raise TypeError('One of the devices does not meet the ' 
+                            'neccesary lightpath interface. Missing '
+                            'attribute {}'.format(e))
 
-        #Check types and positions
-        prior = None
-
-        for dev in self.devices:
-
-            #Ensure positioning is physical
-            if np.isnan(dev.z) or dev.z < 0.:
-                raise CoordinateError('Device {!r} is reporting a non-existant '
-                                      'beamline position, its coordinate was '
-                                      'not properly initialized.'
-                                      ''.format(dev))
-        
-
-            #Ensure beampath is possible
-            if prior and (prior.beamline != dev.beamline
-                          and dev.beamline not in prior.branching):
-                raise PathError('Given set of devices are not contiguous, '
-                                'path must either be on the same beamline or '
-                                'have reflecting device.')
-
-
-            #Add callback here!
-            dev.subscribe(self._device_moved,
-                          event_type=dev.SUB_DEV_CH,
-                          run=False)
-
-            prior = dev
-
-        #Grab mirrors
-        self.mirrors = [d for d in self.devices if d.branching]
 
 
     @property
-    def start(self):
+    def branches(self):
         """
-        First device along the path
+        Branching devices along the path
         """
-        return self.devices[0]
-
-
-    @property
-    def finish(self):
-        """
-        Final device along the path
-        """
-        return self.devices[-1]
+        return [d for d in self.devices if getattr(d, 'branches', False)]
 
 
     @property
@@ -125,22 +124,6 @@ class BeamPath(OphydObject):
 
 
     @property
-    def device_names(self):
-        """
-        Device names fo devices in the BeamPath
-        """
-        return [device.name for device in self.devices]
-
-
-    @property
-    def device_prefixes(self):
-        """
-        The prefix names for all devices in the BeamPath
-        """
-        return [device.prefix for device in self.devices]
-
-
-    @property
     def blocking_devices(self):
         """
         A list of devices that are currently blocking the beam
@@ -149,17 +132,23 @@ class BeamPath(OphydObject):
         block = []
 
         for i, device in enumerate(self.devices):
-            
-            if device.blocking and not (device.passive or device.branching):
-                block.append(device)
-            
-            elif device.branching:
+            #Find branching devices not transmitting
+            if getattr(device, 'branching', False):
                 try:
                     if self.devices[i+1].beamline != device.destination:
                         block.append(device)
 
                 except IndexError:
                     logger.debug('Branching device is last in beamline')
+
+            #Find inserted devices
+            elif device.inserted and (device.transmission <
+                                      self.attenuation_threshold):
+                block.append(device)
+
+           #Find unknown devices
+            elif not device.removed:
+                block.append(device)
 
 
         return block
@@ -182,107 +171,17 @@ class BeamPath(OphydObject):
             return [d for d in inserted if d.z <= self.impediment.z]
 
 
-    def read_configuration(self):
-        """
-        Current state of the path devices
-
-        Included information is the :attr:`.LightDevice.state` as well as the
-        attributes specified in :attr:`.LightDevice.configuration_attrs`
-
-        Returns
-        -------
-        config :
-            Dictionary of both device stat
-        """
-        return dict([(device.name, {'state'  : device.state,
-                                    'config' : device.read_configuration()})
-                     for device in self.devices])
-
-
-    def configure(self, state):
-        """
-        Restore a beampath configuration from state
-
-        Parameters
-        ----------
-        state : dict
-            Dictionary of devices, with smaller dictionaries specifying states
-            and configuration_attrs. See the below example for accepted
-            patterns
-
-        Example
-        -------
-        .. code::
-
-            bp.configure({'my_device': {'state'  : 'inserted',
-                                        'config' :  4}
-                        })
-
-            bp.configure({'my_device' : {'config':
-                                            {'timestamp' : 1223445.8,
-                                             'value'     : 3}
-                                        }
-                        })
-        """
-        for dev,config in state.items():
-
-            logger.debug('Configuring device {} ...'.format(dev))
-
-            #Restore configuration
-            dev = self._device_lookup(dev)
-
-            sig_cpts = dict((s.name, cpt) for cpt, s in dev._signals.items())
-
-            if config.get('config'):
-                for sig, info in config['config'].items():
-                    logger.debug('Reconfiguring signal {} to {}'
-                                 ''.format(sig,info))
-
-                    if isinstance(info, dict):
-                        value = info['value']
-
-                    else:
-                        value = info
-
-                    dev.configure({sig_cpts[sig] : value})
-
-            #Store state
-            st = config.get('state')
-
-            if not st:
-                pass
-
-            elif st == 'unknown':
-                logger.error('Can not restore {} to an unknown state'
-                             ''.format(dev))
-                status = None
-
-            elif st == 'removed':
-                status = dev.remove()
-
-            elif st == 'inserted':
-                status = dev.insert()
-
-            else:
-                raise ValueError('Unrecognized state {}'.format(st))
-
-
-
-    def show_devices(self, state=None, file=sys.stdout):
+    def show_devices(self, file=sys.stdout):
         """
         Print a table of the devices along the beamline
 
         Parameters
         ----------
-        state : str
-            Show only devices in a specific state, 'inserted', 'removed',
-            'unknown'
-
         file : file-like object
             File to writable
         """
         #Initialize Table
-        pt = PrettyTable(['Name', 'Prefix', 'Position', 'Beamline','State'])
+        pt = PrettyTable(['Name', 'Prefix', 'Position', 'Beamline', 'Removed'])
 
         #Adjust Table settings
         pt.align = 'r'
@@ -290,19 +189,22 @@ class BeamPath(OphydObject):
         pt.align['Prefix'] = 'l'
         pt.float_format  = '8.5'
 
-        #Narrow to state
-        if state:
-            d_list = [d for d in self.devices if d.state == state]
-
-        else:
-            d_list = self.devices
-
         #Add info
-        for d in d_list:
-            pt.add_row([d.name, d.prefix, d.z, d.beamline, repr(d.state)])
+        for d in self.devices:
+            pt.add_row([d.name, d.prefix, d.z, d.beamline, str(d.removed)])
 
         #Show table
         print(pt, file=file)
+
+
+    @property
+    def veto_devices(self):
+        """
+        A list of MPS veto devices along the path
+        """
+        return [device for device in self.devices
+                if getattr(device, 'mps', None)
+                and device.mps.veto_capable]
 
 
     @property
@@ -326,16 +228,8 @@ class BeamPath(OphydObject):
         devices
         """
         return [device for device in self.devices
-                if device.mps and device.mps.faulted]
-
-
-    @property
-    def veto_devices(self):
-        """
-        A list of MPS veto devices along the path
-        """
-        return [device for device in self.devices
-                if device.mps and device.mps.veto_capable]
+                if getattr(device, 'mps', None)
+                and device.mps.faulted]
 
 
     @property
@@ -356,123 +250,6 @@ class BeamPath(OphydObject):
         Whether beamline is clear of any devices
         """
         return not any(self.blocking_devices)
-
-
-    def insert(self, device, wait=False, timeout=None, force=False):
-        """
-        Insert a device into the beampath
-
-        Parameters
-        ----------
-        device : str or :class:`.LightDevice`
-            Either a string of the device base or name, or the device itself
-
-        wait : bool , optional
-            Block the thread until move has completed
-
-        timeout : float, optional
-            Time to wait for completion
-
-        force : bool, optional
-            Ignore MPS system warnings
-
-        Returns
-        -------
-        Status
-
-        Raises
-        ------
-        MPSFault:
-            If the move would cause an MPS fault
-
-        ValueError:
-            If the device is not found in the path
-        """
-        d  = self._device_lookup(device)
-
-        #Check if an MPS protected device
-        if d.mps and not d.mps.veto_capable:
-
-            downstream, upstream  = self.split(device=device)
-
-            #Check if protetected by upstream device  
-            if not any([d.inserted for d in downstream.veto_devices]):
-                logger.warning('Inserting MPS protected device with no '
-                               'upstream veto devices found')
-                if not force:
-                    raise MPSFault('The requested motion will cause an MPS '
-                                   'Fault.')
-
-        s = d.insert(timeout=timeout)
-        if wait:
-            logger.debug('Waiting for {} to be done ...'.format(s))
-            status_wait(s, timeout=timeout)
-            logger.info('Completed')
-
-        return s
-
-
-    def remove(self, device, wait=False, timeout=None, force=False):
-        """
-        Remove a device from the beampath
-        
-        Parameters
-        ----------
-        device : str or :class:`.LightDevice`
-            Either a string of the device base or name, or the device itself
-
-        wait : bool , optional
-            Block the thread until move has completed
-
-        timeout : float, optional
-            Time to wait for completion
-
-        force : bool, optional
-            Ignore MPS system warnings
-
-        Returns
-        -------
-        Status
-
-        Raises
-        ------
-        MPSFault:
-            If the move would cause an MPS fault
-
-        ValueError:
-            If the device is not found in the path
-        """
-        d = self._device_lookup(device)
-
-        #If device is veto device
-        if d.mps and d.mps.veto_capable:
-
-            down, up  = self.split(device=d)
-            
-            #Remove devices protected by an additional veto
-            up_vetos = [d for d in up.veto_devices if d.inserted]
-            if len(up_vetos) > 1:
-                up, protected = up.split(device=up_vetos[1])
-
-            #Check for faults downstream
-            if any(up.faulted_devices):
-                logger.warning('Removing this device will expose '
-                               'upstream MPS faults')
-                if not force:
-                    raise MPSFault('The requested motion will cause an MPS '
-                                   'Fault due to {}'
-                                   ''.format(up.faulted_devices))
-        #Remove device
-        s = d.remove(timeout=timeout)
-        
-        #Wait on status
-        if wait:
-            logger.debug('Waiting for {} to be done ...'.format(s))
-            status_wait(s, timeout=timeout)
-            logger.info('Completed')
-
-        return s
-
 
 
     def clear(self, wait=False, timeout=None,
@@ -524,30 +301,6 @@ class BeamPath(OphydObject):
         return status
 
 
-    @property
-    def output(self):
-        """
-        Output of the beampath in form (beamline, transmission)
-        """
-
-        #Find endpoint
-        if not self.impediment:
-            end = self.finish
-
-        else:
-            end = self.impediment
-
-        #If the end is a misaligned mirror / transmission will be zero
-        if end.branching:
-            transmission = 0.
-
-        #Calculate transmission
-        else:
-            transmission = np.prod([d.output[1] for d in self.devices])
-
-        return (end.beamline, transmission)
-
-
     def join(self, *beampaths):
         """
         Join other beampaths with the current one
@@ -575,7 +328,7 @@ class BeamPath(OphydObject):
         """
         Split the beampath producing two new BeamPath objects either by a
         specific position or a devices location
-        
+
         Parameters
         ----------
         z : float
@@ -584,7 +337,7 @@ class BeamPath(OphydObject):
         device  : LightDevice, name, or base PV
             The specified device will be the first device in the second
             :class:`.BeamPath` object
-        
+
         Returns
         -------
         BeamPath, BeamPath
@@ -595,10 +348,10 @@ class BeamPath(OphydObject):
 
         #Grab the z if given a device
         if device:
-            z = self._device_lookup(device).z
+            z = device.z
 
         if z<self.range[0] or z>self.range[1]:
-            raise ValueError("Split position  {} is not within the range of "
+            raise ValueError("Split position {} is not within the range of "
                              "the path.".format(z))
 
         return (BeamPath(*[d for d in self.devices if d.z <  z]),
@@ -642,21 +395,21 @@ class BeamPath(OphydObject):
         """
         Assemble list of available devices with some exclusions
         """
-        #Always ignore mirrors
-        ignore = copy.copy(self.mirrors)
+        ignore = list()
 
         #Add passive devices to ignored
         if not passive:
             logger.debug("Passive devices will be ignored ...")
-            ignore.extend([d for d in self.devices if d.passive])
+            ignore.extend([d for d in self.devices
+                           if d.transmission < self.attenuation_threshold])
 
         
         #Add ignored devices
-        if isinstance(ignore_devices, (tuple, list, set)):
-            ignore.extend([self._device_lookup(d) for d in ignore_devices])
+        if isinstance(ignore_devices, Iterable):
+            ignore.extend(ignore_devices)
 
         elif ignore_devices:
-            ignore.append(self._device_lookup(ignore_devices))
+            ignore.append(ignore_devices)
 
         #Grab target devices
         target_devices = [device for device in self.devices
@@ -665,28 +418,6 @@ class BeamPath(OphydObject):
         logger.debug('Ignoring devices {} ...'.format(ignore))
 
         return target_devices, ignore
-
-
-    def _device_lookup(self, device):
-        """
-        Lookup a device by name or prefix
-        """
-        #Check if given a device name
-        if device in self.device_names:
-            pos    = self.device_names.index(device)
-            device = self.devices[pos]
-
-        #Check if given a device prefix
-        elif device in self.device_prefixes:
-            pos    = self.device_prefixes.index(device)
-            device = self.devices[pos]
-
-
-        if device not in self.devices:
-            raise ValueError("Could not find device {} in the path"
-                             "".format(device))
-
-        return device
 
 
     def _device_moved(self, *args, obj=None, **kwargs):
