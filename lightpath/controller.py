@@ -14,7 +14,6 @@ from happi import Client
 ####################
 from . import subtypes
 from .errors import PathError
-from .device import LightDevice
 
 class LightController:
     """
@@ -43,7 +42,7 @@ class LightController:
         self.device_types = dict((cls.container, cls)
                                  for cls in inspect.getmembers(subtypes,
                                                                inspect.isclass)
-                                 if issubclass(cls, LightDevice))
+                                 if type(cls) == LightInterface)
 
 
         devices = []
