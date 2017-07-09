@@ -1,121 +1,109 @@
+####################
+# Standard Library #
+####################
 import io
-import pytest
 from collections import OrderedDict
+
+####################
+#    Third Party   #
+####################
+import pytest
 from unittest.mock import Mock
 
+####################
+#     Package      #
+####################
 import lightpath
-from   lightpath import BeamPath
+from lightpath import BeamPath
+from .conftest import Crystal
 
-def test_start(beampath):
-    assert beampath.start.z == 0.
+def test_range(path):
+    assert path.range == (0.,30.)
 
-def test_finish(beampath):
-    assert beampath.finish.z == 30.
 
-def test_range(beampath):
-    assert beampath.range == (0.,30.)
-
-def test_sort(beampath):
-    for i,device in enumerate(beampath.devices):
+def test_sort(path):
+    for i,device in enumerate(path.path):
         try:
-            assert device.z < beampath.devices[i+1].z
-        
+        #Each devices is before than the next
+            assert device.z < path.path[i+1].z
+        #Except for the final device
         except IndexError:
-            print('End of devices')
+            assert i == len(path.devices) - 1
 
-def test_reject_non_device():
-    with pytest.raises(TypeError):
-        BeamPath(5)
+def test_branching_finding(path):
+    #Find the optic along the beampath
+    assert len(path.branching) == 1
+    assert isinstance(path.branching[0], Crystal)
 
-def test_reject_z_less_device(simple_device):
-    simple_device._z = -1.0
-    with pytest.raises(lightpath.errors.CoordinateError):
-        bp = BeamPath(simple_device)
 
-def test_reject_uncontiguous(simple_device, complex_device):
-    simple_device._beamline='HDF'
-    with pytest.raises(lightpath.errors.PathError):
-        BeamPath(simple_device, complex_device)
+def test_clear_beamline(path, branch):
+    #Completely removed beamline
+    assert path.blocking_devices == []
+    assert path.impediment == None
+    assert path.cleared
 
-def test_mirror_finding(beampath, simple_mirror):
-    assert beampath.mirrors  == [simple_mirror]
+    #Passive device inserted
+    path.path[6].insert()
+    assert path.blocking_devices == []
+    assert path.impediment == None
+    assert path.cleared
 
-def test_device_names(beampath):
-    assert 'one'     in beampath.device_names
-    assert 'two'     in beampath.device_names
-    assert 'three'   in beampath.device_names
-    assert 'four'    in beampath.device_names
-    assert 'five'    in beampath.device_names
-    assert 'six'     in beampath.device_names
-    assert 'simple' in beampath.device_names
-    assert 'mirror'  in beampath.device_names
-    assert 'complex' in beampath.device_names
+    #Branch with optic inserted
+    branch.path[5].insert() 
+    assert branch.blocking_devices == []
+    assert branch.incident_devices == [branch.path[5]]
+    assert branch.impediment == None
+    assert branch.cleared
 
-def test_device_bases(beampath):
-    assert 'DEVICE_1'  in beampath.device_prefixes
-    assert 'DEVICE_2'  in beampath.device_prefixes
-    assert 'DEVICE_3'  in beampath.device_prefixes
-    assert 'DEVICE_4'  in beampath.device_prefixes
-    assert 'DEVICE_5'  in beampath.device_prefixes
-    assert 'DEVICE_6'  in beampath.device_prefixes
-    assert 'SIMPLE'    in beampath.device_prefixes
-    assert 'MIRROR'    in beampath.device_prefixes
-    assert 'COMPLEX'   in beampath.device_prefixes
 
-def test_clear_beamline(beampath):
-    mirror = beampath.devices[6]
-    assert beampath.blocking_devices == []
-    assert beampath.impediment == None
-    assert beampath.incident_devices == [mirror]
-    assert beampath.cleared
-    assert beampath.output == ('HXR',  1.)
+def test_single_impediment(path, branch):
+    #Insert generic device
+    path.path[0].insert()
+    assert path.impediment.name  == 'one'
+    assert path.blocking_devices == [path.impediment]
+    assert path.incident_devices == [path.impediment]
+    assert path.cleared == False
+    path.path[0].remove()
+    
+    #Insert passive device
+    path.path[6].insert()
+    assert path.impediment.name  == 'six'
+    assert path.blocking_devices == None
+    assert path.incident_devices == [path.path[6]]
+    assert path.cleared == True
+    path.path[6].remove()
+   
+    #Insert blocking optic
+    path.path[5].insert()
+    assert path.impediment.name  == 'five'
+    assert path.blocking_devices == [path.impediment]
+    assert path.incident_devices == [path.impediment]
+    assert path.cleared == False
+    path.path[5].remove()
+   
+    #Removed neccesary optic
+    assert branch.impediment.name  == 'five'
+    assert branch.blocking_devices == [branch.impediment]
+    assert branch.incident_devices == [branch.impediment]
+    assert branch.cleared == False
 
-def test_single_insert_beamline(beampath):
-    dev = beampath.devices[4]
-    mirror = beampath.devices[6]
-    dev.insert()
-    assert beampath.impediment == dev
-    assert beampath.blocking_devices == [dev]
-    assert beampath.incident_devices == [dev]
-    assert beampath.cleared == False
-    assert beampath.output == ('LCLS',  0.5)
-    dev.remove()
-    dev = beampath.devices[8]
-    dev.insert()
-    assert beampath.impediment == dev
-    assert beampath.blocking_devices == [dev]
-    assert beampath.incident_devices == [mirror, dev]
-    assert beampath.cleared == False
-    assert beampath.output == ('HXR',  0.)
 
-def test_multiple_insert_beamline(beampath):
-    dev = beampath.devices[1]
-    dev.insert()
-    dev2 = beampath.devices[3]
-    dev2.insert()
-    assert beampath.impediment == dev
-    assert beampath.blocking_devices == [dev, dev2]
-    assert beampath.cleared == False
-    assert beampath.output == ('LCLS',  0.)
+def test_multiple_insert_beamline(path):
+    #Insert two devices
+    path.path[1].insert()
+    path.path[3].insert()
+    #Assert we have the proper stopping point
+    assert path.impediment.z == 2.0
+    #Assert both are accounted reported
+    assert len(path.blocking_devices) == 2
 
-def test_mirror_out(beampath):
-    dev = beampath.devices[6]
-    dev.remove()
-    assert beampath.impediment == dev
-    assert beampath.blocking_devices == [dev]
-    assert beampath.cleared == False
-    assert beampath.output == ('LCLS',  0.)
-
-def test_show_device(beampath):
+def test_show_device(path):
+    #Write table to file-like object
     f = io.StringIO()
-    beampath.show_devices(file=f)
+    path.show_devices(file=f)
+    #Read from start of document
     f.seek(0)
     assert f.read() == known_table
-
-    f = io.StringIO()
-    beampath.show_devices(file=f, state='inserted')
-    f.seek(0)
-    assert f.read() == small_table
 
 known_table = """\
 +---------+----------+----------+----------+------------+
@@ -133,13 +121,6 @@ known_table = """\
 +---------+----------+----------+----------+------------+
 """
 
-small_table="""\
-+--------+--------+----------+----------+------------+
-| Name   | Prefix | Position | Beamline |      State |
-+--------+--------+----------+----------+------------+
-| mirror | MIRROR | 15.50000 |     LCLS | 'inserted' |
-+--------+--------+----------+----------+------------+
-"""
 
 def test_ignore(beampath, complex_device, simple_device, simple_mirror):
     target, ignore = beampath._ignore(simple_device, passive=False)
@@ -152,15 +133,6 @@ def test_ignore(beampath, complex_device, simple_device, simple_mirror):
     should_target.remove(complex_device)
     assert target == should_target
 
-
-
-def test_lookup(beampath, simple_device):
-    assert beampath._device_lookup(simple_device) == simple_device
-    assert beampath._device_lookup('simple') == simple_device
-    assert beampath._device_lookup('SIMPLE') == simple_device
-
-    with pytest.raises(ValueError):
-        beampath._device_lookup('NOT')
 
 def test_clear(beampath, simple_mirror):
     dev = beampath.devices[3]
@@ -201,75 +173,8 @@ def test_split(simple_device, simple_mirror, complex_device):
     with pytest.raises(ValueError):
         bp1.split(400)
 
-def test_configuration(simple_device, complex_device):
-    bp = BeamPath(simple_device, complex_device)
-    d = bp.read_configuration()
-    assert 'simple' in d.keys()
-    simple = d['simple']
-    assert simple['state'] == 'removed'
-    assert simple['config'] == OrderedDict()
-    
-    assert 'complex' in d.keys()
-    cmplx = d['complex']
-    assert cmplx['state'] == 'removed'
-    assert cmplx['config']['complex_basic']['value'] == 4
 
-def test_configuration_restore(simple_device, complex_device):
-    bp      = BeamPath(simple_device, complex_device)
-    initial = bp.read_configuration()
-    bp.devices[0].insert()
-    assert bp.devices[0].inserted
-    bp.devices[1].basic.put(2)
-    assert bp.devices[1].basic.get() == 2
-    d = bp.read_configuration()
-    
-    assert 'simple' in d.keys()
-    simple = d['simple']
-    assert simple['state'] == 'inserted'
-    assert simple['config'] == OrderedDict()
-
-    assert 'complex' in d.keys()
-    cmplx = d['complex']
-    assert cmplx['state'] == 'removed'
-    assert cmplx['config']['complex_basic']['value'] == 2
-
-    bp.configure(initial)
-
-
-    d = bp.read_configuration()
-    assert 'simple' in d.keys()
-    simple = d['simple']
-    assert simple['state'] == 'removed'
-    assert simple['config'] == OrderedDict()
-
-    assert 'complex' in d.keys()
-    cmplx = d['complex']
-    assert cmplx['state'] == 'removed'
-    print(cmplx)
-    assert cmplx['config']['complex_basic']['value'] == 4
-
-
-def test_unknown_configure(simple_device):
-    simple_device.component.put(4)
-    bp = BeamPath(simple_device)
-    d = bp.read_configuration()
-    bp.configure(d)
-    assert simple_device.component.get() == 4
-    simple_device.insert()
-    bp.configure({'simple' : {'state' : 'unknown'}})
-    assert simple_device.inserted
-
-
-def test_insert_configure(simple_device):
-    simple_device.insert()
-    bp = BeamPath(simple_device)
-    d = bp.read_configuration()
-    simple_device.remove()
-    bp.configure(d)
-    assert simple_device.inserted
-
-
-def test_callback(beampath):
+def test_callback(path):
     cb = Mock()
     beampath.subscribe(cb, event_type=beampath.SUB_PTH_CHNG, run=False)
     beampath.devices[4].insert()
