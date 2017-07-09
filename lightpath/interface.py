@@ -15,6 +15,10 @@ potential that mark the transition from one beamline to another. These device
 will use the :class:`.BranchingInterface` For instance the XCS LODCM when the
 crystal is removed will allow beam to pass through to CXI.  However, when
 inserted, a portion of the beam is sent to XCS.
+
+The lightpath also surveys the devices for an attribute ``mps``. It is expected
+that if a device is in the MPS system, this attribute will return a sub-device
+that uses the :class:`.MPSInterface`
 """
 ############
 # Standard #
@@ -139,5 +143,35 @@ class BranchingInterface(LightInterface):
         List of possible beamlines the device is available to send photons
         """
         raise AttributeError
+
+
+
+class MPSInterface(ComponentMeta, abc.ABCMeta):
+    """
+    Interface for MPS device
+    """
+    @abc.abstractproperty
+    def faulted(self):
+        """
+        Boolean of whether MPS is faulted or not
+        """
+        raise AttributeError
+
+    
+    @abc.abstractproperty
+    def veto_capable(self):
+        """
+        Whether the device causes downstream faults to be ignored
+        """
+        raise AttributeError
+
+
+    @abc.abstractproperty
+    def bypassed(self):
+        """
+        Bypass state of the MPS bit
+        """
+        raise AttributeError
+
 
 
