@@ -5,7 +5,7 @@ import logging
 from .path       import BeamPath
 from .utils      import MPS
 from .controller import LightController
-from .interface  import LightInterface, BranchingInterface
+from .interface  import MPSInterface, LightInterface, BranchingInterface
 
 from ._version import get_versions
 __version__ = get_versions()['version']
