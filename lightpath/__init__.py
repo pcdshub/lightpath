@@ -3,7 +3,6 @@ __all__ = ['device']
 import logging
 
 from .path       import BeamPath
-from .utils      import MPS
 from .controller import LightController
 from .interface  import MPSInterface, LightInterface, BranchingInterface
 

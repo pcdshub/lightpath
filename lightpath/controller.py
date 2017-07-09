@@ -12,7 +12,6 @@ from happi import Client
 ####################
 #     Package      #
 ####################
-from . import subtypes
 from .errors import PathError
 
 class LightController:
@@ -38,25 +37,7 @@ class LightController:
         raw = [d for d in self.conn.search({}, as_dict=True)]
 #               if d.get('lightpath', False)]
 
-        #Gather device mapping
-        self.device_types = dict((cls.container, cls)
-                                 for cls in inspect.getmembers(subtypes,
-                                                               inspect.isclass)
-                                 if type(cls) == LightInterface)
-
-
         devices = []
-        for info in raw:
-            try:
-                cls = self.device_types[raw['type']]
-
-            except KeyError as e:
-                logger.error('Unrecognized device type {} for {}'
-                             ''.format(e, info['base']))
-                cls = LightDevice
-
-            finally:
-                devices.append(cls(info.pop('base'), **info))
 
         #Temporary Data Structure before instantiating paths
         beamlines = dict.fromkeys(set([d.beamline
