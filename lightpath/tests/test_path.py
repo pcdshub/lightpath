@@ -171,6 +171,43 @@ def test_callback(path):
     assert cb.called
 
 
+def test_veto_devices(path):
+    #Find the stopper correctly
+    assert path.veto_devices == [path.path[2]]
+
+
+def test_faulted_devices(path):
+    #No faulted devices by default
+    assert path.faulted_devices == []
+    #Insert a gate valve
+    path.path[0].insert()
+    assert path.faulted_devices == [path.path[0]]
+    #Bypass fault
+    path.path[0].mps.bypassed = True
+    assert path.faulted_devices == []
+    path.path[0].mps.bypassed = False
+    #Insert two gate valves
+    path.path[1].insert()
+    assert path.faulted_devices == [path.path[0], path.path[1]]
+    #Insert one more gatevalve past stopper
+    path.path[6].insert()
+    assert path.faulted_devices == [path.path[0],
+                                    path.path[1],
+                                    path.path[6]]
+
+def test_tripped_devices(path):
+    #No tripped devices by default
+    assert path.tripped_devices == []
+    #Insert a gate valve
+    path.path[0].insert()
+    assert path.tripped_devices == [path.path[0]]
+    #Insert two gate valves
+    path.path[6].insert()
+    assert path.tripped_devices == [path.path[0], path.path[6]]
+    #Insert stopper to halt downstream faults
+    path.path[2].insert()
+    assert path.tripped_devices == [path.path[0]]
+
 known_table = """\
 +-------+--------+----------+----------+---------+
 | Name  | Prefix | Position | Beamline | Removed |
