@@ -15,7 +15,7 @@ from ophyd.status import DeviceStatus
 ##########
 # Module #
 ##########
-from lightpath import LightInterface, BeamPath
+from lightpath import MPSInterface, LightInterface, BeamPath
 
 #################
 # Logging Setup #
@@ -98,8 +98,14 @@ class Valve(Device, metaclass=LightInterface):
         """
         Insert the device into the beampath
         """
+        #Complete request
         self.status = Status.inserted
+        #Run subscriptions to device state
         self._run_subs(obj=self, sub_type=self._default_sub)
+        #Run subscriptions to mps state
+        if self.mps:
+            self.mps._run_subs(obj=self, sub_type=self.mps._default_sub)
+        #Return complete status object
         return DeviceStatus(self, done=True, success=True)
 
 
@@ -107,8 +113,14 @@ class Valve(Device, metaclass=LightInterface):
         """
         Remove the device from the beampath
         """
+        #Complete request
         self.status = Status.removed
+        #Run subscriptions to device state
         self._run_subs(obj=self, sub_type=self._default_sub)
+        #Run subscriptions to mps state
+        if self.mps:
+            self.mps._run_subs(obj=self, sub_type=self.mps._default_sub)
+        #Return complete status object
         return DeviceStatus(self, done=True, success=True)
 
 
@@ -150,11 +162,15 @@ class Crystal(Valve):
             return self.branches
 
 
-class MPS(object):
+class MPS(Device, metaclass=MPSInterface):
     """
     Simulated MPS device
     """
+    SUB_MPS_CH    = 'mps_state_changed'
+    _default_sub  = SUB_MPS_CH
+
     def __init__(self, device):
+        super().__init__('MPS')
         self.device   = device
         self.bypassed = False
 
@@ -176,6 +192,11 @@ class MPS(object):
 ############
 # Fixtures #
 ############
+#Basic Device
+@pytest.fixture(scope='module')
+def device():
+    return Valve('valve', z=40.0, beamline='TST')
+
 
 #Basic Beamline
 @pytest.fixture(scope='function')
