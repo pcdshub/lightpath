@@ -164,7 +164,6 @@ class MPS(object):
         MPS is faulted if device is inserted and not bypassed
         """
         return (self.device.inserted 
-                and not self.bypassed
                 and not self.veto_capable)
 
     @property
