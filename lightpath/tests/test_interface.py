@@ -10,7 +10,7 @@ from ophyd import Device
 ##########
 # Module #
 ##########
-from lightpath.interface import BranchingInterface, LightInterface
+from lightpath.interface import MPSInterface, BranchingInterface, LightInterface
 
 class BasicDevice(Device, metaclass=LightInterface):
 
@@ -120,14 +120,30 @@ class BasicBranching(Device, metaclass=BranchingInterface):
         """
         pass
 
-
+    @property
     def branching(self):
         return None
 
-
+    @property
     def destination(self):
         return None
 
+
+class MPS(Device, metaclass=MPSInterface):
+    """
+    Basic MPS implementation
+    """
+    @property
+    def faulted(self):
+        return None
+
+    @property
+    def bypassed(self):
+        return None
+
+    @property
+    def veto_capable(self):
+        return None
 
 
 def test_basic_interface():
@@ -143,4 +159,12 @@ def test_branching_interface():
     #Check that our class is a LightInterface type 
     assert type(BasicBranching) == BranchingInterface
     #Check that the device is an ophyd device
-    assert isinstance(device, BasicBranching)
+    assert isinstance(device, Device)
+
+
+def test_mps_interface():
+    device = MPS("base")
+    #Check that our class is a LightInterface type 
+    assert type(MPS) == MPSInterface
+    #Check that the device is an ophyd device
+    assert isinstance(device, Device) 
