@@ -49,7 +49,7 @@ class Illustrator:
                             alignment=AlignmentChoice.Center)
 
         #Draw all the beampipes but the final path
-        for i, device in enumerate(beampath.devices):
+        for i, device in enumerate(beampath.path):
             #Add LightWidget
             l.addLayout(LightWidget(convert(device, with_prefix=True),
                                     name=device.name))
