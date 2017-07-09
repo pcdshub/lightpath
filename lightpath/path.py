@@ -208,7 +208,7 @@ class BeamPath(OphydObject):
         """
         A list of MPS veto devices along the path
         """
-        return [device for device in self.devices
+        return [device for device in self.path
                 if getattr(device, 'mps', None)
                 and device.mps.veto_capable]
 
@@ -233,9 +233,10 @@ class BeamPath(OphydObject):
         A list of faulted MPS devices, this includes those protected by veto
         devices
         """
-        return [device for device in self.devices
+        return [device for device in self.path
                 if getattr(device, 'mps', None)
-                and device.mps.faulted]
+                and device.mps.faulted
+                and not device.mps.bypassed]
 
 
     @property
