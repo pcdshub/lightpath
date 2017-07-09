@@ -1,1 +1,1 @@
-from .conftest import mps_path
+from .conftest import path
