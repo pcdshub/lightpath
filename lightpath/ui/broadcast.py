@@ -203,7 +203,7 @@ class Broadcaster:
         def sync(*args, **kwargs):
             #Find impediment
             if path.impediment:
-                idx = path.devices.index(path.impediment)
+                idx = path.path.index(path.impediment)
             else:
                 idx = len(path.devices)
 
@@ -214,13 +214,23 @@ class Broadcaster:
 
         #Monitor MPS System faults
         def mps(*args, **kwargs):
-            for device in [d for d in path.devices if d.mps]:
+            for device in [d for d in path.path if getattr(d,'mps',None)]:
                 val = int(device in path.tripped_devices)
                 #Communicate
                 self.driver.write(convert(device)+'.MPS_TRIP', val)
 
         #Create trip 
         self.add_subscription(path, mps, event_type=path.SUB_MPSPATH_CHNG)
+
+        #Add path devices
+        for device in path.path:
+            logger.debug("Adding device {} on path {}".format(path.name,
+                                                              device.name))
+            try:
+                self.add_device(device)
+            except ValueError:
+                logger.debug("Device has previously been "
+                             " added".format(device.name))
 
     def add_device(self, device):
         """
@@ -249,10 +259,20 @@ class Broadcaster:
         def sync(*args, **kwargs):
             logger.debug('Device {} has changed state, syncing PV values'
                          ''.format(device.name))
-            self.driver.write(pv, DeviceState[device.state].value)
+            #Summarize state
+            if device.inserted and not device.removed:
+                state = DeviceState.inserted
+
+            elif device.removed and not device.inserted:
+                state = DeviceState.removed
+
+            else:
+                state = DeviceState.unknown
+
+            self.driver.write(pv, state.value)
 
         #Create subscription
-        self.add_subscription(device, sync, event_type=device.SUB_DEV_CH)
+        self.add_subscription(device, sync)
 
         #Add MPS and CMD structure to database
         warn_pv = pv + '.MPS_WARN'
@@ -278,7 +298,7 @@ class Broadcaster:
         self.register_cmd(cmd_pv, device)
 
 
-        if device.mps:
+        if getattr(device, 'mps', None):
             #Create update callback
             def mps_sync(*args, **kwargs):
                 logger.debug('Device {} MPS state has changed, syncing '
@@ -286,7 +306,7 @@ class Broadcaster:
                 self.driver.write(warn_pv, int(device.mps.faulted))
 
             #Create subscription
-            self.add_subscription(device.mps, mps_sync, event_type=device.mps.SUB_MPS)
+            self.add_subscription(device.mps, mps_sync)
 
 
     def add_subscription(self, device, cb, event_type=None):
