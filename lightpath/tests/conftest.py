@@ -1,168 +1,213 @@
-import pytest
+############
+# Standard #
+############
 import logging
+from enum import Enum
+
+###############
+# Third Party #
+###############
+import pytest
 import numpy as np
-from ophyd import Signal
-from ophyd.device import Component
+from ophyd.device import Device
+from ophyd.status import DeviceStatus
 
-import lightpath
-from lightpath import MPS, BeamPath, LightDevice
-from lightpath.device import StateComponent
-lightpath.device.logger.setLevel(logging.DEBUG)
+##########
+# Module #
+##########
+from lightpath import LightInterface, BeamPath
 
-class FakeStateComponent(StateComponent):
+#################
+# Logging Setup #
+#################
+#Enable the logging level to be set from the command line
+def pytest_addoption(parser):
+    parser.addoption("--log", action="store", default="INFO",
+                     help="Set the level of the log")
+    parser.addoption("--logfile", action="store", default=None,
+                     help="Write the log output to specified file path")
 
-    def __init__(self, value=None, transitions=None):
-        super().__init__(None, read_only=False,
-                        transitions=transitions)
-        self.cls = Signal
+#Create a fixture to automatically instantiate logging setup
+@pytest.fixture(scope='session', autouse=True)
+def set_level(pytestconfig):
+    #Read user input logging level
+    log_level = getattr(logging, pytestconfig.getoption('--log'), None)
 
+    #Report invalid logging level
+    if not isinstance(log_level, int):
+        raise ValueError("Invalid log level : {}".format(log_level))
 
-    def create_component(self, instance):
-        cpt_inst = super().create_component(instance)
-        cpt_inst.put(1) #Do explicit put so that callback is run
-                        #Just like a real PV will be
-        return cpt_inst
+    #Create basic configuration
+    logging.basicConfig(level=log_level,
+                        filename=pytestconfig.getoption('--logfile'))
 
-
-class SimpleDevice(LightDevice):
-    component = FakeStateComponent(transitions = {0 : 'inserted',
-                                                  1 : 'removed',
-                                                  2 : 'bad_transition'}
-                                  )
-    _beamline     = 'LCLS'
-    _transmission = 0.
-
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def insert(self,timeout=None):
-        status = super().insert(timeout=timeout)
-        self.component.put(0)
-        return status
-
-    def remove(self,timeout=None):
-        status = super().remove(timeout=timeout)
-        self.component.put(1)
-        return status
+#####################
+# Simulated Classes #
+#####################
+class Status:
+    """
+    Hold pseudo-status
+    """
+    inserted = 0
+    removed  = 1
+    unknown  = 2
 
 
-class ComplexDevice(LightDevice):
-    opn = FakeStateComponent(transitions = {0 : 'defer',
-                                            1 : 'removed',
-                            })
-    cls = FakeStateComponent(transitions = {0 : 'inserted',
-                                            1 : 'defer',
-                            })
+class Valve(Device, metaclass=LightInterface):
+    """
+    Basic device to facilitate in/out positioning
+    """
+    _transmission = 0.0
+    _veto         = False
+    SUB_DEV_CH    = 'device_state_changed'
+    _default_sub  = SUB_DEV_CH
 
-    basic = Component(Signal, value=4,)
+    def __init__(self, name, z, beamline):
+        super().__init__(name)
+        self.z    = z
+        self.beamline     = beamline
+        self.status = Status.removed
+        self.mps    = MPS(self)
 
-    _transmission = .5
-    _beamline = 'LCLS'
 
-    def __init__(self, *args, **kwargs):
-        kwargs['configuration_attrs'] = ['basic']
-        super().__init__(*args, **kwargs)
+    @property
+    def transmission(self):
+        """
+        Transmission of device
+        """
+        return self._transmission
 
-    def insert(self, timeout=None):
-        status = super().insert(timeout=timeout)
-        self.opn.put(0)
-        self.cls.put(0)
-        return status 
 
-    def remove(self, timeout=None):
-        status = super().remove(timeout=timeout)
-        self.opn.put(1)
-        self.cls.put(1)
-        return status
+    @property
+    def inserted(self):
+        """
+        Report if the device is inserted into the beam
+        """
+        return self.status == Status.inserted
 
-class SimpleMirror(SimpleDevice):
 
-    _destination  = 'HXR'
-    _branching    = ['SXR', 'HXR']
-    _transmission = 1.
+    @property
+    def removed(self):
+        """
+        Report if the device is inserted into the beam
+        """
+        return self.status == Status.removed
 
-    def __init__(self , *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.insert()
+
+    def insert(self, timeout=None, finished_cb=None):
+        """
+        Insert the device into the beampath
+        """
+        self.status = Status.inserted
+        self._run_subs(obj=self, sub_type=self._default_sub)
+        return DeviceStatus(self, done=True, success=True)
+
+
+    def remove(self, timeout=None, finished_cb=None):
+        """
+        Remove the device from the beampath
+        """
+        self.status = Status.removed
+        self._run_subs(obj=self, sub_type=self._default_sub)
+        return DeviceStatus(self, done=True, success=True)
+
+
+class IPIMB(Valve):
+    """
+    Generic Passive Device
+    """
+    _transmission = 0.6
+
+
+class Stopper(Valve):
+    """
+    Generic Veto Device
+    """
+    _veto = True
+
+
+class Crystal(Valve):
+    """
+    Generic branching device
+    """
+    def __init__(self, name, z, beamline, branch):
+        super().__init__(name, z, beamline)
+        self.branches = [self.beamline, branch]
+        self.mps      = None
 
     @property
     def destination(self):
+        """
+        Return current beam destination
+        """
         if self.inserted:
-            return self._destination
-        
+            return [self.branches[1]]
+
+        elif self.removed:
+            return [self.beamline]
+
         else:
-            return None
-
-class SimpleMPS(MPS):
-
-    bypass = Component(Signal, value=0)
-    alarm  = Component(Signal, value=0)
-
-class MPSDevice(SimpleDevice):
-
-    switches = Component(SimpleMPS,'basic', veto=False)
-
-    def insert(self, timeout=None):
-        self.mps.alarm.put(2)
-        return super().insert(timeout=None)
-
-    def remove(self, timeout=None):
-        self.mps.alarm.put(0)
-        return super().remove(timeout=None)
-
-class VetoDevice(SimpleDevice):
-
-    switches = Component(SimpleMPS,'basic', veto=True)
+            return self.branches
 
 
+class MPS(object):
+    """
+    Simulated MPS device
+    """
+    def __init__(self, device):
+        self.device   = device
+        self.bypassed = False
+
+    @property
+    def faulted(self):
+        """
+        MPS is faulted if device is inserted and not bypassed
+        """
+        return (self.device.inserted 
+                and not self.bypassed
+                and not self.veto_capable)
+
+    @property
+    def veto_capable(self):
+        """
+        Veto device
+        """
+        return self.device._veto
+
+############
+# Fixtures #
+############
+
+#Basic Beamline
 @pytest.fixture(scope='function')
-def simple_device():
-    device = SimpleDevice('SIMPLE', alias='simple', z = 4)
-    return device
-
-@pytest.fixture(scope='function')
-def simple_mirror():
-    device = SimpleMirror('MIRROR', alias='mirror', z = 15.5)
-    return device
-
-@pytest.fixture(scope='function')
-def complex_device():
-    device = ComplexDevice('COMPLEX', alias='complex', z = 10)
-    return device
-
-
-@pytest.fixture(scope='function')
-def beampath(simple_device, complex_device, simple_mirror):
-    devices = [SimpleDevice('DEVICE_1', alias='one',   z = 0.),
-               SimpleDevice('DEVICE_2', alias='two',   z = 2.),
-               SimpleDevice('DEVICE_3', alias='three', z = 9.),
-               SimpleDevice('DEVICE_4', alias='four',  z = 15.),
-               SimpleDevice('DEVICE_5', alias='five',  z = 16., beamline='HXR'),
-               SimpleDevice('DEVICE_6', alias='six',   z = 30., beamline='HXR'),
-               simple_mirror,
-               simple_device,
-               complex_device,
+def path():
+    #Assemble device lists
+    devices = [Valve('zero',     z=0.,  beamline='TST'),
+               Valve('one',      z=2.,  beamline='TST'),
+               Stopper('two',    z=9.,  beamline='TST'),
+               Valve('three',    z=15., beamline='TST'),
+               Crystal('four',   z=16., beamline='TST', branch='SIM'),
+               IPIMB('five',     z=24., beamline='TST'),
+               Valve('six',      z=30., beamline='TST'),
               ]
-    bp = BeamPath(*devices, name='TST')
-    return bp
+    #Create semi-random order
+    devices = sorted(devices, key=lambda d : d.prefix)
+    #Create beampath
+    return BeamPath(*devices, name='TST')
 
+#Beamline that requires optic insertion
 @pytest.fixture(scope='function')
-def mps():
-    return SimpleMPS('basic', veto=False)
-
-@pytest.fixture(scope='function')
-def mps_device():
-    mps= MPSDevice('basic', z=8.3,  beamline='LCLS')
-    return mps
-
-@pytest.fixture(scope='function')
-def mps_path():
-    first_veto  = VetoDevice('veto_1', z=8.3,  beamline='LCLS')
-    second_veto = VetoDevice('veto_2', z=14.3, beamline='LCLS')
-    first_mps   = MPSDevice('mps_1',   z=8.8, beamline='LCLS')
-    second_mps  = MPSDevice('mps_2',   z=18.8, beamline='LCLS')
-
-    return BeamPath(first_veto, second_veto,
-                    second_mps, first_mps,
-                    name='TST')
+def branch():
+    #Assemble device lists
+    devices = [Valve('zero',     z=0.,  beamline='TST'),
+               Valve('one',      z=2.,  beamline='TST'),
+               Stopper('two',    z=9.,  beamline='TST'),
+               Valve('three',    z=15., beamline='TST'),
+               Crystal('four',   z=16., beamline='TST', branch='SIM'),
+               IPIMB('five',     z=24., beamline='SIM'),
+               Valve('six',      z=30., beamline='SIM'),
+              ]
+    #Create semi-random order
+    devices = sorted(devices, key=lambda d : d.prefix)
+    #Create beampath
+    return BeamPath(*devices, name='SIM')

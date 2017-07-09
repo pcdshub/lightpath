@@ -30,10 +30,11 @@ def test_sort(path):
         except IndexError:
             assert i == len(path.devices) - 1
 
+
 def test_branching_finding(path):
     #Find the optic along the beampath
-    assert len(path.branching) == 1
-    assert isinstance(path.branching[0], Crystal)
+    assert path.branches  == [path.path[4]]
+    assert isinstance(path.branches[0], Crystal)
 
 
 def test_clear_beamline(path, branch):
@@ -43,15 +44,16 @@ def test_clear_beamline(path, branch):
     assert path.cleared
 
     #Passive device inserted
-    path.path[6].insert()
+    path.path[5].insert()
     assert path.blocking_devices == []
+    assert path.incident_devices == [path.path[5]]
     assert path.impediment == None
     assert path.cleared
 
     #Branch with optic inserted
-    branch.path[5].insert() 
+    branch.path[4].insert() 
     assert branch.blocking_devices == []
-    assert branch.incident_devices == [branch.path[5]]
+    assert branch.incident_devices == [branch.path[4]]
     assert branch.impediment == None
     assert branch.cleared
 
@@ -59,32 +61,32 @@ def test_clear_beamline(path, branch):
 def test_single_impediment(path, branch):
     #Insert generic device
     path.path[0].insert()
-    assert path.impediment.name  == 'one'
+    assert path.impediment       == path.path[0]
     assert path.blocking_devices == [path.impediment]
     assert path.incident_devices == [path.impediment]
     assert path.cleared == False
     path.path[0].remove()
     
     #Insert passive device
-    path.path[6].insert()
-    assert path.impediment.name  == 'six'
-    assert path.blocking_devices == None
-    assert path.incident_devices == [path.path[6]]
+    path.path[5].insert()
+    assert path.impediment == None
+    assert path.blocking_devices == []
+    assert path.incident_devices == [path.path[5]]
     assert path.cleared == True
-    path.path[6].remove()
+    path.path[5].remove()
    
     #Insert blocking optic
-    path.path[5].insert()
-    assert path.impediment.name  == 'five'
+    path.path[4].insert()
+    assert path.impediment       == path.path[4]
     assert path.blocking_devices == [path.impediment]
     assert path.incident_devices == [path.impediment]
     assert path.cleared == False
-    path.path[5].remove()
+    path.path[4].remove()
    
     #Removed neccesary optic
-    assert branch.impediment.name  == 'five'
+    assert branch.impediment       == branch.path[4]
     assert branch.blocking_devices == [branch.impediment]
-    assert branch.incident_devices == [branch.impediment]
+    assert branch.incident_devices == []
     assert branch.cleared == False
 
 
@@ -93,9 +95,11 @@ def test_multiple_insert_beamline(path):
     path.path[1].insert()
     path.path[3].insert()
     #Assert we have the proper stopping point
-    assert path.impediment.z == 2.0
+    assert path.impediment == path.path[1]
     #Assert both are accounted reported
-    assert len(path.blocking_devices) == 2
+    assert path.blocking_devices == [path.path[1], path.path[3]]
+    assert path.incident_devices == [path.path[1]]
+
 
 def test_show_device(path):
     #Write table to file-like object
@@ -105,78 +109,79 @@ def test_show_device(path):
     f.seek(0)
     assert f.read() == known_table
 
-known_table = """\
-+---------+----------+----------+----------+------------+
-| Name    | Prefix   | Position | Beamline |      State |
-+---------+----------+----------+----------+------------+
-| one     | DEVICE_1 |  0.00000 |     LCLS |  'removed' |
-| two     | DEVICE_2 |  2.00000 |     LCLS |  'removed' |
-| simple  | SIMPLE   |        4 |     LCLS |  'removed' |
-| three   | DEVICE_3 |  9.00000 |     LCLS |  'removed' |
-| complex | COMPLEX  |       10 |     LCLS |  'removed' |
-| four    | DEVICE_4 | 15.00000 |     LCLS |  'removed' |
-| mirror  | MIRROR   | 15.50000 |     LCLS | 'inserted' |
-| five    | DEVICE_5 | 16.00000 |      HXR |  'removed' |
-| six     | DEVICE_6 | 30.00000 |      HXR |  'removed' |
-+---------+----------+----------+----------+------------+
-"""
+def test_ignore(path):
+    #Ignore only one device
+    target, ignore = path._ignore(path.path[4], passive=True)
+    assert ignore == [path.path[4]]
+    assert path.path[4] not in target
+    #Assert we are not ignoring passive devices
+    assert path.path[5] in target
+
+    #Ignore passive devices in addition
+    target, ignore = path._ignore(path.path[3], passive=False)
+    assert ignore == [path.path[5], path.path[3]]
+    assert path.path[3] not in target
+    assert path.path[5] not in target
+   
+
+def test_clear(path):
+    #Insert a variety of devices
+    path.path[0].insert()
+    path.path[1].insert()
+    path.path[2].insert()
+    #Clear the line
+    status = path.clear(wait=False)
+    #Assert the path is clear
+    assert path.cleared
 
 
-def test_ignore(beampath, complex_device, simple_device, simple_mirror):
-    target, ignore = beampath._ignore(simple_device, passive=False)
-    assert ignore == [simple_mirror, simple_device]
-    should_target = [d for d in beampath.devices
-                     if d not in [simple_mirror,simple_device]]
-    assert should_target == target
-    target, ignore = beampath._ignore([complex_device, simple_device])
-    assert ignore == [simple_mirror, complex_device, simple_device]
-    should_target.remove(complex_device)
-    assert target == should_target
+def test_join(path):
+    #Create two partial beampaths
+    first  = BeamPath(*path.path[:4])
+    second = BeamPath(*path.path[4:]) 
+    
+    #Combine in a variety of ways to same result
+    assert BeamPath.from_join(first, second).path == path.path
+    assert first.join(second).path == path.path
+    assert second.join(first).path == path.path
 
 
-def test_clear(beampath, simple_mirror):
-    dev = beampath.devices[3]
-    dev.insert()
-    dev = beampath.devices[2]
-    dev.insert()
-    dev = beampath.devices[7]
-    dev.insert()
-    status = beampath.clear(wait=True, timeout=1.)
-    assert beampath.cleared
-    assert beampath.output == ('HXR',  1.)
-
-    assert all([lambda s : s.done for s in status])
-
-def test_join(simple_device, simple_mirror, complex_device):
-    bp1 = BeamPath(simple_device)
-    bp2 = BeamPath(simple_mirror, complex_device)
-    bp  = BeamPath(simple_device, simple_mirror, complex_device)
-
-    assert BeamPath.from_join(bp1, bp2) == bp
-    assert bp1.join(bp2) == bp
-    assert bp2.join(bp1) == bp
-
-    with pytest.raises(TypeError):
-        bp1.join(4)
-
-def test_split(simple_device, simple_mirror, complex_device):
-    bp1 = BeamPath(simple_device)
-    bp2 = BeamPath(simple_mirror, complex_device)
-    bp  = BeamPath(simple_device, simple_mirror, complex_device)
-    assert bp.split(device=complex_device) == (bp1, bp2)
-    assert bp.split(z=10) == (bp1, bp2)
-
-
-    with pytest.raises(ValueError):
-        bp1.split()
-
-    with pytest.raises(ValueError):
-        bp1.split(400)
+def test_split(path):
+    #Create two partial beampaths
+    first  = BeamPath(*path.path[:4])
+    second = BeamPath(*path.path[4:])
+    
+    #Test split by device yields partial beampaths
+    assert path.split(device=path.path[4])[0].path == first.path
+    assert path.split(device=path.path[4])[1].path == second.path
+    
+    #Test split by z yields partial beampaths
+    assert path.split(z=path.path[4].z)[0].path == first.path
+    assert path.split(z=path.path[4].z)[1].path == second.path
 
 
 def test_callback(path):
+    #Create mock callback
     cb = Mock()
-    beampath.subscribe(cb, event_type=beampath.SUB_PTH_CHNG, run=False)
-    beampath.devices[4].insert()
+    #Subscribe to event changes
+    path.subscribe(cb, event_type=path.SUB_PTH_CHNG, run=False)
+    #Change state of beampath
+    path.devices[4].insert()
+    #Assert callback has been run 
     assert cb.called
+
+
+known_table = """\
++-------+--------+----------+----------+---------+
+| Name  | Prefix | Position | Beamline | Removed |
++-------+--------+----------+----------+---------+
+| zero  | zero   |  0.00000 |      TST |    True |
+| one   | one    |  2.00000 |      TST |    True |
+| two   | two    |  9.00000 |      TST |    True |
+| three | three  | 15.00000 |      TST |    True |
+| four  | four   | 16.00000 |      TST |    True |
+| five  | five   | 24.00000 |      TST |    True |
+| six   | six    | 30.00000 |      TST |    True |
++-------+--------+----------+----------+---------+
+"""
 
