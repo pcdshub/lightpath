@@ -13,9 +13,9 @@ import pytest
 from lightpath.ui import Illustrator
 
 
-def test_draw_beam(mps_path):
+def test_draw_beam(path):
     i = Illustrator()
-    l = i.draw_path(mps_path)
-    assert len(l.widgets) == 2*len(mps_path.devices)-1
+    l = i.draw_path(path)
+    assert len(l.widgets) == 2*len(path.devices)-1
 
 
