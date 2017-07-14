@@ -1,0 +1,4 @@
+pcdsdevices
+ophyd
+pcaspy
+pedl >= 0.2.0
