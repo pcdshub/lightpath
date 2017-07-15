@@ -18,7 +18,7 @@ from ophyd.utils.epics_pvs    import raise_if_disconnected
 ####################
 #     Package      #
 ####################
-from .errors import MPSFault, CoordinateError, PathError
+from .errors import CoordinateError, PathError
 
 
 logger = logging.getLogger(__name__)
@@ -52,8 +52,8 @@ class BeamPath(OphydObject):
 
     Attributes
     ----------
-    devices
-    mirrors
+    minimum_transmission : float
+        Minimum amount of transmission considered for beam presence
     """
     SUB_PTH_CHNG     = 'beampath_changed'
     SUB_MPSPATH_CHNG = 'mpspath_changed'
@@ -126,8 +126,8 @@ class BeamPath(OphydObject):
     @property
     def blocking_devices(self):
         """
-        A list of devices that are currently blocking the beam
-        or are in unknown positions
+        A list of devices that are currently inserted or are in unknown
+        positions
         """
         block = []
 
