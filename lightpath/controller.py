@@ -72,14 +72,14 @@ class LightController:
 
 
     @property
-    def faulted_devices(self):
+    def tripped_devices(self):
         """
-        List of all faulted devices along the beamline
+        List of all tripped MPS devices along the beamline
         """
         devices = list()
 
         for line in self.beamlines.values():
-            devices.extend(line.faulted_devices)
+            devices.extend(line.tripped_devices)
 
         return list(set(devices))
 
