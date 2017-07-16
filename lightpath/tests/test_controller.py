@@ -63,16 +63,16 @@ def test_controller_device_summaries(lcls):
     assert len(controller.incident_devices) == 1
     lcls[3].remove()
 
-    #No faulted devices
-    assert controller.faulted_devices == []
-    #Common faulted devices
+    #No tripped devices
+    assert controller.tripped_devices == []
+    #Common tripped devices
     lcls[0].insert()
-    assert controller.faulted_devices == [lcls[0]]
+    assert controller.tripped_devices == [lcls[0]]
     #Multiple faults
     controller.hxr.path[8].insert()
-    assert len(controller.faulted_devices) == 2
+    assert len(controller.tripped_devices) == 2
     controller.hxr.path[2].insert()
-    assert len(controller.faulted_devices) == 2
+    assert len(controller.tripped_devices) == 1
 
 
 def test_path_to(lcls):
