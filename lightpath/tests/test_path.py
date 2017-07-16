@@ -148,8 +148,8 @@ def test_join(path):
 
 def test_split(path):
     #Create two partial beampaths
-    first  = BeamPath(*path.path[:4])
-    second = BeamPath(*path.path[4:])
+    first  = BeamPath(*path.path[:5])
+    second = BeamPath(*path.path[5:])
     
     #Test split by device yields partial beampaths
     assert path.split(device=path.path[4])[0].path == first.path
