@@ -343,7 +343,7 @@ class BeamPath(OphydObject):
             Z position to split the paths
 
         device  : LightDevice, name, or base PV
-            The specified device will be the first device in the second
+            The specified device will be the last device in the first
             :class:`.BeamPath` object
 
         Returns
@@ -362,8 +362,8 @@ class BeamPath(OphydObject):
             raise ValueError("Split position {} is not within the range of "
                              "the path.".format(z))
 
-        return (BeamPath(*[d for d in self.devices if d.z <  z]),
-                BeamPath(*[d for d in self.devices if d.z >= z])
+        return (BeamPath(*[d for d in self.devices if d.z <= z]),
+                BeamPath(*[d for d in self.devices if d.z >  z])
                )
 
     @classmethod
