@@ -231,3 +231,24 @@ def branch():
     devices = sorted(devices, key=lambda d : d.prefix)
     #Create beampath
     return BeamPath(*devices, name='SIM')
+
+#Simplified LCLS layout
+@pytest.fixture(scope='function')
+def lcls():
+    return [Valve('fee_1',    z=0.,   beamline='HXR'),
+            Valve('fee_2',    z=2.,   beamline='HXR'),
+            Stopper('HX2',    z=9.,   beamline='HXR'),
+            IPIMB('xrt_ipm',  z=15.,  beamline='HXR'),
+            Crystal('M1H',    z=16.,  beamline='HXR', branch='XCS'),
+            Valve('xrt_0',    z=18.,  beamline='HXR'),
+            Crystal('M2H',    z=20.,  beamline='HXR', branch='MEC'),
+            IPIMB('hxr_ipm',  z=24.,  beamline='HXR'),
+            Valve('hxr_0',    z=25.,  beamline='HXR'),
+            Stopper('CXI',    z=31.,  beamline='HXR'),
+            Stopper('XCS',    z=32.,  beamline='XCS'),
+            Stopper('MEC',    z=30.,  beamline='MEC'),
+            IPIMB('mec_ipm',  z=24.,  beamline='MEC'),
+            Valve('mec_0',    z=25.,  beamline='MEC'),
+            IPIMB('xcs_ipm',  z=17.,  beamline='XCS'),
+            Valve('xcs_0',    z=22.,  beamline='XCS'),
+              ]
