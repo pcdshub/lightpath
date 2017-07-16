@@ -4,21 +4,25 @@ flexibility, and in order to avoid duplicating object implementations, any
 object can be entered into the path as long as it agrees with one of the
 interfaces below.
 
-The :class:`.LightInterface` covers the majority of LCLS devices. While the
-logical implementation of reading PVs and updating the reported state of the
-device is up to the object to implement, the lightpath will count on these
-functions to be accurate in order to determine the state of the beamline as a
-whole. :class:`.LightInterface` can be used for any object that enters the
-beam, regardless of whether it fully stops photons, for example an IPIMB target
-would still use this interface. The only exception is devices that have the
-potential that mark the transition from one beamline to another. These device
-will use the :class:`.BranchingInterface` For instance the XCS LODCM when the
-crystal is removed will allow beam to pass through to CXI.  However, when
-inserted, a portion of the beam is sent to XCS.
+The :class:`.LightInterface` covers the majority of LCLS devices. The logical
+implementation of reading PVs and updating the reported state of the device is
+up to the object to implement, the lightpath will count on these functions to
+be accurate in order to determine the state of the beamline as a whole. The
+:class:`.LightInterface` simplifies a device down to one of two states,
+inserted and removed. If a device is not found in either of these states it is
+considered unknown and a possible impediment to the path.  There are a number
+of devices that are regularly inserted into the beamline that do not block
+photons completely such as IPIMB targets and attenutators. These devices are
+incorporated by adjusting the :attr:`.LightInterface.transmission`, either to a
+fixed value or one which depends on other device readbacks.  The only type of
+devices that require a more copmlex interface are those that have the potential
+that mark the transition from one beamline to another. These device will use
+the :class:`.BranchingInterface. This includes mirrors and crystals that
+different hutches use to manipulate from the common line.
 
-The lightpath also surveys the devices for an attribute ``mps``. It is expected
+The lightpath also surveys devices for an attribute ``mps``. It is expected
 that if a device is in the MPS system, this attribute will return a sub-device
-that uses the :class:`.MPSInterface`
+that uses the :class:`.MPSInterface`.
 """
 ############
 # Standard #
@@ -81,9 +85,12 @@ class LightInterface(ComponentMeta, abc.ABCMeta):
 
 
     @abc.abstractmethod
-    def remove(self, wait=False, timeout=None, finished_cb=None):
+    def remove(self, wait=False, timeout=None, finished_cb=None, **kwargs):
         """
         Remove the device from the beampath
+
+        This should remove the device completely from the beamline with no
+        potential for interaction with incoming photons.
 
         Parameters
         ----------
