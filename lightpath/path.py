@@ -1,3 +1,18 @@
+"""
+The :class:`.BeamPath` is the main abstraction for the lightpath module,
+grouping together a set of devices using the :class:`.LightInterface` and
+representing the path between them as single object. While the manipulation of
+each of these object should be done at the device level, the
+:meth:`.BeamPath.clear` does provide a powerful tool to quickly change the
+status of the path.
+
+The :class:`.BeamPath` object is also not meant to be a rigid representation,
+:meth:`.BeamPath.split` and :meth:`.BeamPath.join` both allow for slicing and
+combining of different areas of the LCLS beamline. However, keep in mind that
+the path only knows the state of the devices it contains, so certain methods
+might not return an accurate representation of reality if an upstream device is
+affecting the beam.
+"""
 ####################
 # Standard Library #
 ####################
@@ -13,7 +28,7 @@ import numpy as np
 from prettytable    import PrettyTable
 from ophyd.ophydobj import OphydObject
 from ophyd.status   import wait as status_wait
-from ophyd.utils.epics_pvs    import raise_if_disconnected
+from ophyd.utils.epics_pvs import raise_if_disconnected
 
 ####################
 #     Package      #
@@ -41,7 +56,7 @@ class BeamPath(OphydObject):
 
     Raises
     ------
-    TypeError: 
+    TypeError:
         If a non-LightDevice object is supplied
 
     CoordinateError:
@@ -123,11 +138,13 @@ class BeamPath(OphydObject):
         """
         return sorted(self.devices, key=lambda dev : dev.z)
 
+
     @property
     def blocking_devices(self):
         """
         A list of devices that are currently inserted or are in unknown
-        positions
+        positions. This includes devices downstream of the first
+        :attr:`.impediment`
         """
         block = []
 
@@ -163,7 +180,9 @@ class BeamPath(OphydObject):
     @property
     def incident_devices(self):
         """
-        A list of devices the beam is incident on
+        A list of devices the beam is currently incident on. This includes the
+        current :attr:`.impediment` and any upstream devices that may be
+        inserted but have more transmission than :attr:`.minimum_transmission`
         """
         inserted = [d for d in self.path if d.inserted]
 
@@ -254,7 +273,8 @@ class BeamPath(OphydObject):
     @property
     def cleared(self):
         """
-        Whether beamline is clear of any devices
+        Whether beamline is clear of any devices that are below the
+        :attr:`.minimum_transmission`
         """
         return not any(self.blocking_devices)
 
@@ -272,17 +292,18 @@ class BeamPath(OphydObject):
         timeout : float, optional
             Duration to wait for device movements
 
-        ignore: LightDevice or iterable, optional
+        ignore: device or iterable, optional
             Leave devices in their current state without removing them
 
         passive : bool, optional
-            If True, passive devices will also be reviewed 
+            If False, devices that are inserted but don't attenuate the beam
+            below :attr:`.minimum_threshold` are ignored
 
         Returns
         -------
         statuses :
             Returns list of status objects returned by
-            :meth:`.LightDevice.remove`
+            :meth:`.LightInterface.remove`
         """
         logger.info('Clearing beampath {} ...'.format(self))
 
@@ -311,7 +332,7 @@ class BeamPath(OphydObject):
 
     def join(self, *beampaths):
         """
-        Join other beampaths with the current one
+        Join multiple beampaths with the current one
 
         Parameters
         ----------
