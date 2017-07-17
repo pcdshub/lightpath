@@ -25,11 +25,9 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
   #Grab all dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION  coverage pip jinja2 wheel ophyd pytest -c conda-forge -c lightsource2-tag 
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION  pcaspy coverage pip jinja2 wheel ophyd pytest -c conda-forge -c lightsource2-tag -c https://conda.anaconda.org/paulscherrerinstitute
   #Launch Conda environment
   - source activate test-environment
-  #Install pcaspy
-  - conda install -c https://conda.anaconda.org/paulscherrerinstitute pcaspy
   #Install pedl
   - git clone https://github.com/slaclab/pedl.git pedl
   - pushd pedl
