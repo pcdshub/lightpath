@@ -13,18 +13,14 @@ requirements:
 
 
     run:
+      - pedl
       - ophyd
-      - happi
       - numpy
-      - super_state_machine
-      - prettytable
       - pcaspy 
       - python
 
 test:
     imports:
-      - happi
-
+      - pyepics
     requires: 
-      - mongomock
       - pyepics
