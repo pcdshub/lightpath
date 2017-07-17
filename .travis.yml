@@ -1,5 +1,8 @@
 language: python
 
+env:
+  - PEDL_VERSION=v0.2.0
+
 python:
   # We don't actually use the Travis Python, but this keeps it organized.
   - "3.4"
@@ -22,11 +25,16 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
   #Grab all dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION super_state_machine coverage pip wheel ophyd pytest -c conda-forge -c lightsource2-tag 
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION  coverage pip jinja2 wheel ophyd pytest -c conda-forge -c lightsource2-tag 
   - conda install -c https://conda.anaconda.org/paulscherrerinstitute pcaspy
-  - conda install -c https://conda.anaconda.org/trendahl -c conda-forge  happi
+  #Launch Conda environment
   - source activate test-environment
-  - pip install mongomock 
+  #Clone pedl and install
+  - git clone https://github.com/slaclab/pedl.git pedl
+  - pushd pedl
+  - git checkout tags/$PEDL_VERSION
+  - python setup.py install
+  - popd
   - pip install codecov
   #Install
   - python setup.py install
