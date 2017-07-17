@@ -1,5 +1,10 @@
 LCLS Lightpath
 ==============
+.. image:: https://travis-ci.org/slaclab/lightpath.svg?branch=master
+    :target: https://travis-ci.org/slaclab/lightpath
+
+.. image:: https://codecov.io/github/slaclab/lightpath/coverage.svg?branch=master
+    :target: https://codecov.io/gh/slaclab/lightpath?branch=master
 Python module for control of LCLS beamlines
 
 By abstracting individual devices into larger collections of paths, operators
