@@ -1,4 +1,4 @@
-pcdsdevices
+git+https://github.com/slaclab/pcds-devices.git
 ophyd
 pcaspy
 pedl >= 0.2.0
