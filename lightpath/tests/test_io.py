@@ -19,9 +19,10 @@ logger = logging.getLogger()
 epics.ca.replace_printf_handler(fcn=logger.debug)
 
 @pytest.fixture(scope='module')
-def server():
+def server(device):
     #Setup
     server = lightpath.ui.broadcast.Broadcaster()
+    server.add_device(device)
     yield server
     #Catch-all
     server.cleanup()
@@ -39,15 +40,12 @@ def client_pv(pvname):
 
     return pvc
 
-def test_add_device(server, mps_device):
-    #Add device
-    server.add_device(mps_device)
-
+def test_add_device(server, device):
     #Start server
     server.run()
 
-    pvc = client_pv('LCLS:LIGHT:BASIC')
-    mps = client_pv('LCLS:LIGHT:BASIC.MPS')
+    pvc = client_pv('LCLS:LIGHT:VALVE')
+    mps = client_pv('LCLS:LIGHT:VALVE.MPS_WARN')
 
 
     #Check proper initialization of state
@@ -59,7 +57,7 @@ def test_add_device(server, mps_device):
     #assert mps.severity == 0
 
     #Check syncing of state
-    mps_device.insert()
+    device.insert()
     assert caget(pvc, as_string=True)   == 'inserted'
     assert pvc.severity == 2
 
@@ -72,13 +70,34 @@ def test_add_device(server, mps_device):
     mps.disconnect()
     del pvc
     del mps
-#    time.sleep(0.5)
+    time.sleep(0.5)
+
+def test_commands(server, device):
+    #Start server
+    server.run()
+    pvc = client_pv('LCLS:LIGHT:VALVE:CMD')
+    print(server.cmds)
+    #Insert the device
+    pvc.put('insert')
+    time.sleep(0.1)
+    assert device.inserted
+
+    #Remove the device
+    pvc.put('remove')
+    time.sleep(0.1)
+    assert device.removed
+    
+    #Cleanup
+    pvc.disconnect()
+    del pvc
     server.cleanup()
+    time.sleep(0.5)
 
 
-def test_add_path(server, beampath):
+
+def test_add_path(server, path):
     #Add path
-    server.add_path(beampath)
+    server.add_path(path)
 
     #Start server
     server.run()
@@ -86,49 +105,23 @@ def test_add_path(server, beampath):
     pvc = client_pv('LCLS:LIGHT:TST') 
 
     #No devices inserted
-    assert caget(pvc) == 9
+    assert caget(pvc) == 7
 
     #Second device inserted
-    beampath.insert('two')
+    path.one.insert()
     assert caget(pvc) == 1
 
     #Second and fourth device inserted
-    beampath.insert('three')
+    path.three.insert()
     assert caget(pvc) == 1
 
     #Only fourth device inserted
-    beampath.remove('two')
+    path.one.remove()
     assert caget(pvc) == 3
 
     #Cleanup
     pvc.disconnect()
     del pvc
 #    time.sleep(0.5)
-    server.cleanup()
 
-def test_commands(server, simple_device):
-    #Add device
-    server.add_device(simple_device)
-
-    #Start server
-    server.run()
-
-    pvc = client_pv('LCLS:LIGHT:SIMPLE:CMD')
-
-    #Insert the device
-    pvc.put('insert')
-    time.sleep(0.1)
-    assert simple_device.inserted
-
-    #Remove the device
-    pvc.put('remove')
-    time.sleep(0.1)
-    assert simple_device.removed
-    
-    
-    #Cleanup
-    pvc.disconnect()
-    del pvc
-#    time.sleep(0.5)
-    server.cleanup()
 

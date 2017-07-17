@@ -1,177 +1,143 @@
+"""
+While the :class:`.BeamPath` object provides basic control functionality, the
+:class:`.LightController` is what does the organization of all of LCLS's
+devices. After parsing through all of the given devices, each beamline is
+contsructed as a :class:`.BeamPath` object. This includes not only devices on
+the upstream beamline but all of the beamlines before it. For example, the MEC
+beampath will include devices in both the FEE and the XRT. The
+:class:`.LightController` handles this logic as well as a basic overview of
+where the beam is and what the state of the MPS system is currently. 
+"""
 ####################
 # Standard Library #
 ####################
-import inspect
 import logging
-
 ####################
 #    Third Party   #
 ####################
-from happi import Client
 
 ####################
 #     Package      #
 ####################
-from . import subtypes
-from .errors import PathError
-from .device import LightDevice
+from .path import BeamPath
+
+logger = logging.getLogger(__name__)
 
 class LightController:
     """
     Controller for the LCLS Lightpath
 
+    Handles grouping devices into beamlines and joining paths together. Also
+    provides an overview of the state of the entire beamline
 
-    Attributes
+    Parameters
     ----------
-    paths
-    devices
-    device_types
+    args :
+        LCLS Devices
     """
-    conn = None
 
-    def __init__(self, host=None, port=None):
+    def __init__(self, *devices):
+        #Create segmented beampaths beamlines
+        self.beamlines = dict((line, BeamPath(*[dev for dev in devices
+                                                if dev.beamline == line],
+                                                name=line))
+                              for line in set(d.beamline for d in devices))
 
-        #Connect to Happi Database
-        self.conn    = Client(host=host, port=port)
-        self.paths   = []
-        
-        #Load devices and beamlines
-        raw = [d for d in self.conn.search({}, as_dict=True)]
-#               if d.get('lightpath', False)]
+        #Iterate through creating complete paths 
+        for bp in sorted(self.beamlines.values(),
+                         key = lambda x : x.path[0].z):
+            logger.debug("Assembling complete beamline {} ...".format(bp.name))
 
-        #Gather device mapping
-        self.device_types = dict((cls.container, cls)
-                                 for cls in inspect.getmembers(subtypes,
-                                                               inspect.isclass)
-                                 if issubclass(cls, LightDevice))
+            #Grab branches off the beamline
+            for branch in bp.branches:
+                logger.info("Found branches onto beamlines {} from {} "
+                             "".format(', '.join(branch.branches),
+                                       branch.name))
+                for destination in branch.branches:
+                    if destination != bp.name:
+                        try:
+                            #Split path up before branching device
+                            prior, after = bp.split(device=branch)
+                            #Join with downstream path
+                            logger.debug("Joining {} and {}".format(bp.name,
+                                                                    destination))
+                            self.beamlines[destination] = self.beamlines[destination].join(prior)
 
-
-        devices = []
-        for info in raw:
-            try:
-                cls = self.device_types[raw['type']]
-
-            except KeyError as e:
-                logger.error('Unrecognized device type {} for {}'
-                             ''.format(e, info['base']))
-                cls = LightDevice
-
-            finally:
-                devices.append(cls(info.pop('base'), **info))
-
-        #Temporary Data Structure before instantiating paths
-        beamlines = dict.fromkeys(set([d.beamline
-                                        for d in devices]),
-                                        {'parents'  : list(),
-                                         'beampath' : None})
-
-        #Create segemnted paths
-        for line in beamlines.keys():
-            beamlines[line]['beampath'] = BeamPath([d
-                                                    for d in devices
-                                                    if d.beamline==line],
-                                                    name=line)
-        #Map branches together
-        #TODO catch bad branches
-        for (line, branches) in [(d.beamline, d.branching)
-                                  for d in devices
-                                  if d.branching]:
-            for branch in branches:
-                try:
-                    beamlines[branch]['branches'].append(line)
-
-                except KeyError:
-                    raise PathError('No beamline found with name '
-                                    '{}'.format(branch))
-
-        #Create joined beampaths
-        for line, info in beamlines.items():
-
-            path = info['beampath']
-            if info.get('parents'):
-                for source in info['parents']:
-                    path.join(beamlines[source]['beampath'])
-
-            #Make accessible
-            self.paths[line] = path
-            setattr(self, line, path)
-
-        #Organize devices
-        self.devices = list(set([d for p in self.paths for d in p.devices]))
+                        except KeyError:
+                            logger.critical("Device {} has invalid branching "
+                                            "destination {}".format(branch.name,
+                                                                    destination))
+            #Set as attribute for easy access
+            setattr(self, bp.name.replace(' ','_').lower(),
+                    self.beamlines[bp.name])
 
 
     @property
     def destinations(self):
         """
-        Current beam destinations
+        Current device destinations for the LCLS photon beam
         """
-        d = set([p.impediment for p in self.paths if p.impediment])
-
-        if not d:
-            return None
-
-        else:
-            return d
+        return list(set([p.impediment for p in self.beamlines.values()
+                         if p.impediment and p.impediment not in p.branches]))
 
 
-    def find_device(self, **kwargs):
+    @property
+    def tripped_devices(self):
         """
-        Find a device along the beamline
-
-        If multiple devices are found, only the one is returned.
-
-        Parameters
-        ----------
-        kwargs :
-            Search the database for a device by giving key, value pairs
-
-
-        Returns
-        -------
-        device:
-            A device of type or subtype :class:`.LightDevice`
-
-
-        Raises
-        ------
-        SearchError
-            If no device is found that meets the specifications
-
-        See Also
-        --------
-        :meth:`.happi.Client.load_device`
+        List of all tripped MPS devices in LCLS
         """
-        device = self.conn.load_device(*args, **kwargs)
+        devices = list()
 
-        if not device.beamline:
-            return None
+        for line in self.beamlines.values():
+            devices.extend(line.tripped_devices)
 
-        #Search in path for object instantiated in BeamPath
-        path = self.paths[device.beamline]
-
-        return path._device_lookup(device.base)
+        return list(set(devices))
 
 
-    def path_to(self, **kwargs):
+    @property
+    def devices(self):
+        """
+        All of the devices loaded into beampaths
+        """
+        devices = list()
+
+        for line in self.beamlines.values():
+            devices.extend(line.devices)
+
+        return list(set(devices))
+
+
+    @property
+    def incident_devices(self):
+        """
+        List of all devices in contact with photons along the beamline
+        """
+        devices = list()
+
+        for line in self.beamlines.values():
+            devices.extend(line.incident_devices)
+
+        return list(set(devices))
+
+
+    def path_to(self, device):
         """
         Create a BeamPath from the source to the requested device
 
         Parameters
         ----------
-        kwargs :
-            Search the database for a device by giving key, value pairs
+        device : Device
+            A device somewhere in LCLS
 
-        Raises
-        ------
-        SearchError
-            If the device is not found 
-
-        See Also
-        --------
-        :meth:`.LightController.find_device`
+        Returns
+        -------
+        path : :class:`BeamPath`
+            Path to and including given device
         """
-        device = self.find_device(**kwargs)
+        try:
+            prior, after = self.beamlines[device.beamline].split(device=device)
 
-        prior, after = self.paths[device.beamline].split(device)
+        except KeyError:
+            raise ValueError("Beamline {} not found".format(device.beamline))
 
         return prior
