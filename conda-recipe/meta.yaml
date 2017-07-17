@@ -1,0 +1,26 @@
+{% set data = load_setup_py_data() %}
+
+package:
+    name    : lightpath
+    version : {{ data.get('version') }}
+
+source:
+    path: ..
+
+requirements:
+    build:
+       - python
+
+
+    run:
+      - pedl
+      - ophyd
+      - numpy
+      - pcaspy 
+      - python
+
+test:
+    imports:
+      - pyepics
+    requires: 
+      - pyepics

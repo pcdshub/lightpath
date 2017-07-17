@@ -1,0 +1,2 @@
+include versioneer.py
+include lightpath/_version.py

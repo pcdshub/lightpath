@@ -1,17 +1,17 @@
-.. LCLS Lightpath documentation master file, created by
-   sphinx-quickstart on Mon Jan  9 22:14:23 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to LCLS Lightpath's documentation!
-==========================================
-
-Contents:
+.. include:: ../../README.rst
 
 .. toctree::
    :maxdepth: 1
+   :caption: Controlling the beamline
+   :hidden: 
 
-   device.rst
-   path.rst
-   mps.rst
    controller.rst
+   path.rst
+   device.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: User Inteface
+   :hidden: 
+
+   broadcast.rst
