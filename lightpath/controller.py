@@ -1,3 +1,13 @@
+"""
+While the :class:`.BeamPath` object provides basic control functionality, the
+:class:`.LightController` is what does the organization of all of LCLS's
+devices. After parsing through all of the given devices, each beamline is
+contsructed as a :class:`.BeamPath` object. This includes not only devices on
+the upstream beamline but all of the beamlines before it. For example, the MEC
+beampath will include devices in both the FEE and the XRT. The
+:class:`.LightController` handles this logic as well as a basic overview of
+where the beam is and what the state of the MPS system is currently. 
+"""
 ####################
 # Standard Library #
 ####################
@@ -65,7 +75,7 @@ class LightController:
     @property
     def destinations(self):
         """
-        Current beam ending points
+        Current device destinations for the LCLS photon beam
         """
         return list(set([p.impediment for p in self.beamlines.values()
                          if p.impediment and p.impediment not in p.branches]))
@@ -74,7 +84,7 @@ class LightController:
     @property
     def tripped_devices(self):
         """
-        List of all tripped MPS devices along the beamline
+        List of all tripped MPS devices in LCLS
         """
         devices = list()
 
@@ -87,7 +97,7 @@ class LightController:
     @property
     def devices(self):
         """
-        All LCLS Devices
+        All of the devices loaded into beampaths
         """
         devices = list()
 
@@ -100,7 +110,7 @@ class LightController:
     @property
     def incident_devices(self):
         """
-        List of all faulted devices along the beamline
+        List of all devices in contact with photons along the beamline
         """
         devices = list()
 
@@ -117,6 +127,12 @@ class LightController:
         Parameters
         ----------
         device : Device
+            A device somewhere in LCLS
+
+        Returns
+        -------
+        path : :class:`BeamPath`
+            Path to and including given device
         """
         try:
             prior, after = self.beamlines[device.beamline].split(device=device)

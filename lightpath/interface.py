@@ -17,12 +17,8 @@ incorporated by adjusting the :attr:`.LightInterface.transmission`, either to a
 fixed value or one which depends on other device readbacks.  The only type of
 devices that require a more copmlex interface are those that have the potential
 that mark the transition from one beamline to another. These device will use
-the :class:`.BranchingInterface. This includes mirrors and crystals that
+the :class:`.BranchingInterface`. This includes mirrors and crystals that
 different hutches use to manipulate from the common line.
-
-The lightpath also surveys devices for an attribute ``mps``. It is expected
-that if a device is in the MPS system, this attribute will return a sub-device
-that uses the :class:`.MPSInterface`.
 """
 ############
 # Standard #
@@ -156,6 +152,10 @@ class BranchingInterface(LightInterface):
 class MPSInterface(ComponentMeta, abc.ABCMeta):
     """
     Interface for MPS device
+
+    The lightpath surveys devices for an attribute ``mps``. It is expected
+    that if a device is in the MPS system, this attribute will return a sub-device
+    that uses this interface
     """
     @abc.abstractproperty
     def faulted(self):

@@ -1,5 +1,5 @@
-Broadcast
-=========
+Python Channel Access Server
+============================
 
 .. automodule:: lightpath.ui.broadcast
 

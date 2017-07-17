@@ -2,10 +2,16 @@
 
 .. toctree::
    :maxdepth: 1
-   :caption: Lightpath
+   :caption: Controlling the beamline
    :hidden: 
 
-   device.rst
-   path.rst
    controller.rst
+   path.rst
+   device.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: User Inteface
+   :hidden: 
+
    broadcast.rst
