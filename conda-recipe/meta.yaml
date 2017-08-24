@@ -11,13 +11,13 @@ requirements:
     build:
        - python
 
-
     run:
       - pedl
       - ophyd
       - numpy
       - pcaspy 
       - python
+      - prettytable
 
 test:
     imports:
