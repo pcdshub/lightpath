@@ -315,7 +315,7 @@ class BeamPath(OphydObject):
         #Remove devices
         status = [device.remove(timeout=timeout)
                   for device in target_devices
-                  if device in self.blocking_devices]
+                  if not device.removed]
 
         #Wait parameters
         if wait:
@@ -457,6 +457,7 @@ class BeamPath(OphydObject):
         target_devices = [device for device in self.devices
                           if device not in ignore]
 
+        logger.debug("Targeting devices {} ...".format(target_devices))
         logger.debug('Ignoring devices {} ...'.format(ignore))
 
         return target_devices, ignore

@@ -133,7 +133,10 @@ def test_clear(path):
     status = path.clear(wait=False)
     #Assert the path is clear
     assert path.cleared
-
+    #Clear passive devices
+    path.path[5].insert()
+    status = path.clear(wait=False, passive=True)
+    assert path.incident_devices == []
 
 def test_join(path):
     #Create two partial beampaths
