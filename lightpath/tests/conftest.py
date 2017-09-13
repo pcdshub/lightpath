@@ -22,7 +22,7 @@ from lightpath import MPSInterface, LightInterface, BeamPath
 #################
 #Enable the logging level to be set from the command line
 def pytest_addoption(parser):
-    parser.addoption("--log", action="store", default="INFO",
+    parser.addoption("--log", action="store", default="DEBUG",
                      help="Set the level of the log")
     parser.addoption("--logfile", action="store", default=None,
                      help="Write the log output to specified file path")
