@@ -17,6 +17,18 @@ from ophyd.status import DeviceStatus
 ##########
 from lightpath import MPSInterface, LightInterface, BeamPath
 
+
+##################
+# Check for PEDL #
+##################
+try:
+    import pedl
+    _pedl = True
+except ImportError:
+    _pedl = False
+
+requires_pedl = pytest.mark.skipif(not _pedl,
+                                   reason='pedl not available')
 #################
 # Logging Setup #
 #################
