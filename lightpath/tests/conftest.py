@@ -17,12 +17,24 @@ from ophyd.status import DeviceStatus
 ##########
 from lightpath import MPSInterface, LightInterface, BeamPath
 
+
+##################
+# Check for PEDL #
+##################
+try:
+    import pedl
+    _pedl = True
+except ImportError:
+    _pedl = False
+
+requires_pedl = pytest.mark.skipif(not _pedl,
+                                   reason='pedl not available')
 #################
 # Logging Setup #
 #################
 #Enable the logging level to be set from the command line
 def pytest_addoption(parser):
-    parser.addoption("--log", action="store", default="INFO",
+    parser.addoption("--log", action="store", default="DEBUG",
                      help="Set the level of the log")
     parser.addoption("--logfile", action="store", default=None,
                      help="Write the log output to specified file path")

@@ -5,6 +5,7 @@
    :caption: Controlling the beamline
    :hidden: 
 
+   tutorial.rst
    controller.rst
    path.rst
    device.rst

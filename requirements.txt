@@ -1,4 +1,3 @@
-git+https://github.com/slaclab/pedl.git
 git+https://github.com/slaclab/pcds-devices.git
 ophyd
 pcaspy

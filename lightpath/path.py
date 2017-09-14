@@ -16,7 +16,6 @@ affecting the beam.
 ####################
 # Standard Library #
 ####################
-import sys
 import copy
 import logging
 from collections import Iterable
@@ -196,7 +195,7 @@ class BeamPath(OphydObject):
             return [d for d in inserted if d.z <= self.impediment.z]
 
 
-    def show_devices(self, file=sys.stdout):
+    def show_devices(self, file=None):
         """
         Print a table of the devices along the beamline
 
@@ -315,7 +314,7 @@ class BeamPath(OphydObject):
         #Remove devices
         status = [device.remove(timeout=timeout)
                   for device in target_devices
-                  if device in self.blocking_devices]
+                  if not device.removed]
 
         #Wait parameters
         if wait:
@@ -457,6 +456,7 @@ class BeamPath(OphydObject):
         target_devices = [device for device in self.devices
                           if device not in ignore]
 
+        logger.debug("Targeting devices {} ...".format(target_devices))
         logger.debug('Ignoring devices {} ...'.format(ignore))
 
         return target_devices, ignore
