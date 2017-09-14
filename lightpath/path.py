@@ -16,7 +16,6 @@ affecting the beam.
 ####################
 # Standard Library #
 ####################
-import sys
 import copy
 import logging
 from collections import Iterable
@@ -196,7 +195,7 @@ class BeamPath(OphydObject):
             return [d for d in inserted if d.z <= self.impediment.z]
 
 
-    def show_devices(self, file=sys.stdout):
+    def show_devices(self, file=None):
         """
         Print a table of the devices along the beamline
 
