@@ -17,23 +17,12 @@ from ophyd.status import DeviceStatus
 ##########
 from lightpath import BeamPath
 
-##################
-# Check for PEDL #
-##################
-try:
-    import pedl
-    _pedl = True
-except ImportError:
-    _pedl = False
-
-requires_pedl = pytest.mark.skipif(not _pedl,
-                                   reason='pedl not available')
 #################
 # Logging Setup #
 #################
 #Enable the logging level to be set from the command line
 def pytest_addoption(parser):
-    parser.addoption("--log", action="store", default="DEBUG",
+    parser.addoption("--log", action="store", default="INFO",
                      help="Set the level of the log")
     parser.addoption("--logfile", action="store", default=None,
                      help="Write the log output to specified file path")
@@ -120,7 +109,7 @@ class Valve(Device):
         return DeviceStatus(self, done=True, success=True)
 
 
-    def remove(self, timeout=None, finished_cb=None):
+    def remove(self, wait=False, timeout=None, finished_cb=None):
         """
         Remove the device from the beampath
         """
@@ -246,20 +235,20 @@ def branch():
 #Simplified LCLS layout
 @pytest.fixture(scope='function')
 def lcls():
-    return [Valve('fee_1',    z=0.,   beamline='HXR'),
-            Valve('fee_2',    z=2.,   beamline='HXR'),
-            Stopper('HX2',    z=9.,   beamline='HXR'),
-            IPIMB('xrt_ipm',  z=15.,  beamline='HXR'),
-            Crystal('M1H',    z=16.,  beamline='HXR', branch='XCS'),
-            Valve('xrt_0',    z=18.,  beamline='HXR'),
-            Crystal('M2H',    z=20.,  beamline='HXR', branch='MEC'),
-            IPIMB('hxr_ipm',  z=24.,  beamline='HXR'),
-            Valve('hxr_0',    z=25.,  beamline='HXR'),
-            Stopper('CXI',    z=31.,  beamline='HXR'),
-            Stopper('XCS',    z=32.,  beamline='XCS'),
-            Stopper('MEC',    z=30.,  beamline='MEC'),
-            IPIMB('mec_ipm',  z=24.,  beamline='MEC'),
-            Valve('mec_0',    z=25.,  beamline='MEC'),
-            IPIMB('xcs_ipm',  z=17.,  beamline='XCS'),
-            Valve('xcs_0',    z=22.,  beamline='XCS'),
+    return [Valve('FEE Valve 1',   z=0.,   beamline='HXR'),
+            Valve('FEE Valve 2',   z=2.,   beamline='HXR'),
+            Stopper('S2 Stopper',  z=9.,   beamline='HXR'),
+            IPIMB('XRT IPM',       z=15.,  beamline='HXR'),
+            Crystal('XRT M1H',     z=16.,  beamline='HXR', branch='XCS'),
+            Valve('XRT Valve',     z=18.,  beamline='HXR'),
+            Crystal('XRT M2H',     z=20.,  beamline='HXR', branch='MEC'),
+            IPIMB('HXR IPM',       z=24.,  beamline='HXR'),
+            Valve('HXR Valve',     z=25.,  beamline='HXR'),
+            Stopper('S5 Stopper',  z=31.,  beamline='HXR'),
+            Stopper('S4 Stopper',  z=32.,  beamline='XCS'),
+            Stopper('S6 Stopper',  z=30.,  beamline='MEC'),
+            IPIMB('MEC IPM',       z=24.,  beamline='MEC'),
+            Valve('MEC Valve',     z=25.,  beamline='MEC'),
+            IPIMB('XCS IPM',       z=17.,  beamline='XCS'),
+            Valve('XCS Valve',     z=22.,  beamline='XCS'),
               ]
