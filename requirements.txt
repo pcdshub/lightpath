@@ -1,2 +1,6 @@
-ophyd
+numpy
+ophyd==0.6.1
 prettytable
+PyQt5
+git+https://github.com/hhslepicka/pydm@base_plugin
+git+https://github.com/lcls-pcds/QDarkStyleSheet
