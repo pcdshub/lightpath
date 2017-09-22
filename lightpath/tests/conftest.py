@@ -15,8 +15,7 @@ from ophyd.status import DeviceStatus
 ##########
 # Module #
 ##########
-from lightpath import MPSInterface, LightInterface, BeamPath
-
+from lightpath import BeamPath
 
 ##################
 # Check for PEDL #
@@ -65,7 +64,7 @@ class Status:
     unknown  = 2
 
 
-class Valve(Device, metaclass=LightInterface):
+class Valve(Device):
     """
     Basic device to facilitate in/out positioning
     """
@@ -174,7 +173,7 @@ class Crystal(Valve):
             return self.branches
 
 
-class MPS(Device, metaclass=MPSInterface):
+class MPS(Device):
     """
     Simulated MPS device
     """
