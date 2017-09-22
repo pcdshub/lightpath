@@ -8,7 +8,6 @@
    tutorial.rst
    controller.rst
    path.rst
-   device.rst
 
 .. toctree::
    :maxdepth: 1
