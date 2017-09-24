@@ -1,4 +1,6 @@
-git+https://github.com/slaclab/pcds-devices.git
-ophyd
-pcaspy
+numpy
+ophyd==0.6.1
 prettytable
+PyQt5
+git+https://github.com/slaclab/pydm
+git+https://github.com/lcls-pcds/QDarkStyleSheet

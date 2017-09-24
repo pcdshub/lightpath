@@ -9,42 +9,31 @@ import logging
 ###############
 # Third Party #
 ###############
-from pedl.choices import ColorChoice
+import pydm
+import qdarkstyle
+
 ##########
 # Module #
 ##########
 import lightpath.tests
-from lightpath.ui import Illustrator, Broadcaster
+from lightpath.ui import LightApp
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('lightpath')
+logging.basicConfig(level='DEBUG')
 
 
 def main():
-    pth = lightpath.tests.path()
-
-    #Create IOC
-    b = Broadcaster()
-    b.add_path(pth)
-
-    #Start IOC
-    b.run()
-
-    #Create UI
-    i = Illustrator()
-    beam = i.draw_path(pth)
-    i.app.window.setLayout(beam, resize=True)
-    i.save('test.edl')
-
-    #Launch the window
-    try:
-        i.show()
-    #Report exception if EDM executable is not found
-    except OSError as e:
-        print(e)
-
-    #Stop the IOC
-    b.cleanup()
-
+    #Gather devices
+    lcls = lightpath.tests.lcls()
+    [dev.insert() for dev in lcls]
+    #Create Application
+    app   = pydm.PyQt.QtGui.QApplication([])
+    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+    #Create Lightpath
+    light = LightApp(*lcls)
+    light.show()
+    #Execute 
+    app.exec_()
 
 if __name__ == '__main__':
     main()

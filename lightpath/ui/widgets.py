@@ -4,15 +4,17 @@ Definitions for Lightpath Widgets
 ############
 # Standard #
 ############
-import copy
 import logging
+from enum import Enum
+from os   import path
 
 ###############
 # Third Party #
 ###############
-import pedl
-from pedl.choices import ColorChoice, AlignmentChoice
-from pedl.widgets import Rectangle, StaticText, MessageButton
+from pydm import Display
+from pydm.PyQt.QtCore     import pyqtSlot, Qt
+from pydm.PyQt.QtGui      import QSizePolicy
+from pydm.widgets.drawing import PyDMDrawingRectangle
 
 ##########
 # Module #
@@ -20,170 +22,136 @@ from pedl.widgets import Rectangle, StaticText, MessageButton
 
 logger = logging.getLogger(__name__)
 
-
-class LightWidget(pedl.StackedLayout):
+class LightRow(Display):
     """
-    Generic Widget for LightDevice
+    Basic Widget to display LightDevice information
+
+    The widget shows the device information and state, updating looking at the
+    devices :attr:`.inserted` and :attr:`.removed` attributes. The
+    :attr:`.remove_button` also allows the user to remove devices by calling
+    the :meth:`.remove` method of the given device. Finally, PyDMRectangle is
+    used to show the current path of the beam through the table
+
+    Parameters
+    ----------
+    device : obj
+
+    path : BeamPath
+
+    parent : QObject, optional
     """
-    #Default Widget sizes
-    shape_size   = (30,  30)
-    button_size  = (60,  15)
-    label_size   = (100, 12)
-    frame_margin = 10
-    control_drop = 10 
+    def __init__(self, device, path, parent=None):
+        super().__init__(parent=parent)
+        self.device = device
+        self.path   = path
+        #Create labels 
+        self.name_label.setText(device.name)
+        self.prefix_label.setText('({})'.format(device.prefix))
+        #Connect button to slot
+        self.remove_button.clicked.connect(self.remove)
+        #Create Beam Indicator
+        self.indicator = PyDMDrawingRectangle()
+        self.indicator.setMinimumSize(40, 20)
+        self.indicator.setSizePolicy(QSizePolicy.Fixed,
+                                     QSizePolicy.Expanding)
+        self.widget_layout.insertWidget(0, self.indicator)
+        #Run once for correct state initialization
+        self.update_state()
+        self.update_mps()
+        self.update_path()
+        #Subscribe device to state changes
+        self.path.subscribe(self.update_path, run=False)
+        self.device.subscribe(self.update_state, run=False)
+        self.path.subscribe(self.update_mps,
+                            event_type=path.SUB_MPSPATH_CHNG,
+                            run=False)
 
-    def __init__(self, prefix, name, **kwargs):
-        super().__init__(name=name,
-                         alignment = AlignmentChoice.Center,
-                         **kwargs)
+    def update_path(self, *args,  **kwargs):
+        """
+        Update the PyDMRectangle to show the device as in the beam or not
+        """
+        #If our device is before or at the impediment, it is lit
+        if not self.path.impediment or (self.device.z
+                                        <= self.path.impediment.z):
+            self.indicator._default_color = Qt.cyan
+        #Otherwise, it is off
+        else:
+            self.indicator._default_color = Qt.gray
+        #Update widget display
+        self.indicator.update()
 
-        #Store PV prefix
-        self.prefix = prefix
+    def update_mps(self, *args, **kwargs):
+        """
+        Update the MPS status of the frame
 
+        The frame of the row will be red if the device is tripping the beam,
+        yellow if it is faulted but a full trip is being prevented by an
+        upstream device
+        """
+        if self.device in self.path.tripped_devices:
+            self.frame.setStyleSheet("#frame {border: 2px solid red}")
+
+        elif self.device in self.path.faulted_devices:
+            self.frame.setStyleSheet("#frame {border: 2px solid \
+                                                         rgb(255,215,0)}")
+        else:
+            self.frame.setStyleSheet("#frame {border: 2px solid black}")
+
+    def update_state(self, *args, **kwargs):
+        """
+        Update the state label
         
-        #Create central layout
-        l = pedl.VBoxLayout(spacing=self.control_drop,
-                            alignment=AlignmentChoice.Center)
-        l.addWidget(self.label)
-        l.addWidget(self.shape)
-        l.addLayout(self.control)
-        
-        #Add background MPS frame
-        self.addLayout(self.frame(l))
-
-        #Add to stack
-        self.addLayout(l)
-
-
-    @property
-    def shape(self):
+        The displayed state can be one of ``Unknown`` , ``Inserted``,
+        ``Removed`` or ``Error``, with ``Unknown`` being if the device is not
+        inserted or removed, and error being if the device is reporting as both
+        inserted and removed. The color of the label is also adjusted to either
+        green or red to quickly 
         """
-        Basic widget shape
+        states = Enum('states', ('Unknown', 'Inserted', 'Removed', 'Error'))
+        #Interpret state
+        try:
+            state  = 1 + int(self.device.inserted) + 2*int(self.device.removed)
+        except Exception as exc:
+            logger.error(exc)
+            state = states.Error.value
+        #Set label to state description
+        self.state_label.setText(states(state).name)
+        #Set the color of the label
+        if state == states.Removed.value:
+            self.state_label.setStyleSheet("QLabel {color : rgb(124, 252,0)}")
+        else:
+            self.state_label.setStyleSheet("QLabel {color : red}")
+        #Disable the button
+        self.remove_button.setEnabled(state!=states.Removed.value)
+
+    @pyqtSlot()
+    def remove(self):
         """
-        r = Rectangle(w=self.shape_size[0],
-                      h=self.shape_size[1],
-                      alarmPv=self.prefix,
-                      alarm=True,
-                      fill=ColorChoice.Green,
-                      lineWidth=3)
-        return r
-
-    @property
-    def label(self):
+        Remove the device from the beamline
         """
-        Label for device
+        logger.info("Removing device %s ...", self.device.name)
+        try:
+            self.device.remove(wait=False)
+        except Exception as exc:
+            logger.error(exc)
+
+    def ui_filename(self):
         """
-        l = StaticText(text=self.name,
-                       w=self.label_size[0],
-                       h=self.label_size[1],
-                       font = pedl.Font(size=12, bold=True),
-                       alignment=AlignmentChoice.Center)
-        return l
-
-
-    def frame(self, lay):
+        Name of designer UI file
         """
-        Frame for MPS alert
+        return 'lightrow.ui'
+
+    def ui_filepath(self):
         """
-        l = pedl.StackedLayout()
-
-        r = Rectangle(w=lay.w+self.frame_margin,
-                      h=lay.h+self.frame_margin,
-                      lineWidth=3)
-        #Add warning frame
-        warn = copy.copy(r)
-        warn.lineColor  = ColorChoice.Yellow
-        warn.visibility = pedl.Visibility(pv=self.prefix+'.MPS_WARN',
-                                          max=1, inverted=True)
-        l.addWidget(warn)
-
-        #Add tripped frame
-        trip = copy.copy(r)
-        trip.lineColor  = ColorChoice.Red
-        trip.visibility = pedl.Visibility(pv=self.prefix+'.MPS_TRIP',
-                                          max=1, inverted=True)
-        l.addWidget(trip)
-
-
-        return l
-
-    @property
-    def control(self):
+        Full path to :attr:`.ui_filename`
         """
-        Control box for insert / remove control
+        return path.join(path.dirname(path.realpath(__file__)),
+                         self.ui_filename())
+
+    def clear_sub(self):
         """
-        #Button layout
-        l    = pedl.VBoxLayout(spacing=2)
-
-        
-        button  = MessageButton(font=pedl.Font(size=12, bold=True),
-                                fontColor=ColorChoice.Blue,
-                                controlPv=self.prefix+':CMD',
-                                lineColor=ColorChoice.Black,
-                                w=self.button_size[0],
-                                h=self.button_size[1])
-       
-        #Create buttons
-        _in  =  copy.copy(button)
-        _in.value, _in.label = 'insert','Insert'
-        
-        _out  =  copy.copy(button)
-        _out.value, _out.label = 'remove','Remove'
-        
-        #Add to layout
-        l.addWidget(_in)
-        l.addWidget(_out)
-        return l
-
-
-
-class PipeWidget(pedl.StackedLayout):
-
-    width  = 100
-    height = 20
-
-    def __init__(self, prefix, index, _max,  **kwargs):
-        super().__init__(**kwargs)
-        #Store index of beampipe
-        self.prefix = prefix
-        self.index  = index
-        self.max    = _max
-
-        #Draw layered beampipes 
-        self.addWidget(self.empty)
-        self.addWidget(self.full)
-
-
-    @property
-    def beampipe(self):
+        Clear the subscription event
         """
-        Basic beampipe to be reimplemented by different states
-        """
-        r = Rectangle(w=self.width, h=self.height,
-                      lineColor=ColorChoice.Black,
-                      lineWidth=2)
-        return r
-
-
-    @property
-    def empty(self):
-        """
-        Empty beampipe
-        """
-        r = self.beampipe
-        r.fill = ColorChoice.Grey
-        return r
-
-
-    @property
-    def full(self):
-        """
-        Beampipe when beam is present
-        """
-        r = self.beampipe
-        r.fill = ColorChoice.Cyan
-        r.visibility.pv  = self.prefix
-        r.visibility.min = self.index 
-        r.visibility.max = self.max 
-        
-        return r
+        self.device.clear_sub(self.update_state)
+        self.path.clear_sub(self.update_mps)
+        self.path.clear_sub(self.update_path)

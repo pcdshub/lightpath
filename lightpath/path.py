@@ -69,9 +69,13 @@ class BeamPath(OphydObject):
     minimum_transmission : float
         Minimum amount of transmission considered for beam presence
     """
+    #Subscription Information
     SUB_PTH_CHNG     = 'beampath_changed'
     SUB_MPSPATH_CHNG = 'mpspath_changed'
+    _default_sub = SUB_PTH_CHNG
+    #Transmission setting
     minimum_transmission = 0.1
+    
     def __init__(self, *devices, name=None):
         super().__init__(name=name)
         self.devices = devices

@@ -9,9 +9,3 @@
    controller.rst
    path.rst
 
-.. toctree::
-   :maxdepth: 1
-   :caption: User Inteface
-   :hidden: 
-
-   broadcast.rst
