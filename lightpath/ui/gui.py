@@ -14,6 +14,10 @@ from pydm import Display
 from pydm.PyQt.QtCore import pyqtSlot
 from pydm.PyQt.QtGui  import QPushButton, QWidget, QVBoxLayout
 
+from happi import Client
+from happi.backends import JSONBackend
+from pcdsdevices.happireader import construct_device
+
 ##########
 # Module #
 ##########
@@ -21,7 +25,6 @@ from .widgets import LightRow
 from ..controller import LightController
 
 logger = logging.getLogger(__name__)
-
 
 class LightApp(Display):
     """
@@ -155,7 +158,6 @@ class LightApp(Display):
 
         #Add all the widgets to the display
         for row in rows:
-            #print(row.device)
             self.rowLayout.addWidget(row)
 
     def ui_filename(self):
@@ -170,3 +172,45 @@ class LightApp(Display):
         """
         return path.join(path.dirname(path.realpath(__file__)),
                          self.ui_filename())
+
+    @classmethod
+    def from_json(cls, json, beamline=None, parent=None,  **kwargs):
+        """
+        Create a lightpath user interface from a JSON happi database
+
+        Parameters
+        ----------
+        path : str
+            Path to the JSON file
+
+        beamline : str, optional
+            Name of beamline to launch application
+
+        parent : QWidget, optional
+            Parent for LightApp QWidget
+
+        kwargs :
+            Restrict the devices included in the lightpath. These keywords are
+            all passed to :meth:`.happi.Client.search`
+        
+        Returns
+        -------
+        lightApp:
+            Instantiated widget 
+        """
+        #Load all of the information from happi
+        happi   = Client(database=JSONBackend(json))
+        devices = happi.search(**kwargs, as_dict=False)
+        #Create valid pcdsdevices
+        path = list()
+        for dev in devices:
+            try:
+                path.append(construct_device(dev))
+            except Exception:
+                logger.exception("Error instantiating %s ...", dev.name)
+        #Instantiate the Application
+        logger.debug("Instantiating User Interface ...")
+        return cls(*path, beamline=beamline, parent=parent)
+
+
+
