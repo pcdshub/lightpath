@@ -9,18 +9,22 @@ source:
 
 requirements:
     build:
-       - python
+       - python {{PY_VER}}*,>=3
+       - setuptools
 
     run:
-      - pedl
-      - ophyd
+      - python {{PY_VER}}*,>=3
+      - ophyd ==0.6.1
+      - pyqt >=5 
       - numpy
-      - pcaspy 
-      - python
+      - pcaspy
       - prettytable
 
 test:
     imports:
-      - pyepics
-    requires: 
-      - pyepics
+      - lightpath
+
+about:
+  home: https://github.com/slaclab/lightpath
+  licence: SLAC Open Licence
+  summary: LCLS Lightpath Module

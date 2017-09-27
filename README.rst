@@ -14,3 +14,17 @@ the individual interfaces for each device, devices are summarized in states.
 This allows operators to quickly view and manipulate large sections of the
 beamline when the goal is to simply handle beam delivery.
 
+Conda
+++++++
+
+Install the most recent tagged build:
+
+.. code::
+
+  conda install lightpath -c skywalker-tag -c lightsource2-tag -c conda-forge -c paulscherrerinstitute
+
+Install the most recent development build:
+
+.. code::
+
+  conda install lightpath -c skywalker-dev -c lightsource2-tag -c conda-forge -c paulscherrerinstitute
