@@ -2,6 +2,7 @@ language: python
 sudo: false
 env:
   global:
+    - OFFICIAL_REPO="slaclab/lightpath"
     - secure: "tV+zuW0Wqt4pruoWfHAW3sNHSGXqPQjmhYf0qpxPvFyMFISP8tBxSnVlcPyQN0ILBdbkhTOXBUWuaRSYOBJdAleCPxcdR5A0dIjUsqVz7+0f2ec3ucDCi5Ge+xaZy6LzCI0ZJE0o/SvdOeSpLimj4+jKhEQUTqGphNNVXVct0R9sSP7wZopGlKs/6BQ3gbkdGGX7t5n0edUMrxZ9AfjA8eYcOQ8CIiKJ7viUGT7FG+bk8CyNrwcVy1r6Emh2gIPdgsCIspHsUrLYK4ll/lzrnkNR690Qqlo2HDcvlCpPUStJAtfMh8JDmZ/ECl8uT/A8O7x6PEE1+wfq4s6gO7e2xEgdscVnm3EgQE0/ixxf0ahX61BGZcNo2bWy5R027SeMGn0WEmvRL0jkHFrU4i7sglyiS/aFLIRg2zmq2zXovE7tmtBwxbKuA7K3RkpwOF3XDoRDh0sGGNf2XvzCVkdQds/ZSW4Ygw8PcQ7YwjEW9LQwponeFY/5Y1eZLFoz+i3UE7xbMFbfnmntXjvKCbpLZgbLC3u86jTMEx+F2LC/4RiGxGtNAI+igr+No5LdWiVo4ct2orloNvtXbB1xoBLG4T3z5fklhyN4wi6AjrapPqDP4dpNxMxw1pi6+yzBi1aHOi/trKJvTvfTqpXN9E3FPy68SjJCGDgyoK9SmJVJh4k="
 
 matrix:
@@ -23,7 +24,8 @@ install:
   - export PATH="$HOME/miniconda/bin:$PATH"
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
+  - conda install conda-build anaconda-client
+  - conda update -q conda conda-build
   # Useful for debugging any issues with conda
   - conda info -a
   #Grab all dependencies
@@ -64,3 +66,11 @@ script:
 
 after_success:
   - codecov
+  - |
+    if [[ $TRAVIS_PULL_REQUEST == false && $TRAVIS_REPO_SLUG == $OFFICIAL_REPO && $TRAVIS_BRANCH == $TRAVIS_TAG  && $TRAVIS_TAG != '' && $CONDA_UPLOAD_TOKEN_TAG != '' ]]; then
+      conda build . -c defaults -c conda-forge -c skywalker-dev -c lightsource2-tag -c paulscherrerinstitute --token $CONDA_UPLOAD_TOKEN_TAG --python $TRAVIS_PYTHON_VERSION
+    fi
+  - |
+    if [[ $TRAVIS_PULL_REQUEST == false && $TRAVIS_REPO_SLUG == $OFFICIAL_REPO && $TRAVIS_BRANCH == 'master' && $TRAVIS_TAG == '' && $CONDA_UPLOAD_TOKEN_DEV != '' ]]; then
+      conda build . -c defaults -c conda-forge -c skywalker-dev -c lightsource2-tag -c paulscherrerinstitute --token $CONDA_UPLOAD_TOKEN_DEV --python $TRAVIS_PYTHON_VERSION
+    fi
