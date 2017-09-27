@@ -3,4 +3,6 @@ ophyd==0.6.1
 prettytable
 PyQt5
 git+https://github.com/slaclab/pydm
+git+https://github.com/slaclab/happi
+git+https://github.com/slaclab/pcds-devices
 git+https://github.com/lcls-pcds/QDarkStyleSheet
