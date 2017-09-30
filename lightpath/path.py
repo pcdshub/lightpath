@@ -16,7 +16,6 @@ affecting the beam.
 ####################
 # Standard Library #
 ####################
-import copy
 import logging
 from collections import Iterable
 
@@ -32,11 +31,10 @@ from ophyd.utils.epics_pvs import raise_if_disconnected
 ####################
 #     Package      #
 ####################
-from .errors import CoordinateError, PathError
+from .errors import CoordinateError
 
 
 logger = logging.getLogger(__name__)
-
 
 class BeamPath(OphydObject):
     """
@@ -72,10 +70,10 @@ class BeamPath(OphydObject):
     #Subscription Information
     SUB_PTH_CHNG     = 'beampath_changed'
     SUB_MPSPATH_CHNG = 'mpspath_changed'
-    _default_sub = SUB_PTH_CHNG
+    _default_sub     = SUB_PTH_CHNG
     #Transmission setting
     minimum_transmission = 0.1
-    
+
     def __init__(self, *devices, name=None):
         super().__init__(name=name)
         self.devices = devices
@@ -84,40 +82,24 @@ class BeamPath(OphydObject):
             prior = None
             #Check types and positions
             for dev in self.path:
-                logger.debug("Configuring device {} ... ".format(dev.name))
+                logger.debug("Configuring device %s ... ", dev.name)
                 #Ensure positioning is physical
                 if np.isnan(dev.z) or dev.z < 0.:
                     raise CoordinateError('Device {!r} is reporting a non-existant '
                                           'beamline position, its coordinate was '
                                           'not properly initialized.'
                                           ''.format(dev))
-            
-                #Ensure beampath is possible
-                if prior and (prior.beamline != dev.beamline
-                              and dev.beamline not in getattr(prior,
-                                                              'branches',
-                                                              [prior.beamline])):
-                    raise PathError('Given set of devices are not contiguous, '
-                                    'path must either be on the same beamline or '
-                                    'have branching device.')
-
-
                 #Add callback here!
                 dev.subscribe(self._device_moved,
                               run=False)
-                
                 #Add as attribute
                 setattr(self, dev.name.replace(' ','_'), dev)
-
-                #Ready for next iteration
-                prior = dev
 
         except AttributeError as e:
             raise TypeError('One of the devices does not meet the ' 
                             'neccesary lightpath interface. Missing '
                             'attribute {}'.format(e))
-    
-            
+
     @property
     def branches(self):
         """
@@ -125,22 +107,19 @@ class BeamPath(OphydObject):
         """
         return [d for d in self.devices if getattr(d, 'branches', False)]
 
-
     @property
     def range(self):
         """
         Starting z position of beamline
         """
         return self.path[0].z, self.path[-1].z
-    
-    
+
     @property
     def path(self):
         """
         List of devices ordered by coordinates
         """
         return sorted(self.devices, key=lambda dev : dev.z)
-
 
     @property
     def blocking_devices(self):
@@ -149,36 +128,40 @@ class BeamPath(OphydObject):
         positions. This includes devices downstream of the first
         :attr:`.impediment`
         """
-        block = []
-
+        #Cache important prior devices
+        prior         = None
+        last_branches = list()
+        block         = list()
         for i, device in enumerate(self.path):
-            #Find branching devices not transmitting
-            if getattr(device, 'branches', False):
-                try:
-                    if self.path[i+1].beamline not in device.destination:
-                        logger.debug("Found branching device {} in blocking "
-                                     "position".format(device.name))
-                        block.append(device)
+            #Iterate through branches to check pointing 
+            if prior and device.beamline != prior.beamline:
+                #Find improperly configured optics
+                for optic in last_branches:
+                    if device.beamline not in optic.destination:
+                        block.append(optic)
+                #Clear optics that have been evaluated
+                last_branches.clear()
 
-                except IndexError:
-                    logger.debug('Branching device is last in beamline')
+            #Find branching devices and store
+            #They will be marked as blocking by downstream devices
+            if device in self.branches:
+                last_branches.append(device)
 
             #Find inserted devices
             elif device.inserted and (device.transmission <
-                                      self.minimum_transmission):
+                                    self.minimum_transmission):
                 logger.debug("Found device {} in blocking position"
                              "".format(device.name))
                 block.append(device)
-
             #Find unknown devices
             elif not device.removed and not device.inserted:
                 logger.debug("Found device {} in an unknown position"
                              "".format(device.name))
                 block.append(device)
-
+            #Stache our prior device
+            prior = device
 
         return block
-
 
     @property
     def incident_devices(self):
@@ -188,16 +171,15 @@ class BeamPath(OphydObject):
         inserted but have more transmission than :attr:`.minimum_transmission`
         """
         inserted = [d for d in self.path if d.inserted]
-
+        #Return an empty list instead of None
         if not inserted:
             return []
-
+        #No blocking devices, all inserted devices incident
         elif not self.impediment:
             return inserted
-
+        #Otherwise only return upstream of the impediment
         else:
             return [d for d in inserted if d.z <= self.impediment.z]
-
 
     def show_devices(self, file=None):
         """
@@ -210,20 +192,16 @@ class BeamPath(OphydObject):
         """
         #Initialize Table
         pt = PrettyTable(['Name', 'Prefix', 'Position', 'Beamline', 'Removed'])
-
         #Adjust Table settings
         pt.align = 'r'
         pt.align['Name'] = 'l'
         pt.align['Prefix'] = 'l'
         pt.float_format  = '8.5'
-
         #Add info
         for d in self.path:
             pt.add_row([d.name, d.prefix, d.z, d.beamline, str(d.removed)])
-
         #Show table
         print(pt, file=file)
-
 
     @property
     def veto_devices(self):
@@ -233,7 +211,6 @@ class BeamPath(OphydObject):
         return [device for device in self.path
                 if getattr(device, 'mps', None)
                 and device.mps.veto_capable]
-
 
     @property
     def tripped_devices(self):
@@ -248,7 +225,6 @@ class BeamPath(OphydObject):
         return [d for d in self.faulted_devices
                   if ins_veto[0].z > d.z]
 
-
     @property
     def faulted_devices(self):
         """
@@ -259,7 +235,6 @@ class BeamPath(OphydObject):
                 if getattr(device, 'mps', None)
                 and device.mps.faulted
                 and not device.mps.bypassed]
-
 
     @property
     def impediment(self):
@@ -272,7 +247,6 @@ class BeamPath(OphydObject):
         else:
             return self.blocking_devices[0]
 
-
     @property
     def cleared(self):
         """
@@ -280,7 +254,6 @@ class BeamPath(OphydObject):
         :attr:`.minimum_transmission`
         """
         return not any(self.blocking_devices)
-
 
     def clear(self, wait=False, timeout=None,
               passive=False, ignore=None):
@@ -309,29 +282,25 @@ class BeamPath(OphydObject):
             :meth:`.LightInterface.remove`
         """
         logger.info('Clearing beampath {} ...'.format(self))
-
         #Assemble device list
         target_devices, ignored = self._ignore(ignore, passive=passive)
-
-        logger.info('Removing devices along the beampath ...')
-
         #Remove devices
+        logger.info('Removing devices along the beampath ...')
         status = [device.remove(timeout=timeout)
                   for device in target_devices
                   if not device.removed]
-
         #Wait parameters
         if wait:
             logger.info('Waiting for all devices to be '\
                         'removed from the beampath {} ...'.format(self))
-
+            #Wait consecutively for statuses, this can be done by combining
+            #statuses in the future
             for s in status:
                 logger.debug('Waiting for {} to be done ...'.format(s))
                 status_wait(s, timeout=timeout)
                 logger.info('Completed')
 
         return status
-
 
     def join(self, *beampaths):
         """
@@ -355,7 +324,6 @@ class BeamPath(OphydObject):
         """
         return BeamPath.from_join(self, *beampaths, name=self.name)
 
-
     def split(self, z=None, device=None):
         """
         Split the beampath producing two new BeamPath objects either by a
@@ -375,17 +343,17 @@ class BeamPath(OphydObject):
         BeamPath, BeamPath
             Two new beampath instances
         """
+        #Not enough information
         if not z and not device:
             raise ValueError("Must supply information where to split the path")
-
         #Grab the z if given a device
         if device:
             z = device.z
-
+        #Look within range
         if z<self.range[0] or z>self.range[1]:
             raise ValueError("Split position {} is not within the range of "
                              "the path.".format(z))
-
+        #Split the paths
         return (BeamPath(*[d for d in self.devices if d.z <= z]),
                 BeamPath(*[d for d in self.devices if d.z >  z])
                )
@@ -414,14 +382,13 @@ class BeamPath(OphydObject):
         TypeError:
             Raised if a non-BeamPath object is supplied
         """
+        #Catch invalid paths
         if not all(isinstance(bp,BeamPath) for bp in beampaths):
             raise TypeError('Can not join non-BeamPath object')
-
+        #Flatten path lists
         devices = [device for path in beampaths for device in path.devices]
-
-
+        #Create a new instance
         return BeamPath(*set(devices), name=name)
-
 
     def _ignore(self, ignore_devices, passive=False):
         """
@@ -447,24 +414,17 @@ class BeamPath(OphydObject):
             logger.debug("Passive devices will be ignored ...")
             ignore.extend([d for d in self.devices
                            if d.transmission > self.minimum_transmission])
-
-        
         #Add ignored devices
         if isinstance(ignore_devices, Iterable):
             ignore.extend(ignore_devices)
-
         elif ignore_devices:
             ignore.append(ignore_devices)
-
         #Grab target devices
         target_devices = [device for device in self.devices
                           if device not in ignore]
-
         logger.debug("Targeting devices {} ...".format(target_devices))
         logger.debug('Ignoring devices {} ...'.format(ignore))
-
         return target_devices, ignore
-
 
     def _device_moved(self, *args, obj=None, **kwargs):
         """
@@ -482,12 +442,10 @@ class BeamPath(OphydObject):
         yield('range',   self.range)
         yield('devices', len(self.devices))
 
-
     __hash = object.__hash__
 
     def __eq__(self, *args, **kwargs):
         try:
             return self.devices == args[0].devices
-
         except AttributeError:
             return super().__eq__(*args, **kwargs)
