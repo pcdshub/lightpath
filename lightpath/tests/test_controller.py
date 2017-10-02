@@ -16,18 +16,22 @@ from lightpath import LightController
 def test_controller_paths(lcls):
     controller = LightController(*lcls)
     #See that we have all the beamlines accounted for
-    assert all(line in controller.beamlines.keys() for line in ['HXR', 'XCS', 'MEC'])
+    assert all(line in controller.beamlines.keys()
+               for line in ['CXI','HXR', 'XCS', 'MEC'])
     #We have total path lengths
-    assert len(controller.xcs.devices) == 8
-    assert len(controller.hxr.devices) == 10
+    assert len(controller.xcs.devices) == 10
+    assert len(controller.hxr.devices) == 7
+    assert len(controller.cxi.devices) == 10
     assert len(controller.mec.devices) == 10
     #Range of each path is correct
     assert controller.xcs.path[0]   == lcls[0]
     assert controller.xcs.path[-1]  == lcls[10]
     assert controller.hxr.path[0]   == lcls[0]
-    assert controller.hxr.path[-1]  == lcls[9]
+    assert controller.hxr.path[-1]  == lcls[6]
     assert controller.mec.path[0]   == lcls[0]
     assert controller.mec.path[-1]  == lcls[11]
+    assert controller.cxi.path[0]   == lcls[0]
+    assert controller.cxi.path[-1]  == lcls[9]
 
 def test_controller_device_summaries(lcls):
     controller = LightController(*lcls)
@@ -40,11 +44,11 @@ def test_controller_device_summaries(lcls):
     controller.hxr.path[0].remove()
     #Use mirrors to change destination
     controller.xcs.path[-1].insert()
-    controller.hxr.path[-1].insert()
-    assert controller.destinations == [controller.hxr.path[-1]]
+    controller.cxi.path[-1].insert()
+    assert controller.destinations == [controller.cxi.path[-1]]
     lcls[4].insert()
     assert controller.destinations == [controller.xcs.path[-1]]
-    controller.hxr.path[-1].remove()
+    controller.cxi.path[-1].remove()
     controller.xcs.path[-1].remove()
     lcls[4].remove()
 
@@ -69,9 +73,9 @@ def test_controller_device_summaries(lcls):
     lcls[0].insert()
     assert controller.tripped_devices == [lcls[0]]
     #Multiple faults
-    controller.hxr.path[8].insert()
+    controller.cxi.path[8].insert()
     assert len(controller.tripped_devices) == 2
-    controller.hxr.path[2].insert()
+    controller.cxi.path[2].insert()
     assert len(controller.tripped_devices) == 1
 
 
