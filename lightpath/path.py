@@ -26,7 +26,6 @@ import numpy as np
 from prettytable    import PrettyTable
 from ophyd.ophydobj import OphydObject
 from ophyd.status   import wait as status_wait
-from ophyd.utils.epics_pvs import raise_if_disconnected
 
 ####################
 #     Package      #
@@ -79,16 +78,15 @@ class BeamPath(OphydObject):
         self.devices = devices
         #Sort by position downstream to upstream
         try:
-            prior = None
             #Check types and positions
             for dev in self.path:
                 logger.debug("Configuring device %s ... ", dev.name)
                 #Ensure positioning is physical
                 if np.isnan(dev.z) or dev.z < 0.:
-                    raise CoordinateError('Device {!r} is reporting a non-existant '
-                                          'beamline position, its coordinate was '
-                                          'not properly initialized.'
-                                          ''.format(dev))
+                    raise CoordinateError('Device %r is reporting a '
+                                          'non-existant beamline position, '
+                                          'its coordinate was not properly '
+                                          'initialized', dev)
                 #Add callback here!
                 dev.subscribe(self._device_moved,
                               run=False)
@@ -132,8 +130,8 @@ class BeamPath(OphydObject):
         prior         = None
         last_branches = list()
         block         = list()
-        for i, device in enumerate(self.path):
-            #Iterate through branches to check pointing 
+        for device in self.path:
+            #If we have switched beamlines
             if prior and device.beamline != prior.beamline:
                 #Find improperly configured optics
                 for optic in last_branches:
@@ -141,6 +139,13 @@ class BeamPath(OphydObject):
                         block.append(optic)
                 #Clear optics that have been evaluated
                 last_branches.clear()
+
+            #If our last device was an optic, make sure it wasn't required
+            #to continue along this beampath
+            elif (prior in last_branches
+                and device.beamline in prior.branches
+                and device.beamline not in prior.destination):
+                block.append(last_branches.pop(-1))
 
             #Find branching devices and store
             #They will be marked as blocking by downstream devices
@@ -150,13 +155,13 @@ class BeamPath(OphydObject):
             #Find inserted devices
             elif device.inserted and (device.transmission <
                                     self.minimum_transmission):
-                logger.debug("Found device {} in blocking position"
-                             "".format(device.name))
+                logger.debug("Found device %s in blocking position",
+                             device.name)
                 block.append(device)
             #Find unknown devices
             elif not device.removed and not device.inserted:
-                logger.debug("Found device {} in an unknown position"
-                             "".format(device.name))
+                logger.debug("Found device %s in an unknown position",
+                             device.name)
                 block.append(device)
             #Stache our prior device
             prior = device
@@ -281,7 +286,7 @@ class BeamPath(OphydObject):
             Returns list of status objects returned by
             :meth:`.LightInterface.remove`
         """
-        logger.info('Clearing beampath {} ...'.format(self))
+        logger.info('Clearing beampath %s ...', self)
         #Assemble device list
         target_devices, ignored = self._ignore(ignore, passive=passive)
         #Remove devices
@@ -292,11 +297,11 @@ class BeamPath(OphydObject):
         #Wait parameters
         if wait:
             logger.info('Waiting for all devices to be '\
-                        'removed from the beampath {} ...'.format(self))
+                        'removed from the beampath %s ...', self)
             #Wait consecutively for statuses, this can be done by combining
             #statuses in the future
             for s in status:
-                logger.debug('Waiting for {} to be done ...'.format(s))
+                logger.debug('Waiting for %s to be done ...', s)
                 status_wait(s, timeout=timeout)
                 logger.info('Completed')
 
@@ -422,8 +427,8 @@ class BeamPath(OphydObject):
         #Grab target devices
         target_devices = [device for device in self.devices
                           if device not in ignore]
-        logger.debug("Targeting devices {} ...".format(target_devices))
-        logger.debug('Ignoring devices {} ...'.format(ignore))
+        logger.debug("Targeting devices %s ...", target_devices)
+        logger.debug('Ignoring devices %s ...', ignore)
         return target_devices, ignore
 
     def _device_moved(self, *args, obj=None, **kwargs):
