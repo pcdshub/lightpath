@@ -198,6 +198,35 @@ def test_faulted_devices(path):
                                     path.path[1],
                                     path.path[6]]
 
+def test_complex_branching(lcls):
+    #Upstream Optic
+    xcs = [d for d in lcls if d.beamline in ['HXR','XCS']]
+    bp  = BeamPath(*xcs)
+    #Remove all the devices
+    for d in xcs : d.remove()
+    #OffsetMirror should be blocking
+    assert bp.impediment == xcs[4]
+    #Insert OffsetMirror
+    bp.path[4].insert()
+    #Path should be cleared
+    assert bp.blocking_devices == []
+    #Downstream Optic
+    mec = [d for d in lcls if d.beamline in ['HXR','MEC']]
+    bp  = BeamPath(*mec)
+    #Remove all devices
+    for d in mec : d.remove()
+    #Path should be cleared
+    assert bp.impediment == mec[6]
+    #Insert first mirror
+    bp.path[4].insert()
+    assert bp.impediment == mec[4]
+    #Insert second mirror
+    bp.path[6].insert()
+    assert bp.impediment == mec[4]
+    #Retract first mirror
+    bp.path[4].remove()
+    assert bp.blocking_devices == []
+
 def test_tripped_devices(path):
     #No tripped devices by default
     assert path.tripped_devices == []

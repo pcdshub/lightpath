@@ -142,9 +142,11 @@ class Crystal(Valve):
     """
     Generic branching device
     """
-    def __init__(self, name, z, beamline, branch):
+    def __init__(self, name, z, beamline, states):
         super().__init__(name, z, beamline)
-        self.branches = [self.beamline, branch]
+        self.states = states
+        self.branches = [dest for state in self.states
+                              for dest  in state]
         self.mps      = None
 
     @property
@@ -153,10 +155,10 @@ class Crystal(Valve):
         Return current beam destination
         """
         if self.inserted:
-            return [self.branches[1]]
+            return self.states[1]
 
         elif self.removed:
-            return [self.beamline]
+            return self.states[0]
 
         else:
             return self.branches
@@ -206,7 +208,8 @@ def path():
                Valve('one',      z=2.,  beamline='TST'),
                Stopper('two',    z=9.,  beamline='TST'),
                Valve('three',    z=15., beamline='TST'),
-               Crystal('four',   z=16., beamline='TST', branch='SIM'),
+               Crystal('four',   z=16., beamline='TST',
+                                        states=[['TST'],['SIM']]),
                IPIMB('five',     z=24., beamline='TST'),
                Valve('six',      z=30., beamline='TST'),
               ]
@@ -223,7 +226,8 @@ def branch():
                Valve('one',      z=2.,  beamline='TST'),
                Stopper('two',    z=9.,  beamline='TST'),
                Valve('three',    z=15., beamline='TST'),
-               Crystal('four',   z=16., beamline='TST', branch='SIM'),
+               Crystal('four',   z=16., beamline='TST',
+                                        states=[['TST'],['SIM']]),
                IPIMB('five',     z=24., beamline='SIM'),
                Valve('six',      z=30., beamline='SIM'),
               ]
@@ -239,16 +243,18 @@ def lcls():
             Valve('FEE Valve 2',   z=2.,   beamline='HXR'),
             Stopper('S2 Stopper',  z=9.,   beamline='HXR'),
             IPIMB('XRT IPM',       z=15.,  beamline='HXR'),
-            Crystal('XRT M1H',     z=16.,  beamline='HXR', branch='XCS'),
+            Crystal('XRT M1H',     z=16.,  beamline='HXR',
+                                           states=[['MEC','CXI'],['XCS']]),
             Valve('XRT Valve',     z=18.,  beamline='HXR'),
-            Crystal('XRT M2H',     z=20.,  beamline='HXR', branch='MEC'),
-            IPIMB('HXR IPM',       z=24.,  beamline='HXR'),
-            Valve('HXR Valve',     z=25.,  beamline='HXR'),
-            Stopper('S5 Stopper',  z=31.,  beamline='HXR'),
+            Crystal('XRT M2H',     z=20.,  beamline='HXR',
+                                           states=[['CXI','XCS'],['MEC']]),
+            IPIMB('HXR IPM',       z=24.,  beamline='CXI'),
+            Valve('HXR Valve',     z=25.,  beamline='CXI'),
+            Stopper('S5 Stopper',  z=31.,  beamline='CXI'),
             Stopper('S4 Stopper',  z=32.,  beamline='XCS'),
             Stopper('S6 Stopper',  z=30.,  beamline='MEC'),
             IPIMB('MEC IPM',       z=24.,  beamline='MEC'),
             Valve('MEC Valve',     z=25.,  beamline='MEC'),
-            IPIMB('XCS IPM',       z=17.,  beamline='XCS'),
+            IPIMB('XCS IPM',       z=21.,  beamline='XCS'),
             Valve('XCS Valve',     z=22.,  beamline='XCS'),
               ]

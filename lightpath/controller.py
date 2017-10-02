@@ -46,31 +46,31 @@ class LightController:
         #Iterate through creating complete paths 
         for bp in sorted(self.beamlines.values(),
                          key = lambda x : x.path[0].z):
-            logger.debug("Assembling complete beamline {} ...".format(bp.name))
+            logger.debug("Assembling complete beamline %s ...", bp.name)
 
             #Grab branches off the beamline
             for branch in bp.branches:
-                logger.info("Found branches onto beamlines {} from {} "
-                             "".format(', '.join(branch.branches),
-                                       branch.name))
-                for destination in branch.branches:
-                    if destination != bp.name:
+                logger.info("Found branches onto beamlines %s from %s",
+                             ', '.join(branch.branches), branch.name)
+                for dest in branch.branches:
+                    if dest != bp.name:
+                        #If this is a branch that can pass beam through
+                        #without renaming the beamline split
+                        if branch.beamline in branch.branches: 
+                            section, after = bp.split(device=branch)
+                        else:
+                            section = bp
+                        #Join with downstream path
+                        logger.debug("Joining %s and %s", bp.name, dest)
                         try:
-                            #Split path up before branching device
-                            prior, after = bp.split(device=branch)
-                            #Join with downstream path
-                            logger.debug("Joining {} and {}".format(bp.name,
-                                                                    destination))
-                            self.beamlines[destination] = self.beamlines[destination].join(prior)
-
+                            self.beamlines[dest] = self.beamlines[dest].join(
+                                                                        section)
                         except KeyError:
-                            logger.critical("Device {} has invalid branching "
-                                            "destination {}".format(branch.name,
-                                                                    destination))
+                            logger.critical("Device %s has invalid branching "
+                                            "dest %s", branch.name, dest)
             #Set as attribute for easy access
             setattr(self, bp.name.replace(' ','_').lower(),
                     self.beamlines[bp.name])
-
 
     @property
     def destinations(self):
@@ -79,7 +79,6 @@ class LightController:
         """
         return list(set([p.impediment for p in self.beamlines.values()
                          if p.impediment and p.impediment not in p.branches]))
-
 
     @property
     def tripped_devices(self):
@@ -93,7 +92,6 @@ class LightController:
 
         return list(set(devices))
 
-
     @property
     def devices(self):
         """
@@ -106,7 +104,6 @@ class LightController:
 
         return list(set(devices))
 
-
     @property
     def incident_devices(self):
         """
@@ -118,7 +115,6 @@ class LightController:
             devices.extend(line.incident_devices)
 
         return list(set(devices))
-
 
     def path_to(self, device):
         """
