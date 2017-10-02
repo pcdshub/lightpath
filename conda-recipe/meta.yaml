@@ -17,7 +17,6 @@ requirements:
       - ophyd ==0.6.1
       - pyqt >=5 
       - numpy
-      - pcaspy
       - prettytable
 
 test:
