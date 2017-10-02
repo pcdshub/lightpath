@@ -6,6 +6,9 @@ LCLS Lightpath
 .. image:: https://codecov.io/github/slaclab/lightpath/coverage.svg?branch=master
     :target: https://codecov.io/gh/slaclab/lightpath?branch=master
 
+.. image:: https://landscape.io/github/slaclab/lightpath/master/landscape.svg?style=flat
+    :target: https://landscape.io/github/slaclab/lightpath/master
+
 Python module for control of LCLS beamlines
 
 By abstracting individual devices into larger collections of paths, operators
@@ -21,10 +24,10 @@ Install the most recent tagged build:
 
 .. code::
 
-  conda install lightpath -c skywalker-tag -c lightsource2-tag -c conda-forge -c paulscherrerinstitute
+  conda install lightpath -c skywalker-tag -c lightsource2-tag -c conda-forge
 
 Install the most recent development build:
 
 .. code::
 
-  conda install lightpath -c skywalker-dev -c lightsource2-tag -c conda-forge -c paulscherrerinstitute
+  conda install lightpath -c skywalker-dev -c lightsource2-tag -c conda-forge
