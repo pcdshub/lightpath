@@ -6,14 +6,17 @@ Full Application for Lightpath
 ############
 import logging
 from os import path
+from functools import partial
 
 ###############
 # Third Party #
 ###############
 from pydm import Display
 from pydm.PyQt.QtCore import pyqtSlot
-from pydm.PyQt.QtGui  import QPushButton, QWidget, QVBoxLayout
+from pydm.PyQt.QtGui  import QSpacerItem, QGridLayout
+from pydm.widgets.drawing import PyDMDrawingLine
 
+import happi
 from happi import Client
 from happi.backends import JSONBackend
 from pcdsdevices.happireader import construct_device
@@ -21,7 +24,7 @@ from pcdsdevices.happireader import construct_device
 ##########
 # Module #
 ##########
-from .widgets import LightRow
+from .widgets import LightRow, InactiveRow
 from ..controller import LightController
 
 logger = logging.getLogger(__name__)
@@ -38,6 +41,10 @@ class LightApp(Display):
     *args
         List of instantiated devices that match :class:`.LightInterface`
 
+    containers : list, optional
+        Happi device containers to display in the GUI but not to use in the
+        lightpath logic
+
     beamline : str, optional
         Beamline to initialize the application with, otherwise the most
         upstream beamline will be selected
@@ -45,13 +52,14 @@ class LightApp(Display):
     parent : optional
     """
 
-    def __init__(self, *devices, beamline=None,  parent=None):
+    def __init__(self, *devices, containers=None, beamline=None,  parent=None):
         super().__init__(parent=parent)
         self.light   = LightController(*devices)
         #Create empty layout
-        self.rowLayout = QVBoxLayout(self)
-        self.rowLayout.setSpacing(1)
-        self.widget_rows.setLayout(self.rowLayout)
+        self.lightLayout = QGridLayout(self.widget_rows)
+        self.lightLayout.setVerticalSpacing(1)
+        self.lightLayout.setHorizontalSpacing(1)
+        self.widget_rows.setLayout(self.lightLayout)
         self.scroll.setWidget(self.widget_rows)
 
         #Add destinations
@@ -63,6 +71,8 @@ class LightApp(Display):
                                             self.change_path_display)
         self.mps_only_check.clicked.connect(self.change_path_display)
         self.upstream_check.clicked.connect(self.change_path_display)
+        #Store LightRow objects to manage subscriptions
+        self.rows = list()
         #Select the beamline to begin with
         beamline = beamline or self.destinations()[0]
         try:
@@ -72,6 +82,23 @@ class LightApp(Display):
             idx = 0
         #Move the ComboBox
         self.destination_combo.setCurrentIndex(idx)
+        #Grab containers
+        containers = containers or []
+        self.containers = dict((key, list())
+                               for key in self.light.beamlines.keys())
+        for device in containers:
+            try:
+                #Check we have a z attribute
+                z = getattr(device, 'z')
+                self.containers[device.beamline].append(device)
+            except KeyError:
+                logger.error('Container %s belongs to beamline %s, '
+                             ' which is not represented by other devices',
+                             device.name, device.beamline)
+            except AttributeError:
+                logger.error('Device %r does not implement the proper '
+                             'interface to be included in the path',
+                             device)
         #Setup the UI
         self.change_path_display()
 
@@ -87,9 +114,12 @@ class LightApp(Display):
         Create LightRow for device
         """
         #Create new widget
-        w = LightRow(device,
-                     self.light.beamlines[device.beamline],
-                     parent=self.widget_rows)
+        if isinstance(device, happi.Device):
+            w = InactiveRow(device, parent=self.widget_rows)
+        else:
+            w = LightRow(device,
+                         self.light.beamlines[device.beamline],
+                         parent=self.widget_rows)
         return w
 
     def select_devices(self, beamline, upstream=True, mps_only=False):
@@ -107,7 +137,20 @@ class LightApp(Display):
         mps_only : bool ,optional
             Only show devices that are in the mps system
         """
+        #Find pool of devices and all beamlines
         pool = self.light.beamlines[beamline].path
+        #Find end point for each beamline
+        bls  = set(d.beamline for d in pool)
+        endpoints = dict((bl, max([d.z for d in pool
+                                   if d.beamline == bl]))
+                         for bl in bls)
+        #Find necessary containers
+        containers = [c for bl in endpoints.keys()
+                        for c in self.containers[bl]
+                        if (c.beamline == bl
+                            and c.z < endpoints[bl])]
+        #Add containers to pool and resort
+        pool = sorted(pool + containers, key = lambda x : x.z)
         #Only return devices if they are on the specified beamline
         if not upstream:
             pool = [dev for dev in pool if dev.beamline == beamline]
@@ -136,6 +179,19 @@ class LightApp(Display):
         """
         return self.upstream_check.isChecked()
 
+    @pyqtSlot(bool)
+    def remove(self, value, device=None):
+        """
+        Remove the device from the beamline
+        """
+        if device:
+            logger.info("Removing device %s ...", device.name)
+            try:
+                device.remove(wait=False)
+            except Exception as exc:
+                logger.error(exc)
+
+
     @pyqtSlot()
     @pyqtSlot(bool)
     def change_path_display(self, value=None):
@@ -148,17 +204,32 @@ class LightApp(Display):
                 for d in self.select_devices(self.selected_beamline(),
                                              upstream=self.upstream(),
                                              mps_only=self.mps_only())]
-        #Clear the layout
-        for i in reversed(range(self.rowLayout.count())):
-            oldrow = self.rowLayout.itemAt(i).widget()
-            oldrow.clear_sub()
-            self.rowLayout.removeWidget(oldrow)
-            oldrow.deleteLater()
-
+        #Clear layout if previously loaded rows exist
+        if self.rows:
+            #Clear our subscribtions
+            for row in self.rows: row.clear_sub()
+            #Clear the widgets
+            for i in reversed(range(self.lightLayout.count())):
+                old = self.lightLayout.takeAt(i).widget()
+                if old:
+                    old.deleteLater()
+            #Clear subscribed row cache
+            self.rows.clear()
 
         #Add all the widgets to the display
-        for row in rows:
-            self.rowLayout.addWidget(row)
+        for i, row in enumerate(rows):
+            #Cache row to later clear subscriptions
+            self.rows.append(row)
+            #Connect up remove button
+            if hasattr(row, 'remove_button'):
+                row.remove_button.clicked.connect(partial(self.remove,
+                                                          device=row.device))
+            #Add widgets to layout
+            for j, widget in enumerate(row.widgets):
+                if isinstance(widget, QSpacerItem):
+                    self.lightLayout.addItem(widget, i, j)
+                else:
+                    self.lightLayout.addWidget(widget, i, j)
 
     def ui_filename(self):
         """
