@@ -76,11 +76,12 @@ class BeamPath(OphydObject):
     def __init__(self, *devices, name=None):
         super().__init__(name=name)
         self.devices = devices
+        logger.debug("Configuring path %s with %s devices",
+                     name, len(self.devices))
         #Sort by position downstream to upstream
         try:
             #Check types and positions
             for dev in self.path:
-                logger.debug("Configuring device %s ... ", dev.name)
                 #Ensure positioning is physical
                 if np.isnan(dev.z) or dev.z < 0.:
                     raise CoordinateError('Device %r is reporting a '
@@ -155,13 +156,9 @@ class BeamPath(OphydObject):
             #Find inserted devices
             elif device.inserted and (device.transmission <
                                     self.minimum_transmission):
-                logger.debug("Found device %s in blocking position",
-                             device.name)
                 block.append(device)
             #Find unknown devices
             elif not device.removed and not device.inserted:
-                logger.debug("Found device %s in an unknown position",
-                             device.name)
                 block.append(device)
             #Stache our prior device
             prior = device
