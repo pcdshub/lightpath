@@ -25,12 +25,13 @@ logging.basicConfig(level='DEBUG')
 def main():
     #Gather devices
     lcls = lightpath.tests.lcls()
+    cntrs = lightpath.tests.containers()
     [dev.insert() for dev in lcls]
     #Create Application
     app   = pydm.PyQt.QtGui.QApplication([])
     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
     #Create Lightpath
-    light = LightApp(*lcls)
+    light = LightApp(*lcls, containers=cntrs)
     light.show()
     #Execute 
     app.exec_()
