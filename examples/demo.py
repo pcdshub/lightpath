@@ -10,7 +10,6 @@ import logging
 # Third Party #
 ###############
 import pydm
-import qdarkstyle
 
 ##########
 # Module #
@@ -29,7 +28,6 @@ def main():
     [dev.insert() for dev in lcls]
     #Create Application
     app   = pydm.PyQt.QtGui.QApplication([])
-    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
     #Create Lightpath
     light = LightApp(*lcls, containers=cntrs)
     light.show()

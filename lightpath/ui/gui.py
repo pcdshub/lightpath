@@ -49,10 +49,14 @@ class LightApp(Display):
         Beamline to initialize the application with, otherwise the most
         upstream beamline will be selected
 
+    dark : bool, optional
+        Load the UI with the `qdarkstyle` interface
+
     parent : optional
     """
 
-    def __init__(self, *devices, containers=None, beamline=None,  parent=None):
+    def __init__(self, *devices, containers=None, beamline=None,
+                 parent=None, dark=True):
         super().__init__(parent=parent)
         self.light   = LightController(*devices)
         #Create empty layout
@@ -101,6 +105,16 @@ class LightApp(Display):
                              device)
         #Setup the UI
         self.change_path_display()
+
+        #Change the stylesheet
+        if dark:
+            try:
+                import qdarkstyle
+            except ImportError:
+                logger.error("Can not use dark theme, "
+                             "qdarkstyle package not available")
+            else:
+                self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
 
     def destinations(self):
         """
