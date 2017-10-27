@@ -33,6 +33,7 @@ def test_remove_button(app, lcls, containers):
     assert lightapp.rows[0].device.removed
 
 @using_fake_epics_pv
+@pytest.mark.xfail
 def test_app_from_json(app):
     #Basic configuration
     lit = LightApp.from_json(os.path.join(
