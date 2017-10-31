@@ -12,7 +12,7 @@ from functools import partial
 # Third Party #
 ###############
 from pydm import Display
-from pydm.PyQt.QtCore import pyqtSlot
+from pydm.PyQt.QtCore import pyqtSlot, Qt
 from pydm.PyQt.QtGui  import QSpacerItem, QGridLayout
 from pydm.widgets.drawing import PyDMDrawingLine
 
@@ -58,7 +58,9 @@ class LightApp(Display):
     def __init__(self, *devices, containers=None, beamline=None,
                  parent=None, dark=True):
         super().__init__(parent=parent)
-        self.light   = LightController(*devices)
+        #Store Lightpath information
+        self.light = LightController(*devices)
+        self.path  = None
         #Create empty layout
         self.lightLayout = QGridLayout(self.widget_rows)
         self.lightLayout.setVerticalSpacing(1)
@@ -121,7 +123,15 @@ class LightApp(Display):
         All possible beamline destinations sorted by end point
         """
         return sorted(list(self.light.beamlines.keys()),
-                      key= lambda x : self.light.beamlines[x].range[1])
+                      key= lambda x : self.light.beamlines[x].range[0])
+
+    @property
+    def device_rows(self):
+        """
+        Subset of device rows that refer to live devices
+        """
+        return [row for row in self.rows if not isinstance(row.device,
+                                                           happi.Device)]
 
     def load_device_row(self, device):
         """
@@ -131,9 +141,7 @@ class LightApp(Display):
         if isinstance(device, happi.Device):
             w = InactiveRow(device, parent=self.widget_rows)
         else:
-            w = LightRow(device,
-                         self.light.beamlines[device.beamline],
-                         parent=self.widget_rows)
+            w = LightRow(device, parent=self.widget_rows)
         return w
 
     def select_devices(self, beamline, upstream=True, mps_only=False):
@@ -151,8 +159,17 @@ class LightApp(Display):
         mps_only : bool ,optional
             Only show devices that are in the mps system
         """
-        #Find pool of devices and all beamlines
-        pool = self.light.beamlines[beamline].path
+        #Clear any remaining subscriptions
+        if self.path:
+            self.clear_subs()
+        #Find pool of devices and create subscriptions
+        self.path = self.light.beamlines[beamline]
+        #Defer running updates until UI is created 
+        self.path.subscribe(self.update_path, run=False)
+        self.path.subscribe(self.update_mps,
+                            event_type=self.path.SUB_MPSPATH_CHNG,
+                            run=False)
+        pool = self.path.path
         #Find end point for each beamline
         bls  = set(d.beamline for d in pool)
         endpoints = dict((bl, max([d.z for d in pool
@@ -244,6 +261,9 @@ class LightApp(Display):
                     self.lightLayout.addItem(widget, i, j)
                 else:
                     self.lightLayout.addWidget(widget, i, j)
+        #Initialize interface
+        self.update_path()
+        self.update_mps()
 
     def ui_filename(self):
         """
@@ -297,5 +317,44 @@ class LightApp(Display):
         logger.debug("Instantiating User Interface ...")
         return cls(*path, beamline=beamline, parent=parent)
 
+    def update_path(self, *args,  **kwargs):
+        """
+        Update the PyDMRectangles to show devices as in the beam or not
+        """
+        block = self.path.impediment
+        for row in self.device_rows:
+            #If our device is before or at the impediment, it is lit
+            if not block or (row.device.z <= block.z):
+                row.indicator._default_color = Qt.cyan
+            #Otherwise, it is off
+            else:
+                row.indicator._default_color = Qt.gray
+            #Update widget display
+            row.indicator.update()
 
+    def update_mps(self, *args, **kwargs):
+        """
+        Update the MPS status of the frame
 
+        The frame of the row will be red if the device is tripping the beam,
+        yellow if it is faulted but a full trip is being prevented by an
+        upstream device
+        """
+        #Path information
+        tripped = self.path.tripped_devices
+        faulted = self.path.faulted_devices
+        for row in self.device_rows:
+            if row.device in tripped:
+                row.frame.setStyleSheet("#name_frame {border: 2px solid red}")
+            elif row.device in faulted:
+                row.frame.setStyleSheet("#name_frame {border: 2px "\
+                                         "solid rgb(255,215,0)}")
+            else:
+                row.frame.setStyleSheet("#frame {border: 0px solid black}")
+
+    def clear_subs(self):
+        """
+        Clear the subscription event
+        """
+        self.path.clear_sub(self.update_path)
+        self.path.clear_sub(self.update_mps)
