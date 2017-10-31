@@ -46,11 +46,11 @@ class LightController:
         #Iterate through creating complete paths 
         for bp in sorted(self.beamlines.values(),
                          key = lambda x : x.path[0].z):
-            logger.debug("Assembling complete beamline %s ...", bp.name)
+            logger.info("Assembling beamline %s ...", bp.name)
 
             #Grab branches off the beamline
             for branch in bp.branches:
-                logger.info("Found branches onto beamlines %s from %s",
+                logger.debug("Found branches onto beamlines %s from %s",
                              ', '.join(branch.branches), branch.name)
                 for dest in branch.branches:
                     if dest != bp.name:
