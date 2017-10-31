@@ -82,7 +82,7 @@ class LightApp(Display):
         #Select the beamline to begin with
         beamline = beamline or self.destinations()[0]
         try:
-            idx = self.destinations().index(beamline)
+            idx = self.destinations().index(beamline.upper())
         except ValueError:
             logger.error("%s is not a valid beamline", beamline)
             idx = 0
@@ -262,6 +262,8 @@ class LightApp(Display):
                 else:
                     self.lightLayout.addWidget(widget, i, j)
         #Initialize interface
+        for row in self.device_rows:
+            row.update_state()
         self.update_path()
         self.update_mps()
 

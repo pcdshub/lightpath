@@ -108,11 +108,13 @@ class LightRow(InactiveRow):
         self.remove_button.setFont(self.font)
         #Subscribe device to state changes
         try:
+            #Wait for later to update widget
             self.device.subscribe(self.update_state,
                                   event_type=self.device.SUB_STATE,
-                                  run=True)
+                                  run=False)
         except:
-            logger.error("Unable to subscribe to device %s", device.name)
+            logger.error("Widget is unable to subscribe to device %s",
+                         device.name)
 
     def update_state(self, *args, **kwargs):
         """
