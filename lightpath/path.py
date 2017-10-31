@@ -464,9 +464,13 @@ class BeamPath(OphydObject):
             #Subscribe to all child devices
             for dev in self.devices:
                 #Add callback here!
-                dev.subscribe(self._device_moved,
-                              event_type=dev.SUB_STATE,
-                              run=False)
+                try:
+                    dev.subscribe(self._device_moved,
+                                  event_type=dev.SUB_STATE,
+                                  run=False)
+                except:
+                    logger.error("BeamPath is unable to subscribe to device %s",
+                                 dev.name)
             self._has_subscribed = True
         super().subscribe(cb, event_type=event_type, run=run)
 

@@ -107,9 +107,12 @@ class LightRow(InactiveRow):
         self.remove_button = QPushButton('Remove', parent=parent)
         self.remove_button.setFont(self.font)
         #Subscribe device to state changes
-        self.device.subscribe(self.update_state,
-                              event_type=self.device.SUB_STATE,
-                              run=True)
+        try:
+            self.device.subscribe(self.update_state,
+                                  event_type=self.device.SUB_STATE,
+                                  run=True)
+        except:
+            logger.error("Unable to subscribe to device %s", device.name)
 
     def update_state(self, *args, **kwargs):
         """
