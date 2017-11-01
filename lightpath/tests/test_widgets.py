@@ -18,10 +18,9 @@ import lightpath.ui
 def lightrow(path):
     app = QApplication([])
     #Generate lightpath
-    w = lightpath.ui.LightRow(path.path[3], path)
+    w = lightpath.ui.LightRow(path.path[3])
     #Replace Update functions with mocks
     setattr(w.state_label, 'setText', Mock())
-    #setattr(w.indicator, 'update', Mock())
     return w
 
 def test_widget_updates(lightrow):

@@ -76,6 +76,7 @@ class BeamPath(OphydObject):
     def __init__(self, *devices, name=None):
         super().__init__(name=name)
         self.devices = devices
+        self._has_subscribed = False
         logger.debug("Configuring path %s with %s devices",
                      name, len(self.devices))
         #Sort by position downstream to upstream
@@ -88,9 +89,6 @@ class BeamPath(OphydObject):
                                           'non-existant beamline position, '
                                           'its coordinate was not properly '
                                           'initialized', dev)
-                #Add callback here!
-                dev.subscribe(self._device_moved,
-                              run=False)
                 #Add as attribute
                 setattr(self, dev.name.replace(' ','_'), dev)
 
@@ -172,16 +170,14 @@ class BeamPath(OphydObject):
         current :attr:`.impediment` and any upstream devices that may be
         inserted but have more transmission than :attr:`.minimum_transmission`
         """
-        inserted = [d for d in self.path if d.inserted]
-        #Return an empty list instead of None
-        if not inserted:
-            return []
+        #Find device information
+        inserted   = [d for d in self.path if d.inserted]
+        impediment = self.impediment
         #No blocking devices, all inserted devices incident
-        elif not self.impediment:
+        if not impediment:
             return inserted
         #Otherwise only return upstream of the impediment
-        else:
-            return [d for d in inserted if d.z <= self.impediment.z]
+        return [d for d in inserted if d.z <= impediment.z]
 
     def show_devices(self, file=None):
         """
@@ -236,18 +232,20 @@ class BeamPath(OphydObject):
         return [device for device in self.path
                 if getattr(device, 'mps', None)
                 and device.mps.faulted
-                and not device.mps.bypassed]
+                and not (device.mps.bypassed or device.mps.veto_capable)]
 
     @property
     def impediment(self):
         """
         First blocking device along the path
         """
-        if not self.blocking_devices:
+        #Find device information
+        blocks = self.blocking_devices
+        if not blocks:
             return None
 
         else:
-            return self.blocking_devices[0]
+            return blocks[0]
 
     @property
     def cleared(self):
@@ -432,13 +430,49 @@ class BeamPath(OphydObject):
         """
         Run when a device changes state
         """
-        #Maybe this should introspect and see if beampath state changes
-        self._run_subs(sub_type = self.SUB_PTH_CHNG,
-                         device = obj)
+        #Determine whether our path has been changed
+        block = self.impediment
+        if block:
+            block = block.z
+        else:
+            block = np.inf
+        #If device is upstream of impediment
+        if obj and obj.z <= block:
+            self._run_subs(sub_type = self.SUB_PTH_CHNG,
+                             device = obj)
         #Alert that an MPS system has moved
-        if getattr(obj, 'mps', None):
+        if obj and getattr(obj, 'mps', None):
             self._run_subs(sub_type=self.SUB_MPSPATH_CHNG,
-                          device=obj)
+                           device=obj)
+
+    def subscribe(self, cb, event_type=None, run=True):
+        """
+        Subscribe to changes of the valve
+
+        Parameters
+        ----------
+        cb : callable
+            Callback to be run
+
+        event_type : str, optional
+            Type of event to run callback on
+
+        run : bool, optional
+            Run the callback immediatelly
+        """
+        if not self._has_subscribed:
+            #Subscribe to all child devices
+            for dev in self.devices:
+                #Add callback here!
+                try:
+                    dev.subscribe(self._device_moved,
+                                  event_type=dev.SUB_STATE,
+                                  run=False)
+                except:
+                    logger.error("BeamPath is unable to subscribe to device %s",
+                                 dev.name)
+            self._has_subscribed = True
+        super().subscribe(cb, event_type=event_type, run=run)
 
     def _repr_info(self):
         yield('range',   self.range)

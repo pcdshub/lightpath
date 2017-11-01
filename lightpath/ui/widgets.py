@@ -76,7 +76,6 @@ class InactiveRow:
                 self.spacer,
                 self.state_label]
 
-
     def clear_sub(self):
         """
         Implemented by rows that have subscriptions
@@ -102,52 +101,20 @@ class LightRow(InactiveRow):
 
     parent : QObject, optional
     """
-    def __init__(self, device, path, parent=None):
+    def __init__(self, device, parent=None):
         super().__init__(device, parent=parent)
-        self.path   = path
         #Create PushButton
         self.remove_button = QPushButton('Remove', parent=parent)
         self.remove_button.setFont(self.font)
-        #Run once for correct state initialization
-        self.update_state()
-        self.update_mps()
-        self.update_path()
         #Subscribe device to state changes
-        self.path.subscribe(self.update_path, run=False)
-        self.device.subscribe(self.update_state, run=False)
-        self.path.subscribe(self.update_mps,
-                            event_type=path.SUB_MPSPATH_CHNG,
-                            run=False)
-
-    def update_path(self, *args,  **kwargs):
-        """
-        Update the PyDMRectangle to show the device as in the beam or not
-        """
-        #If our device is before or at the impediment, it is lit
-        if not self.path.impediment or (self.device.z
-                                        <= self.path.impediment.z):
-            self.indicator._default_color = Qt.cyan
-        #Otherwise, it is off
-        else:
-            self.indicator._default_color = Qt.gray
-        #Update widget display
-        self.indicator.update()
-
-    def update_mps(self, *args, **kwargs):
-        """
-        Update the MPS status of the frame
-
-        The frame of the row will be red if the device is tripping the beam,
-        yellow if it is faulted but a full trip is being prevented by an
-        upstream device
-        """
-        if self.device in self.path.tripped_devices:
-            self.frame.setStyleSheet("#name_frame {border: 2px solid red}")
-        elif self.device in self.path.faulted_devices:
-            self.frame.setStyleSheet("#name_frame {border: 2px "\
-                                     "solid rgb(255,215,0)}")
-        else:
-            self.frame.setStyleSheet("#frame {border: 0px solid black}")
+        try:
+            #Wait for later to update widget
+            self.device.subscribe(self.update_state,
+                                  event_type=self.device.SUB_STATE,
+                                  run=False)
+        except:
+            logger.error("Widget is unable to subscribe to device %s",
+                         device.name)
 
     def update_state(self, *args, **kwargs):
         """
@@ -171,6 +138,8 @@ class LightRow(InactiveRow):
         #Set the color of the label
         if state == states.Removed.value:
             self.state_label.setStyleSheet("QLabel {color : rgb(124,252,0)}")
+        elif state == states.Unknown.value:
+            self.state_label.setStyleSheet("QLabel {color : rgb(255, 215, 0)}")
         else:
             self.state_label.setStyleSheet("QLabel {color : red}")
         #Disable the button
@@ -204,5 +173,3 @@ class LightRow(InactiveRow):
         Clear the subscription event
         """
         self.device.clear_sub(self.update_state)
-        self.path.clear_sub(self.update_mps)
-        self.path.clear_sub(self.update_path)

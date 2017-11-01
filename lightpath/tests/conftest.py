@@ -60,8 +60,8 @@ class Valve(Device):
     """
     _transmission = 0.0
     _veto         = False
-    SUB_DEV_CH    = 'device_state_changed'
-    _default_sub  = SUB_DEV_CH
+    SUB_STATE    = 'sub_state_changed'
+    _default_sub  = SUB_STATE
 
     def __init__(self, name, z, beamline):
         super().__init__(name)
