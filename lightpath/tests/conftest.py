@@ -64,7 +64,7 @@ class Valve(Device):
     _default_sub  = SUB_STATE
 
     def __init__(self, name, z, beamline):
-        super().__init__(name)
+        super().__init__(name, name=name)
         self.z    = z
         self.beamline     = beamline
         self.status = Status.removed
@@ -173,7 +173,7 @@ class MPS(Device):
     _default_sub  = SUB_MPS_CH
 
     def __init__(self, device):
-        super().__init__('MPS')
+        super().__init__('MPS', name='mps')
         self.device   = device
         self.bypassed = False
 
