@@ -5,14 +5,14 @@ Definitions for Lightpath Widgets
 # Standard #
 ############
 import logging
+import threading
 from enum import Enum
-from os   import path
 
 ###############
 # Third Party #
 ###############
 from pydm.PyQt.QtCore     import pyqtSlot, Qt
-from pydm.PyQt.QtGui      import QSizePolicy
+from pydm.PyQt.QtGui      import QPen, QSizePolicy
 from pydm.PyQt.QtGui      import QHBoxLayout, QWidget, QGridLayout, QLabel
 from pydm.PyQt.QtGui      import QFont, QFrame, QSpacerItem, QPushButton
 from pydm.widgets.drawing import PyDMDrawingRectangle
@@ -53,17 +53,12 @@ class InactiveRow:
         self.state_label.setStyleSheet("QLabel {color : rgb(255,0,255)}")
         #Create Beam Indicator
         self.indicator = PyDMDrawingRectangle(parent=parent)
-        self.indicator.setMinimumSize(40, 20)
+        self.indicator.setMinimumSize(45, 55)
         self.indicator.setSizePolicy(QSizePolicy.Fixed,
                                      QSizePolicy.Expanding)
+        self.indicator._pen = QPen(Qt.SolidLine)
         #Spacer
         self.spacer = QSpacerItem(40, 20)
-        #Store framing for MPS updates
-        self.frame_layout = QHBoxLayout()
-        self.frame_layout.addWidget(self.name_label)
-        self.frame = QFrame(parent=parent)
-        self.frame.setObjectName('name_frame')
-        self.frame.setLayout(self.frame_layout)
 
     @property
     def widgets(self):
@@ -71,7 +66,7 @@ class InactiveRow:
         Ordered list of widgets to add to designer
         """
         return [self.indicator,
-                self.frame,
+                self.name_label,
                 self.prefix_label,
                 self.spacer,
                 self.state_label]
@@ -90,8 +85,10 @@ class LightRow(InactiveRow):
     The widget shows the device information and state, updating looking at the
     devices :attr:`.inserted` and :attr:`.removed` attributes. The
     :attr:`.remove_button` also allows the user to remove devices by calling
-    the :meth:`.remove` method of the given device. Finally, PyDMRectangle is
-    used to show the current path of the beam through the table
+    the :meth:`.remove` method of the given device. The identical button is
+    setup if the device is determined to have an `insert` method. Finally,
+    PyDMRectangle is used to show the current path of the beam through the
+    table
 
     Parameters
     ----------
@@ -103,9 +100,21 @@ class LightRow(InactiveRow):
     """
     def __init__(self, device, parent=None):
         super().__init__(device, parent=parent)
-        #Create PushButton
-        self.remove_button = QPushButton('Remove', parent=parent)
-        self.remove_button.setFont(self.font)
+        #Create button widget
+        self.buttons = QWidget(parent=parent)
+        self.button_layout = QHBoxLayout()
+        self.buttons.setLayout(self.button_layout)
+        #Create Insert PushButton
+        if hasattr(device, 'insert'):
+            self.insert_button = QPushButton('Insert', parent=parent)
+            self.insert_button.setFont(self.font)
+            self.button_layout.addWidget(self.insert_button)
+            self.button_layout.addItem(QSpacerItem(10, 20))
+        #Create Remove PushButton
+        if hasattr(device, 'remove'):
+            self.remove_button = QPushButton('Remove', parent=parent)
+            self.remove_button.setFont(self.font)
+            self.button_layout.addWidget(self.remove_button)
         #Subscribe device to state changes
         try:
             #Wait for later to update widget
@@ -124,7 +133,7 @@ class LightRow(InactiveRow):
         ``Removed`` or ``Error``, with ``Unknown`` being if the device is not
         inserted or removed, and error being if the device is reporting as both
         inserted and removed. The color of the label is also adjusted to either
-        green or red to quickly 
+        green or red to quickly
         """
         states = Enum('states', ('Unknown', 'Inserted', 'Removed', 'Error'))
         #Interpret state
@@ -142,8 +151,11 @@ class LightRow(InactiveRow):
             self.state_label.setStyleSheet("QLabel {color : rgb(255, 215, 0)}")
         else:
             self.state_label.setStyleSheet("QLabel {color : red}")
-        #Disable the button
-        self.remove_button.setEnabled(state!=states.Removed.value)
+        #Disable buttons if necessary
+        if hasattr(self, 'insert_button'):
+            self.insert_button.setEnabled(state!=states.Inserted.value)
+        if hasattr(self, 'remove_button'):
+            self.remove_button.setEnabled(state!=states.Removed.value)
 
     @property
     def widgets(self):
@@ -151,22 +163,11 @@ class LightRow(InactiveRow):
         Ordered list of widgets to add to designer
         """
         return [self.indicator,
-                self.frame,
+                self.name_label,
                 self.prefix_label,
                 self.spacer,
                 self.state_label,
-                self.remove_button]
-
-    @pyqtSlot(bool)
-    def remove(self, value):
-        """
-        Remove the device from the beamline
-        """
-        logger.info("Removing device %s ...", self.device.name)
-        try:
-            self.device.remove(wait=False)
-        except Exception as exc:
-            logger.error(exc)
+                self.buttons]
 
     def clear_sub(self):
         """
