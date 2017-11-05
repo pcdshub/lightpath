@@ -54,20 +54,24 @@ class LightController:
                              ', '.join(branch.branches), branch.name)
                 for dest in branch.branches:
                     if dest != bp.name:
-                        #If this is a branch that can pass beam through
-                        #without renaming the beamline split
-                        if branch.beamline in branch.branches: 
-                            section, after = bp.split(device=branch)
-                        else:
-                            section = bp
                         #Join with downstream path
                         logger.debug("Joining %s and %s", bp.name, dest)
                         try:
-                            self.beamlines[dest] = self.beamlines[dest].join(
-                                                                        section)
+                            downstream = self.beamlines[dest] 
+                            #self.beamlines[dest] = self.beamlines[dest].join(
+                            #                                            section)
                         except KeyError:
                             logger.critical("Device %s has invalid branching "
                                             "dest %s", branch.name, dest)
+                        else:
+                            #If this is a branch that can pass beam through
+                            #without renaming the beamline split
+                            if branch.beamline in branch.branches: 
+                                section,after=bp.split(z=downstream.path[0].z)
+                            else:
+                                section = bp
+                            self.beamlines[dest] = BeamPath.join(section,
+                                                                 downstream)
             #Set as attribute for easy access
             setattr(self, bp.name.replace(' ','_').lower(),
                     self.beamlines[bp.name])
