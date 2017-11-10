@@ -40,7 +40,7 @@ class BeamPath(OphydObject):
     Represents a straight line of devices along the beamline
 
     The devices given must be a continuous set all along the same beamline, or,
-    multiple beamlines with appropriate reflecting devices in between. 
+    multiple beamlines with appropriate reflecting devices in between.
 
     Parameters
     ----------
@@ -148,18 +148,24 @@ class BeamPath(OphydObject):
 
             #Find branching devices and store
             #They will be marked as blocking by downstream devices
-            if device in self.branches:
-                last_branches.append(device)
+            try:
+                if device in self.branches:
+                    last_branches.append(device)
 
-            #Find inserted devices
-            elif device.inserted and (device.transmission <
-                                    self.minimum_transmission):
+                #Find inserted devices
+                elif device.inserted and (device.transmission <
+                                          self.minimum_transmission):
+                    block.append(device)
+                #Find unknown devices
+                elif not device.removed and not device.inserted:
+                    block.append(device)
+            except Exception as exc:
+                logger.error('Unable to determine state of %s', device.name)
+                logger.error(exc)
                 block.append(device)
-            #Find unknown devices
-            elif not device.removed and not device.inserted:
-                block.append(device)
-            #Stache our prior device
-            prior = device
+            finally:
+                #Stache our prior device
+                prior = device
 
         return block
 
@@ -288,7 +294,7 @@ class BeamPath(OphydObject):
         logger.info('Removing devices along the beampath ...')
         status = [device.remove(timeout=timeout)
                   for device in target_devices
-                  if not device.removed]
+                  if not device.removed and hasattr(device, 'remove')]
         #Wait parameters
         if wait:
             logger.info('Waiting for all devices to be '\

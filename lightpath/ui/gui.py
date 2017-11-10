@@ -5,7 +5,8 @@ Full Application for Lightpath
 # Standard #
 ############
 import logging
-from os import path
+import threading
+import os.path
 from functools import partial
 
 ###############
@@ -13,8 +14,7 @@ from functools import partial
 ###############
 from pydm import Display
 from pydm.PyQt.QtCore import pyqtSlot, Qt
-from pydm.PyQt.QtGui  import QSpacerItem, QGridLayout
-from pydm.widgets.drawing import PyDMDrawingLine
+from pydm.PyQt.QtGui  import QColor, QSpacerItem, QGridLayout
 
 import happi
 from happi import Client
@@ -61,12 +61,12 @@ class LightApp(Display):
         #Store Lightpath information
         self.light = LightController(*devices)
         self.path  = None
+        self._lock = threading.Lock()
         #Create empty layout
-        self.lightLayout = QGridLayout(self.widget_rows)
+        self.lightLayout = QGridLayout()
         self.lightLayout.setVerticalSpacing(1)
-        self.lightLayout.setHorizontalSpacing(1)
+        self.lightLayout.setHorizontalSpacing(10)
         self.widget_rows.setLayout(self.lightLayout)
-        self.scroll.setWidget(self.widget_rows)
 
         #Add destinations
         for line in self.destinations():
@@ -77,6 +77,7 @@ class LightApp(Display):
                                             self.change_path_display)
         self.mps_only_check.clicked.connect(self.change_path_display)
         self.upstream_check.clicked.connect(self.change_path_display)
+        self.transmission_slider.valueChanged.connect(self.transmission_adjusted)
         #Store LightRow objects to manage subscriptions
         self.rows = list()
         #Select the beamline to begin with
@@ -218,10 +219,30 @@ class LightApp(Display):
         if device:
             logger.info("Removing device %s ...", device.name)
             try:
-                device.remove(wait=False)
+                device.remove()
             except Exception as exc:
                 logger.error(exc)
 
+    @pyqtSlot(bool)
+    def insert(self, value, device=None):
+        """
+        Insert the device from the beamline
+        """
+        if device:
+            logger.info("Inserting device %s ...", device.name)
+            try:
+                device.insert()
+            except Exception as exc:
+                logger.error(exc)
+
+    @pyqtSlot(int)
+    def transmission_adjusted(self, value):
+        """
+        Adjust the :attr:`.BeamPath.minimum_transmission`
+        """
+        logger.debug("Adjusted minimum transmission to %s percent", value)
+        self.path.minimum_transmission = value/100.
+        self.update_path()
 
     @pyqtSlot()
     @pyqtSlot(bool)
@@ -229,42 +250,48 @@ class LightApp(Display):
         """
         Change the display devices based on the state of the control buttons
         """
-        logger.debug("Resorting beampath display ...")
-        #Grab all the light rows
-        rows = [self.load_device_row(d)
-                for d in self.select_devices(self.selected_beamline(),
-                                             upstream=self.upstream(),
-                                             mps_only=self.mps_only())]
-        #Clear layout if previously loaded rows exist
-        if self.rows:
-            #Clear our subscribtions
-            for row in self.rows: row.clear_sub()
-            #Clear the widgets
-            for i in reversed(range(self.lightLayout.count())):
-                old = self.lightLayout.takeAt(i).widget()
-                if old:
-                    old.deleteLater()
-            #Clear subscribed row cache
-            self.rows.clear()
+        with self._lock:
+            logger.debug("Resorting beampath display ...")
+            #Grab all the light rows
+            rows = [self.load_device_row(d)
+                    for d in self.select_devices(self.selected_beamline(),
+                                                 upstream=self.upstream(),
+                                                 mps_only=self.mps_only())]
+            #Clear layout if previously loaded rows exist
+            if self.rows:
+                #Clear our subscribtions
+                for row in self.rows: row.clear_sub()
+                #Clear the widgets
+                for i in reversed(range(self.lightLayout.count())):
+                    old = self.lightLayout.takeAt(i).widget()
+                    if old:
+                        old.deleteLater()
+                #Clear subscribed row cache
+                self.rows.clear()
 
-        #Add all the widgets to the display
-        for i, row in enumerate(rows):
-            #Cache row to later clear subscriptions
-            self.rows.append(row)
-            #Connect up remove button
-            if hasattr(row, 'remove_button'):
-                row.remove_button.clicked.connect(partial(self.remove,
-                                                          device=row.device))
-            #Add widgets to layout
-            for j, widget in enumerate(row.widgets):
-                if isinstance(widget, QSpacerItem):
-                    self.lightLayout.addItem(widget, i, j)
-                else:
-                    self.lightLayout.addWidget(widget, i, j)
+            #Add all the widgets to the display
+            for i, row in enumerate(rows):
+                #Cache row to later clear subscriptions
+                self.rows.append(row)
+                #Connect up remove button
+                if hasattr(row, 'remove_button'):
+                    row.remove_button.clicked.connect(partial(self.remove,
+                                                              device=row.device))
+                #Connect up insert button
+                if hasattr(row, 'insert_button'):
+                    row.insert_button.clicked.connect(partial(self.insert,
+                                                              device=row.device))
+                #Add widgets to layout
+                for j, widget in enumerate(row.widgets):
+                    if isinstance(widget, QSpacerItem):
+                        self.lightLayout.addItem(widget, i, j)
+                    else:
+                        self.lightLayout.addWidget(widget, i, j)
         #Initialize interface
         for row in self.device_rows:
             row.update_state()
-        self.update_path()
+        #Update display
+        self.transmission_adjusted(self.transmission_slider.value()) #Calls .update_path
         self.update_mps()
 
     def ui_filename(self):
@@ -277,8 +304,8 @@ class LightApp(Display):
         """
         Full path to :attr:`.ui_filename`
         """
-        return path.join(path.dirname(path.realpath(__file__)),
-                         self.ui_filename())
+        return os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            self.ui_filename())
 
     @classmethod
     def from_json(cls, json, beamline=None, parent=None,  **kwargs):
@@ -299,7 +326,7 @@ class LightApp(Display):
         kwargs :
             Restrict the devices included in the lightpath. These keywords are
             all passed to :meth:`.happi.Client.search`
-        
+
         Returns
         -------
         lightApp:
@@ -323,16 +350,17 @@ class LightApp(Display):
         """
         Update the PyDMRectangles to show devices as in the beam or not
         """
-        block = self.path.impediment
-        for row in self.device_rows:
-            #If our device is before or at the impediment, it is lit
-            if not block or (row.device.z <= block.z):
-                row.indicator._default_color = Qt.cyan
-            #Otherwise, it is off
-            else:
-                row.indicator._default_color = Qt.gray
-            #Update widget display
-            row.indicator.update()
+        with self._lock:
+            block = self.path.impediment
+            for row in self.device_rows:
+                #If our device is before or at the impediment, it is lit
+                if not block or (row.device.z <= block.z):
+                    row.indicator._default_color = Qt.cyan
+                #Otherwise, it is off
+                else:
+                    row.indicator._default_color = Qt.gray
+                #Update widget display
+                row.indicator.update()
 
     def update_mps(self, *args, **kwargs):
         """
@@ -342,17 +370,19 @@ class LightApp(Display):
         yellow if it is faulted but a full trip is being prevented by an
         upstream device
         """
-        #Path information
-        tripped = self.path.tripped_devices
-        faulted = self.path.faulted_devices
-        for row in self.device_rows:
-            if row.device in tripped:
-                row.frame.setStyleSheet("#name_frame {border: 2px solid red}")
-            elif row.device in faulted:
-                row.frame.setStyleSheet("#name_frame {border: 2px "\
-                                         "solid rgb(255,215,0)}")
-            else:
-                row.frame.setStyleSheet("#frame {border: 0px solid black}")
+        with self._lock:
+            #Path information
+            tripped = self.path.tripped_devices
+            faulted = self.path.faulted_devices
+            for row in self.device_rows:
+                row.indicator._pen.setWidth(5)
+                if row.device in tripped:
+                    row.indicator.penColor = Qt.red
+                elif row.device in faulted:
+                    row.indicator.penColor = QColor(255, 215, 0)
+                else:
+                    row.indicator._pen.setWidth(0)
+                    row.indicator.penColor = Qt.gray
 
     def clear_subs(self):
         """

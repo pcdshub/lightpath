@@ -34,6 +34,7 @@ install:
   - source activate test-environment
   - pip install codecov
   - pip install -r requirements.txt
+  - pip install pyqtgraph
   #Install
   - python setup.py install
   - conda list # for DEBUG of QT issues
