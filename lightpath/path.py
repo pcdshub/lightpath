@@ -16,13 +16,13 @@ affecting the beam.
 ####################
 # Standard Library #
 ####################
+import math
 import logging
 from collections import Iterable
 
 ####################
 #    Third Party   #
 ####################
-import numpy as np
 from prettytable    import PrettyTable
 from ophyd.ophydobj import OphydObject
 from ophyd.status   import wait as status_wait
@@ -84,7 +84,7 @@ class BeamPath(OphydObject):
             #Check types and positions
             for dev in self.path:
                 #Ensure positioning is physical
-                if np.isnan(dev.z) or dev.z < 0.:
+                if math.isnan(dev.z) or dev.z < 0.:
                     raise CoordinateError('Device %r is reporting a '
                                           'non-existant beamline position, '
                                           'its coordinate was not properly '
@@ -441,7 +441,7 @@ class BeamPath(OphydObject):
         if block:
             block = block.z
         else:
-            block = np.inf
+            block = math.inf
         #If device is upstream of impediment
         if obj and obj.z <= block:
             self._run_subs(sub_type = self.SUB_PTH_CHNG,

@@ -9,7 +9,6 @@ from enum import Enum
 ###############
 import happi
 import pytest
-import numpy as np
 from ophyd.device import Device
 from ophyd.status import DeviceStatus
 

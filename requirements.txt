@@ -1,4 +1,3 @@
-numpy
 prettytable
 git+https://github.com/NSLS-II/ophyd
 git+https://github.com/slaclab/pydm
