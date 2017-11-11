@@ -14,7 +14,8 @@ requirements:
 
     run:
       - python {{PY_VER}}*,>=3
-      - ophyd ==0.6.1
+      - ophyd
+      - pydm
       - pyqt >=5 
       - numpy
       - prettytable

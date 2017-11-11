@@ -1,6 +1,6 @@
 numpy
-ophyd==0.6.1
 prettytable
+git+https://github.com/NSLS-II/ophyd
 git+https://github.com/slaclab/pydm
 git+https://github.com/slaclab/happi
 git+https://github.com/slaclab/pcds-devices
