@@ -33,7 +33,7 @@ install:
   #Launch Conda environment
   - source activate test-environment
   - pip install codecov
-  - pip install -r requirements.txt
+  - pip install -r requirements.txt --ignore-installed
   - pip install pyqtgraph
   #Install
   - python setup.py install
