@@ -33,8 +33,7 @@ install:
   #Launch Conda environment
   - source activate test-environment
   - pip install codecov
-  - pip install -r requirements.txt --ignore-installed
-  - pip install pyqtgraph
+  #- pip install -r requirements.txt --ignore-installed
   #Install
   - python setup.py install
   - conda list # for DEBUG of QT issues
@@ -72,6 +71,6 @@ after_success:
       conda build . -c conda-forge -c skywalker-dev -c gsecars -c lightsource2-tag -c pydm-dev --token $CONDA_UPLOAD_TOKEN_TAG --python $TRAVIS_PYTHON_VERSION
     fi
   - |
-    if [[ $TRAVIS_PULL_REQUEST == false && $TRAVIS_REPO_SLUG == $OFFICIAL_REPO && $TRAVIS_BRANCH == 'master' && $TRAVIS_TAG == '' && $CONDA_UPLOAD_TOKEN_DEV != '' ]]; then
+    if [[ $TRAVIS_PULL_REQUEST == false && $TRAVIS_TAG == '' && $CONDA_UPLOAD_TOKEN_DEV != '' ]]; then
       conda build . -c conda-forge -c skywalker-dev -c gsecars -c lightsource2-tag -c pydm-dev --token $CONDA_UPLOAD_TOKEN_DEV --python $TRAVIS_PYTHON_VERSION
     fi
