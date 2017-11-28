@@ -7,7 +7,6 @@ from unittest.mock import Mock
 # Third Party #
 ###############
 import pytest
-from PyQt5.QtWidgets import QApplication
 
 ##########
 # Module #
@@ -16,7 +15,6 @@ import lightpath.ui
 
 @pytest.fixture(scope='function')
 def lightrow(path):
-    app = QApplication([])
     #Generate lightpath
     w = lightpath.ui.LightRow(path.path[3])
     #Replace Update functions with mocks

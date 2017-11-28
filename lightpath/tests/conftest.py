@@ -7,6 +7,7 @@ from enum import Enum
 ###############
 # Third Party #
 ###############
+import pydm
 import happi
 import pytest
 from ophyd.device import Device
@@ -40,6 +41,10 @@ def set_level(pytestconfig):
     #Create basic configuration
     logging.basicConfig(level=log_level,
                         filename=pytestconfig.getoption('--logfile'))
+
+@pytest.fixture(scope='session', autouse=True)
+def app():
+    return pydm.PyDMApplication()
 
 #####################
 # Simulated Classes #

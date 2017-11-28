@@ -1,6 +1,6 @@
 prettytable
 git+https://github.com/NSLS-II/ophyd
 git+https://github.com/slaclab/pydm
-git+https://github.com/slaclab/happi
+git+https://github.com/slaclab/happi@v0.5.0
 git+https://github.com/slaclab/pcds-devices
 git+https://github.com/lcls-pcds/QDarkStyleSheet

@@ -7,7 +7,6 @@ import os.path
 # Third Party #
 ###############
 import pytest
-from PyQt5.QtWidgets import QApplication
 from pcdsdevices.sim.pv import using_fake_epics_pv
 
 ##########
@@ -15,11 +14,7 @@ from pcdsdevices.sim.pv import using_fake_epics_pv
 ##########
 from lightpath.ui import LightApp
 
-@pytest.fixture(scope='module')
-def app():
-    return QApplication([])
-
-def test_app_buttons(app, lcls, containers):
+def test_app_buttons(lcls, containers):
     lightapp = LightApp(*lcls, containers=containers)
     #Check we initialized correctly
     assert lightapp.upstream()
@@ -32,7 +27,7 @@ def test_app_buttons(app, lcls, containers):
     lightapp.change_path_display()
     assert len(lightapp.rows) == 11
 
-def test_beampath_controls(app, lcls, containers):
+def test_beampath_controls(lcls, containers):
     lightapp = LightApp(*lcls, containers=containers)
     lightapp.remove(True, device=lightapp.rows[0].device)
     assert lightapp.rows[0].device.removed
@@ -43,7 +38,7 @@ def test_beampath_controls(app, lcls, containers):
 
 @using_fake_epics_pv
 @pytest.mark.xfail
-def test_app_from_json(app):
+def test_app_from_json():
     #Basic configuration
     lit = LightApp.from_json(os.path.join(
                              os.path.dirname(os.path.abspath(__file__)),
