@@ -7,7 +7,6 @@ import os.path
 # Third Party #
 ###############
 import pytest
-from pcdsdevices.sim.pv import using_fake_epics_pv
 
 ##########
 # Module #
