@@ -3,6 +3,7 @@
 ############
 import logging
 from enum import Enum
+from types import SimpleNamespace
 
 ###############
 # Third Party #
@@ -25,7 +26,7 @@ from lightpath import BeamPath
 def pytest_addoption(parser):
     parser.addoption("--log", action="store", default="INFO",
                      help="Set the level of the log")
-    parser.addoption("--logfile", action="store", default=None,
+    parser.addoption("--logfile", action="store", default='log',
                      help="Write the log output to specified file path")
 
 #Create a fixture to automatically instantiate logging setup
@@ -69,8 +70,9 @@ class Valve(Device):
 
     def __init__(self, name, z, beamline):
         super().__init__(name, name=name)
-        self.z    = z
-        self.beamline     = beamline
+        self.md = SimpleNamespace()
+        self.md.z    = z
+        self.md.beamline     = beamline
         self.status = Status.removed
         self.mps    = MPS(self)
 
@@ -150,8 +152,8 @@ class Crystal(Valve):
     def __init__(self, name, z, beamline, states):
         super().__init__(name, z, beamline)
         self.states = states
-        self.branches = [dest for state in self.states
-                              for dest  in state]
+        self.md.branches = [dest for state in self.states
+                            for dest  in state]
         self.mps      = None
 
     @property
