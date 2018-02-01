@@ -25,7 +25,7 @@ def test_sort(path):
     for i,device in enumerate(path.path):
         try:
         #Each devices is before than the next
-            assert device.z < path.path[i+1].z
+            assert device.md.z < path.path[i+1].md.z
         #Except for the final device
         except IndexError:
             assert i == len(path.devices) - 1
@@ -159,8 +159,8 @@ def test_split(path):
     assert path.split(device=path.path[4])[1].path == second.path
     
     #Test split by z yields partial beampaths
-    assert path.split(z=path.path[4].z)[0].path == first.path
-    assert path.split(z=path.path[4].z)[1].path == second.path
+    assert path.split(z=path.path[4].md.z)[0].path == first.path
+    assert path.split(z=path.path[4].md.z)[1].path == second.path
 
 
 def test_callback(path):
@@ -200,7 +200,7 @@ def test_faulted_devices(path):
 
 def test_complex_branching(lcls):
     #Upstream Optic
-    xcs = [d for d in lcls if d.beamline in ['HXR','XCS']]
+    xcs = [d for d in lcls if d.md.beamline in ['HXR','XCS']]
     bp  = BeamPath(*xcs)
     #Remove all the devices
     for d in xcs : d.remove()
@@ -211,7 +211,7 @@ def test_complex_branching(lcls):
     #Path should be cleared
     assert bp.blocking_devices == []
     #Downstream Optic
-    mec = [d for d in lcls if d.beamline in ['HXR','MEC']]
+    mec = [d for d in lcls if d.md.beamline in ['HXR','MEC']]
     bp  = BeamPath(*mec)
     #Remove all devices
     for d in mec : d.remove()
