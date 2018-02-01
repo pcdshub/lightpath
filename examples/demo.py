@@ -24,12 +24,11 @@ logging.basicConfig(level='DEBUG')
 def main():
     #Gather devices
     lcls = lightpath.tests.lcls()
-    cntrs = lightpath.tests.containers()
     [dev.insert() for dev in lcls]
     #Create Application
     app   = pydm.PyQt.QtGui.QApplication([])
     #Create Lightpath
-    light = LightApp(*lcls, containers=cntrs)
+    light = LightApp(*lcls)
     light.show()
     #Execute 
     app.exec_()
