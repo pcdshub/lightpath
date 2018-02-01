@@ -257,12 +257,3 @@ def lcls():
             IPIMB('XCS IPM',       z=21.,  beamline='XCS'),
             Valve('XCS Valve',     z=22.,  beamline='XCS'),
               ]
-
-@pytest.fixture(scope='function')
-def containers():
-    return [happi.Device(name='FEE Valve 3', prefix='TST:FEE:VGC:03',
-                         beamline='HXR', z=10.0),
-            happi.Device(name='XC2 Valve 2', prefix='TST:XCS:VGC:02',
-                         beamline='XCS', z=23.0),
-           ]
-
