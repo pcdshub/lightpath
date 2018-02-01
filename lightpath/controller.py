@@ -84,17 +84,6 @@ class LightController:
         return list(set([p.impediment for p in self.beamlines.values()
                          if p.impediment and p.impediment not in p.branches]))
 
-    @property
-    def tripped_devices(self):
-        """
-        List of all tripped MPS devices in LCLS
-        """
-        devices = list()
-
-        for line in self.beamlines.values():
-            devices.extend(line.tripped_devices)
-
-        return list(set(devices))
 
     @property
     def devices(self):

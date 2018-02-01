@@ -74,7 +74,6 @@ class Valve(Device):
         self.md.z    = z
         self.md.beamline     = beamline
         self.status = Status.removed
-        self.mps    = MPS(self)
 
 
     @property
@@ -109,9 +108,6 @@ class Valve(Device):
         self.status = Status.inserted
         #Run subscriptions to device state
         self._run_subs(obj=self, sub_type=self._default_sub)
-        #Run subscriptions to mps state
-        if self.mps:
-            self.mps._run_subs(obj=self, sub_type=self.mps._default_sub)
         #Return complete status object
         return DeviceStatus(self, done=True, success=True)
 
@@ -124,9 +120,6 @@ class Valve(Device):
         self.status = Status.removed
         #Run subscriptions to device state
         self._run_subs(obj=self, sub_type=self._default_sub)
-        #Run subscriptions to mps state
-        if self.mps:
-            self.mps._run_subs(obj=self, sub_type=self.mps._default_sub)
         #Return complete status object
         return DeviceStatus(self, done=True, success=True)
 
@@ -154,7 +147,6 @@ class Crystal(Valve):
         self.states = states
         self.md.branches = [dest for state in self.states
                             for dest  in state]
-        self.mps      = None
 
     @property
     def destination(self):

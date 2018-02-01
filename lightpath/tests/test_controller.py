@@ -67,18 +67,6 @@ def test_controller_device_summaries(lcls):
     assert len(controller.incident_devices) == 1
     lcls[3].remove()
 
-    #No tripped devices
-    assert controller.tripped_devices == []
-    #Common tripped devices
-    lcls[0].insert()
-    assert controller.tripped_devices == [lcls[0]]
-    #Multiple faults
-    controller.cxi.path[8].insert()
-    assert len(controller.tripped_devices) == 2
-    controller.cxi.path[2].insert()
-    assert len(controller.tripped_devices) == 1
-
-
 def test_path_to(lcls):
     controller = LightController(*lcls)
     bp = controller.path_to(lcls[12])

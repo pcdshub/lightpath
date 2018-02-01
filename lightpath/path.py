@@ -68,7 +68,6 @@ class BeamPath(OphydObject):
     """
     #Subscription Information
     SUB_PTH_CHNG     = 'beampath_changed'
-    SUB_MPSPATH_CHNG = 'mpspath_changed'
     _default_sub     = SUB_PTH_CHNG
     #Transmission setting
     minimum_transmission = 0.1
@@ -206,39 +205,6 @@ class BeamPath(OphydObject):
             pt.add_row([d.name, d.prefix, d.md.z, d.md.beamline, str(d.removed)])
         #Show table
         print(pt, file=file)
-
-    @property
-    def veto_devices(self):
-        """
-        A list of MPS veto devices along the path
-        """
-        return [device for device in self.path
-                if getattr(device, 'mps', None)
-                and device.mps.veto_capable]
-
-    @property
-    def tripped_devices(self):
-        """
-        Devices who are both faulted and unprotected from the beam
-        """
-        ins_veto = [veto for veto in self.veto_devices if veto.inserted]
-
-        if not ins_veto:
-            return self.faulted_devices
-
-        return [d for d in self.faulted_devices
-                  if ins_veto[0].md.z > d.md.z]
-
-    @property
-    def faulted_devices(self):
-        """
-        A list of faulted MPS devices, this includes those protected by veto
-        devices
-        """
-        return [device for device in self.path
-                if getattr(device, 'mps', None)
-                and device.mps.faulted
-                and not (device.mps.bypassed or device.mps.veto_capable)]
 
     @property
     def impediment(self):
@@ -446,10 +412,6 @@ class BeamPath(OphydObject):
         if obj and obj.md.z <= block:
             self._run_subs(sub_type = self.SUB_PTH_CHNG,
                              device = obj)
-        #Alert that an MPS system has moved
-        if obj and getattr(obj, 'mps', None):
-            self._run_subs(sub_type=self.SUB_MPSPATH_CHNG,
-                           device=obj)
 
     def subscribe(self, cb, event_type=None, run=True):
         """
