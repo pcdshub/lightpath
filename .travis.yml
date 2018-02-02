@@ -29,7 +29,7 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
   #Grab all dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION swig happi=0.5.0 pcds-devices pyqt=5 coverage pip jinja2 wheel ophyd pytest prettytable pydm -c skywalker-tag -c pydm-dev -c gsecars -c conda-forge -c lightsource2-tag
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION swig happi pyqt=5 coverage pip jinja2 wheel ophyd pytest prettytable pydm -c pcds-tag -c pydm-dev -c gsecars -c conda-forge -c lightsource2-tag
   #Launch Conda environment
   - source activate test-environment
   - pip install codecov

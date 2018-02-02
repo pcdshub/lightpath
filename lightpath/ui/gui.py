@@ -17,9 +17,6 @@ from pydm.PyQt.QtCore import pyqtSlot, Qt
 from pydm.PyQt.QtGui  import QColor, QSpacerItem, QGridLayout
 
 import happi
-from happi import Client
-from happi.backends import JSONBackend
-from pcdsdevices.happireader import construct_device
 
 ##########
 # Module #
@@ -55,7 +52,7 @@ class LightApp(Display):
     parent : optional
     """
 
-    def __init__(self, *devices, containers=None, beamline=None,
+    def __init__(self, *devices, beamline=None,
                  parent=None, dark=True):
         super().__init__(parent=parent)
         #Store Lightpath information
@@ -75,7 +72,6 @@ class LightApp(Display):
         #Connect signals to slots
         self.destination_combo.currentIndexChanged.connect(
                                             self.change_path_display)
-        self.mps_only_check.clicked.connect(self.change_path_display)
         self.upstream_check.clicked.connect(self.change_path_display)
         self.transmission_slider.valueChanged.connect(self.transmission_adjusted)
         #Store LightRow objects to manage subscriptions
@@ -89,23 +85,6 @@ class LightApp(Display):
             idx = 0
         #Move the ComboBox
         self.destination_combo.setCurrentIndex(idx)
-        #Grab containers
-        containers = containers or []
-        self.containers = dict((key, list())
-                               for key in self.light.beamlines.keys())
-        for device in containers:
-            try:
-                #Check we have a z attribute
-                z = getattr(device, 'z')
-                self.containers[device.beamline].append(device)
-            except KeyError:
-                logger.error('Container %s belongs to beamline %s, '
-                             ' which is not represented by other devices',
-                             device.name, device.beamline)
-            except AttributeError:
-                logger.error('Device %r does not implement the proper '
-                             'interface to be included in the path',
-                             device)
         #Setup the UI
         self.change_path_display()
 
@@ -126,26 +105,13 @@ class LightApp(Display):
         return sorted(list(self.light.beamlines.keys()),
                       key= lambda x : self.light.beamlines[x].range[0])
 
-    @property
-    def device_rows(self):
-        """
-        Subset of device rows that refer to live devices
-        """
-        return [row for row in self.rows if not isinstance(row.device,
-                                                           happi.Device)]
-
     def load_device_row(self, device):
         """
         Create LightRow for device
         """
-        #Create new widget
-        if isinstance(device, happi.Device):
-            w = InactiveRow(device, parent=self.widget_rows)
-        else:
-            w = LightRow(device, parent=self.widget_rows)
-        return w
+        return LightRow(device, parent=self.widget_rows)
 
-    def select_devices(self, beamline, upstream=True, mps_only=False):
+    def select_devices(self, beamline, upstream=True):
         """
         Select a subset of beamline devices to show in the display
 
@@ -156,9 +122,6 @@ class LightApp(Display):
 
         upstream : bool, optional
             Include upstream devices in the display
-
-        mps_only : bool ,optional
-            Only show devices that are in the mps system
         """
         #Clear any remaining subscriptions
         if self.path:
@@ -167,29 +130,12 @@ class LightApp(Display):
         self.path = self.light.beamlines[beamline]
         #Defer running updates until UI is created 
         self.path.subscribe(self.update_path, run=False)
-        self.path.subscribe(self.update_mps,
-                            event_type=self.path.SUB_MPSPATH_CHNG,
-                            run=False)
-        pool = self.path.path
-        #Find end point for each beamline
-        bls  = set(d.beamline for d in pool)
-        endpoints = dict((bl, max([d.z for d in pool
-                                   if d.beamline == bl]))
-                         for bl in bls)
-        #Find necessary containers
-        containers = [c for bl in endpoints.keys()
-                        for c in self.containers[bl]
-                        if (c.beamline == bl
-                            and c.z < endpoints[bl])]
-        #Add containers to pool and resort
-        pool = sorted(pool + containers, key = lambda x : x.z)
         #Only return devices if they are on the specified beamline
         if not upstream:
-            pool = [dev for dev in pool if dev.beamline == beamline]
-        #Only return MPS devices
-        if mps_only:
-            #Note: This does not account for improperly configured `mps`
-            pool = [dev for dev in pool if hasattr(dev, 'mps')]
+            pool = [dev for dev in self.path.path
+                    if dev.md.beamline == beamline]
+        else:
+            pool = self.path.path
         logger.debug("Selected %s devices ...", len(pool))
         return pool
 
@@ -198,12 +144,6 @@ class LightApp(Display):
         Current beamline selected by the combo box
         """
         return self.destination_combo.currentText()
-
-    def mps_only(self):
-        """
-        Whether the user has selected to only display MPS devices
-        """
-        return self.mps_only_check.isChecked()
 
     def upstream(self):
         """
@@ -255,8 +195,7 @@ class LightApp(Display):
             #Grab all the light rows
             rows = [self.load_device_row(d)
                     for d in self.select_devices(self.selected_beamline(),
-                                                 upstream=self.upstream(),
-                                                 mps_only=self.mps_only())]
+                                                 upstream=self.upstream())]
             #Clear layout if previously loaded rows exist
             if self.rows:
                 #Clear our subscribtions
@@ -288,11 +227,10 @@ class LightApp(Display):
                     else:
                         self.lightLayout.addWidget(widget, i, j)
         #Initialize interface
-        for row in self.device_rows:
+        for row in self.rows:
             row.update_state()
         #Update display
         self.transmission_adjusted(self.transmission_slider.value()) #Calls .update_path
-        self.update_mps()
 
     def ui_filename(self):
         """
@@ -307,54 +245,15 @@ class LightApp(Display):
         return os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             self.ui_filename())
 
-    @classmethod
-    def from_json(cls, json, beamline=None, parent=None,  **kwargs):
-        """
-        Create a lightpath user interface from a JSON happi database
-
-        Parameters
-        ----------
-        path : str
-            Path to the JSON file
-
-        beamline : str, optional
-            Name of beamline to launch application
-
-        parent : QWidget, optional
-            Parent for LightApp QWidget
-
-        kwargs :
-            Restrict the devices included in the lightpath. These keywords are
-            all passed to :meth:`.happi.Client.search`
-
-        Returns
-        -------
-        lightApp:
-            Instantiated widget 
-        """
-        #Load all of the information from happi
-        happi   = Client(database=JSONBackend(json))
-        devices = happi.search(**kwargs, as_dict=False)
-        #Create valid pcdsdevices
-        path = list()
-        for dev in devices:
-            try:
-                path.append(construct_device(dev))
-            except Exception:
-                logger.exception("Error instantiating %s ...", dev.name)
-        #Instantiate the Application
-        logger.debug("Instantiating User Interface ...")
-        return cls(*path, beamline=beamline, parent=parent)
-
     def update_path(self, *args,  **kwargs):
         """
         Update the PyDMRectangles to show devices as in the beam or not
         """
         with self._lock:
             block = self.path.impediment
-            for row in self.device_rows:
+            for row in self.rows:
                 #If our device is before or at the impediment, it is lit
-                if not block or (row.device.z <= block.z):
+                if not block or (row.device.md.z <= block.md.z):
                     row.indicator._default_color = Qt.cyan
                 #Otherwise, it is off
                 else:
@@ -362,31 +261,8 @@ class LightApp(Display):
                 #Update widget display
                 row.indicator.update()
 
-    def update_mps(self, *args, **kwargs):
-        """
-        Update the MPS status of the frame
-
-        The frame of the row will be red if the device is tripping the beam,
-        yellow if it is faulted but a full trip is being prevented by an
-        upstream device
-        """
-        with self._lock:
-            #Path information
-            tripped = self.path.tripped_devices
-            faulted = self.path.faulted_devices
-            for row in self.device_rows:
-                row.indicator._pen.setWidth(5)
-                if row.device in tripped:
-                    row.indicator.penColor = Qt.red
-                elif row.device in faulted:
-                    row.indicator.penColor = QColor(255, 215, 0)
-                else:
-                    row.indicator._pen.setWidth(0)
-                    row.indicator.penColor = Qt.gray
-
     def clear_subs(self):
         """
         Clear the subscription event
         """
         self.path.clear_sub(self.update_path)
-        self.path.clear_sub(self.update_mps)

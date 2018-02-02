@@ -3,6 +3,7 @@
 ############
 import logging
 from enum import Enum
+from types import SimpleNamespace
 
 ###############
 # Third Party #
@@ -25,7 +26,7 @@ from lightpath import BeamPath
 def pytest_addoption(parser):
     parser.addoption("--log", action="store", default="INFO",
                      help="Set the level of the log")
-    parser.addoption("--logfile", action="store", default=None,
+    parser.addoption("--logfile", action="store", default='log',
                      help="Write the log output to specified file path")
 
 #Create a fixture to automatically instantiate logging setup
@@ -69,10 +70,10 @@ class Valve(Device):
 
     def __init__(self, name, z, beamline):
         super().__init__(name, name=name)
-        self.z    = z
-        self.beamline     = beamline
+        self.md = SimpleNamespace()
+        self.md.z    = z
+        self.md.beamline     = beamline
         self.status = Status.removed
-        self.mps    = MPS(self)
 
 
     @property
@@ -107,9 +108,6 @@ class Valve(Device):
         self.status = Status.inserted
         #Run subscriptions to device state
         self._run_subs(obj=self, sub_type=self._default_sub)
-        #Run subscriptions to mps state
-        if self.mps:
-            self.mps._run_subs(obj=self, sub_type=self.mps._default_sub)
         #Return complete status object
         return DeviceStatus(self, done=True, success=True)
 
@@ -122,9 +120,6 @@ class Valve(Device):
         self.status = Status.removed
         #Run subscriptions to device state
         self._run_subs(obj=self, sub_type=self._default_sub)
-        #Run subscriptions to mps state
-        if self.mps:
-            self.mps._run_subs(obj=self, sub_type=self.mps._default_sub)
         #Return complete status object
         return DeviceStatus(self, done=True, success=True)
 
@@ -150,9 +145,8 @@ class Crystal(Valve):
     def __init__(self, name, z, beamline, states):
         super().__init__(name, z, beamline)
         self.states = states
-        self.branches = [dest for state in self.states
-                              for dest  in state]
-        self.mps      = None
+        self.md.branches = [dest for state in self.states
+                            for dest  in state]
 
     @property
     def destination(self):
@@ -263,12 +257,3 @@ def lcls():
             IPIMB('XCS IPM',       z=21.,  beamline='XCS'),
             Valve('XCS Valve',     z=22.,  beamline='XCS'),
               ]
-
-@pytest.fixture(scope='function')
-def containers():
-    return [happi.Device(name='FEE Valve 3', prefix='TST:FEE:VGC:03',
-                         beamline='HXR', z=10.0),
-            happi.Device(name='XC2 Valve 2', prefix='TST:XCS:VGC:02',
-                         beamline='XCS', z=23.0),
-           ]
-

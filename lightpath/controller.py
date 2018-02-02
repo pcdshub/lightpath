@@ -39,20 +39,20 @@ class LightController:
     def __init__(self, *devices):
         #Create segmented beampaths beamlines
         self.beamlines = dict((line, BeamPath(*[dev for dev in devices
-                                                if dev.beamline == line],
+                                                if dev.md.beamline == line],
                                                 name=line))
-                              for line in set(d.beamline for d in devices))
+                              for line in set(d.md.beamline for d in devices))
 
         #Iterate through creating complete paths 
         for bp in sorted(self.beamlines.values(),
-                         key = lambda x : x.path[0].z):
+                         key = lambda x : x.path[0].md.z):
             logger.info("Assembling beamline %s ...", bp.name)
 
             #Grab branches off the beamline
             for branch in bp.branches:
                 logger.debug("Found branches onto beamlines %s from %s",
-                             ', '.join(branch.branches), branch.name)
-                for dest in branch.branches:
+                             ', '.join(branch.md.branches), branch.name)
+                for dest in branch.md.branches:
                     if dest != bp.name:
                         #Join with downstream path
                         logger.debug("Joining %s and %s", bp.name, dest)
@@ -66,8 +66,8 @@ class LightController:
                         else:
                             #If this is a branch that can pass beam through
                             #without renaming the beamline split
-                            if branch.beamline in branch.branches: 
-                                section,after=bp.split(z=downstream.path[0].z)
+                            if branch.md.beamline in branch.md.branches: 
+                                section,after=bp.split(z=downstream.path[0].md.z)
                             else:
                                 section = bp
                             self.beamlines[dest] = BeamPath.join(section,
@@ -84,17 +84,6 @@ class LightController:
         return list(set([p.impediment for p in self.beamlines.values()
                          if p.impediment and p.impediment not in p.branches]))
 
-    @property
-    def tripped_devices(self):
-        """
-        List of all tripped MPS devices in LCLS
-        """
-        devices = list()
-
-        for line in self.beamlines.values():
-            devices.extend(line.tripped_devices)
-
-        return list(set(devices))
 
     @property
     def devices(self):
@@ -135,9 +124,9 @@ class LightController:
             Path to and including given device
         """
         try:
-            prior, after = self.beamlines[device.beamline].split(device=device)
+            prior, after = self.beamlines[device.md.beamline].split(device=device)
 
         except KeyError:
-            raise ValueError("Beamline {} not found".format(device.beamline))
+            raise ValueError("Beamline {} not found".format(device.md.beamline))
 
         return prior

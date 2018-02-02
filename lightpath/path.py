@@ -68,7 +68,6 @@ class BeamPath(OphydObject):
     """
     #Subscription Information
     SUB_PTH_CHNG     = 'beampath_changed'
-    SUB_MPSPATH_CHNG = 'mpspath_changed'
     _default_sub     = SUB_PTH_CHNG
     #Transmission setting
     minimum_transmission = 0.1
@@ -84,7 +83,7 @@ class BeamPath(OphydObject):
             #Check types and positions
             for dev in self.path:
                 #Ensure positioning is physical
-                if math.isnan(dev.z) or dev.z < 0.:
+                if math.isnan(dev.md.z) or dev.md.z < 0.:
                     raise CoordinateError('Device %r is reporting a '
                                           'non-existant beamline position, '
                                           'its coordinate was not properly '
@@ -102,21 +101,21 @@ class BeamPath(OphydObject):
         """
         Branching devices along the path
         """
-        return [d for d in self.devices if getattr(d, 'branches', False)]
+        return [d for d in self.devices if getattr(d.md, 'branches', False)]
 
     @property
     def range(self):
         """
         Starting z position of beamline
         """
-        return self.path[0].z, self.path[-1].z
+        return self.path[0].md.z, self.path[-1].md.z
 
     @property
     def path(self):
         """
         List of devices ordered by coordinates
         """
-        return sorted(self.devices, key=lambda dev : dev.z)
+        return sorted(self.devices, key=lambda dev : dev.md.z)
 
     @property
     def blocking_devices(self):
@@ -131,10 +130,10 @@ class BeamPath(OphydObject):
         block         = list()
         for device in self.path:
             #If we have switched beamlines
-            if prior and device.beamline != prior.beamline:
+            if prior and device.md.beamline != prior.md.beamline:
                 #Find improperly configured optics
                 for optic in last_branches:
-                    if device.beamline not in optic.destination:
+                    if device.md.beamline not in optic.destination:
                         block.append(optic)
                 #Clear optics that have been evaluated
                 last_branches.clear()
@@ -142,8 +141,8 @@ class BeamPath(OphydObject):
             #If our last device was an optic, make sure it wasn't required
             #to continue along this beampath
             elif (prior in last_branches
-                and device.beamline in prior.branches
-                and device.beamline not in prior.destination):
+                and device.md.beamline in prior.md.branches
+                and device.md.beamline not in prior.destination):
                 block.append(last_branches.pop(-1))
 
             #Find branching devices and store
@@ -183,7 +182,7 @@ class BeamPath(OphydObject):
         if not impediment:
             return inserted
         #Otherwise only return upstream of the impediment
-        return [d for d in inserted if d.z <= impediment.z]
+        return [d for d in inserted if d.md.z <= impediment.md.z]
 
     def show_devices(self, file=None):
         """
@@ -203,42 +202,9 @@ class BeamPath(OphydObject):
         pt.float_format  = '8.5'
         #Add info
         for d in self.path:
-            pt.add_row([d.name, d.prefix, d.z, d.beamline, str(d.removed)])
+            pt.add_row([d.name, d.prefix, d.md.z, d.md.beamline, str(d.removed)])
         #Show table
         print(pt, file=file)
-
-    @property
-    def veto_devices(self):
-        """
-        A list of MPS veto devices along the path
-        """
-        return [device for device in self.path
-                if getattr(device, 'mps', None)
-                and device.mps.veto_capable]
-
-    @property
-    def tripped_devices(self):
-        """
-        Devices who are both faulted and unprotected from the beam
-        """
-        ins_veto = [veto for veto in self.veto_devices if veto.inserted]
-
-        if not ins_veto:
-            return self.faulted_devices
-
-        return [d for d in self.faulted_devices
-                  if ins_veto[0].z > d.z]
-
-    @property
-    def faulted_devices(self):
-        """
-        A list of faulted MPS devices, this includes those protected by veto
-        devices
-        """
-        return [device for device in self.path
-                if getattr(device, 'mps', None)
-                and device.mps.faulted
-                and not (device.mps.bypassed or device.mps.veto_capable)]
 
     @property
     def impediment(self):
@@ -354,14 +320,14 @@ class BeamPath(OphydObject):
             raise ValueError("Must supply information where to split the path")
         #Grab the z if given a device
         if device:
-            z = device.z
+            z = device.md.z
         #Look within range
         if z<self.range[0] or z>self.range[1]:
             raise ValueError("Split position {} is not within the range of "
                              "the path.".format(z))
         #Split the paths
-        return (BeamPath(*[d for d in self.devices if d.z <= z]),
-                BeamPath(*[d for d in self.devices if d.z >  z])
+        return (BeamPath(*[d for d in self.devices if d.md.z <= z]),
+                BeamPath(*[d for d in self.devices if d.md.z >  z])
                )
 
     @classmethod
@@ -439,17 +405,13 @@ class BeamPath(OphydObject):
         #Determine whether our path has been changed
         block = self.impediment
         if block:
-            block = block.z
+            block = block.md.z
         else:
             block = math.inf
         #If device is upstream of impediment
-        if obj and obj.z <= block:
+        if obj and obj.md.z <= block:
             self._run_subs(sub_type = self.SUB_PTH_CHNG,
                              device = obj)
-        #Alert that an MPS system has moved
-        if obj and getattr(obj, 'mps', None):
-            self._run_subs(sub_type=self.SUB_MPSPATH_CHNG,
-                           device=obj)
 
     def subscribe(self, cb, event_type=None, run=True):
         """
