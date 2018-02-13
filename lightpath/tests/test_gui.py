@@ -12,9 +12,10 @@ import pytest
 # Module #
 ##########
 from lightpath.ui import LightApp
+from lightpath.controller import LightController
 
-def test_app_buttons(lcls):
-    lightapp = LightApp(*lcls)
+def test_app_buttons(lcls_client):
+    lightapp = LightApp(LightController(lcls_client))
     #Check we initialized correctly
     assert lightapp.upstream()
     #Create widgets
@@ -25,8 +26,8 @@ def test_app_buttons(lcls):
     lightapp.change_path_display()
     assert len(lightapp.rows) == 10
 
-def test_beampath_controls(lcls):
-    lightapp = LightApp(*lcls)
+def test_beampath_controls(lcls_client):
+    lightapp = LightApp(LightController(lcls_client))
     lightapp.remove(True, device=lightapp.rows[0].device)
     assert lightapp.rows[0].device.removed
     lightapp.insert(True, device=lightapp.rows[0].device)
