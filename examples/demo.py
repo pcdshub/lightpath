@@ -16,19 +16,18 @@ import pydm
 ##########
 import lightpath.tests
 from lightpath.ui import LightApp
+from lightpath.controller import LightController
 
 logger = logging.getLogger('lightpath')
-logging.basicConfig(level='DEBUG')
 
 
 def main():
     #Gather devices
-    lcls = lightpath.tests.lcls()
-    [dev.insert() for dev in lcls]
+    cntrl = LightController(lightpath.tests.lcls_client())
     #Create Application
     app   = pydm.PyQt.QtGui.QApplication([])
     #Create Lightpath
-    light = LightApp(*lcls)
+    light = LightApp(cntrl)
     light.show()
     #Execute 
     app.exec_()
