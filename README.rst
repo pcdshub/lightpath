@@ -1,13 +1,13 @@
 LCLS Lightpath
 ==============
-.. image:: https://travis-ci.org/slaclab/lightpath.svg?branch=master
-    :target: https://travis-ci.org/slaclab/lightpath
+.. image:: https://travis-ci.org/pcdshub/lightpath.svg?branch=master
+    :target: https://travis-ci.org/pcdshub/lightpath
 
-.. image:: https://codecov.io/github/slaclab/lightpath/coverage.svg?branch=master
-    :target: https://codecov.io/gh/slaclab/lightpath?branch=master
+.. image:: https://codecov.io/github/pcdshub/lightpath/coverage.svg?branch=master
+    :target: https://codecov.io/gh/pcdshub/lightpath?branch=master
 
-.. image:: https://landscape.io/github/slaclab/lightpath/master/landscape.svg?style=flat
-    :target: https://landscape.io/github/slaclab/lightpath/master
+.. image:: https://landscape.io/github/pcdshub/lightpath/master/landscape.svg?style=flat
+    :target: https://landscape.io/github/pcdshub/lightpath/master
 
 Python module for control of LCLS beamlines
 
@@ -24,10 +24,10 @@ Install the most recent tagged build:
 
 .. code::
 
-  conda install lightpath -c skywalker-tag -c lightsource2-tag -c conda-forge
+  conda install lightpath -c pcds-tag -c lightsource2-tag -c conda-forge
 
 Install the most recent development build:
 
 .. code::
 
-  conda install lightpath -c skywalker-dev -c lightsource2-tag -c conda-forge
+  conda install lightpath -c pcds-dev -c lightsource2-tag -c conda-forge
