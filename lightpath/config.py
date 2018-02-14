@@ -10,4 +10,4 @@ beamlines = {'XPP': {'HXD': {'end': xpp_lodcm}},
                      'XCS': {}},
              'MFX': {'HXD': {'end': post_xrtm2h}},
              'CXI': {'HXD': {}},
-             'MEC': {'MEC': {'end': post_xrtm2h}}}
+             'MEC': {'HXD': {'end': post_xrtm2h}}}
