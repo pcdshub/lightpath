@@ -6,20 +6,15 @@ contsructed as a :class:`.BeamPath` object. This includes not only devices on
 the upstream beamline but all of the beamlines before it. For example, the MEC
 beampath will include devices in both the FEE and the XRT. The
 :class:`.LightController` handles this logic as well as a basic overview of
-where the beam is and what the state of the MPS system is currently. 
+where the beam is and what the state of the MPS system is currently.
 """
-####################
-# Standard Library #
-####################
+import math
 import logging
-####################
-#    Third Party   #
-####################
 
-####################
-#     Package      #
-####################
+from happi.loader import from_container
+
 from .path import BeamPath
+from .config import beamlines
 
 logger = logging.getLogger(__name__)
 
@@ -30,51 +25,80 @@ class LightController:
     Handles grouping devices into beamlines and joining paths together. Also
     provides an overview of the state of the entire beamline
 
+    Attributes
+    ----------
+    containers: list
+        List of happi Device objects that were unable to be instantiated
+
     Parameters
     ----------
-    args :
-        LCLS Devices
+    client : happi.Client
+        Happi Client
+
+    endstations: list, optional
+        List of experimental endstations to load BeamPath objects for. If left
+        as None, all endstations will be loaded
     """
+    def __init__(self, client, endstations=None):
+        self.client = client
+        self.containers = list()
+        self.beamlines = dict()
+        endstations = endstations or beamlines.keys()
+        # Find the requisite beamlines to reach our endstation
+        for beamline in endstations:
+            self.load_beamline(beamline)
 
-    def __init__(self, *devices):
-        #Create segmented beampaths beamlines
-        self.beamlines = dict((line, BeamPath(*[dev for dev in devices
-                                                if dev.md.beamline == line],
-                                                name=line))
-                              for line in set(d.md.beamline for d in devices))
+    def load_beamline(self, endstation):
+        """
+        Load a beamline from the provided happi client
 
-        #Iterate through creating complete paths 
-        for bp in sorted(self.beamlines.values(),
-                         key = lambda x : x.path[0].md.z):
-            logger.info("Assembling beamline %s ...", bp.name)
+        Parameters
+        ----------
+        endstation : str
+            Name of endstation to load
 
-            #Grab branches off the beamline
-            for branch in bp.branches:
-                logger.debug("Found branches onto beamlines %s from %s",
-                             ', '.join(branch.md.branches), branch.name)
-                for dest in branch.md.branches:
-                    if dest != bp.name:
-                        #Join with downstream path
-                        logger.debug("Joining %s and %s", bp.name, dest)
-                        try:
-                            downstream = self.beamlines[dest] 
-                            #self.beamlines[dest] = self.beamlines[dest].join(
-                            #                                            section)
-                        except KeyError:
-                            logger.critical("Device %s has invalid branching "
-                                            "dest %s", branch.name, dest)
-                        else:
-                            #If this is a branch that can pass beam through
-                            #without renaming the beamline split
-                            if branch.md.beamline in branch.md.branches: 
-                                section,after=bp.split(z=downstream.path[0].md.z)
-                            else:
-                                section = bp
-                            self.beamlines[dest] = BeamPath.join(section,
-                                                                 downstream)
-            #Set as attribute for easy access
-            setattr(self, bp.name.replace(' ','_').lower(),
-                    self.beamlines[bp.name])
+        Returns
+        -------
+        path: BeamPath
+        """
+        try:
+            path = beamlines[endstation]
+            path[endstation] = dict()
+        except KeyError as exc:
+            logger.warning("Unable to find %s as a configured endstation, "
+                           "assuming this is an independent path", endstation)
+            path = {endstation: {}}
+
+        # Load the devices specified in the configuration
+        devices = list()
+
+        for line, info in path.items():
+            # Find the happi containers for this section of beamlines
+            start = info.get('start', 0.0)
+            end = info.get('end', math.inf)
+            logger.debug("Searching for devices on line %s between %s and %s",
+                         line, start, end)
+            containers = self.client.search(beamline=line, active=True,
+                                            start=start, end=end)
+            # Ensure we actually found valid devices
+            if not containers:
+                logger.error("No valid beamline devices found for %s", line)
+                continue
+            # Load all the devices we found
+            logger.debug("Found %s devices along %s", len(containers), line)
+            for c in containers:
+                try:
+                    dev = from_container(c)
+                    devices.append(dev)
+                except Exception as exc:
+                    logger.exception("Failure loading %s ...", c.name)
+                    self.containers.append(c)
+        # Create the beamline from the loaded devices
+        bp = BeamPath(*devices, name=line)
+        self.beamlines[line] = bp
+        # Set as attribute for easy access
+        setattr(self, bp.name.replace(' ','_').lower(), bp)
+        return bp
 
     @property
     def destinations(self):

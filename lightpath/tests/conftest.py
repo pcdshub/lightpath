@@ -1,6 +1,7 @@
 ############
 # Standard #
 ############
+import os.path
 import logging
 from enum import Enum
 from types import SimpleNamespace
@@ -17,6 +18,7 @@ from ophyd.status import DeviceStatus
 ##########
 # Module #
 ##########
+import lightpath
 from lightpath import BeamPath
 
 #################
@@ -145,8 +147,8 @@ class Crystal(Valve):
     def __init__(self, name, z, beamline, states):
         super().__init__(name, z, beamline)
         self.states = states
-        self.md.branches = [dest for state in self.states
-                            for dest  in state]
+        self.branches = [dest for state in self.states
+                         for dest in state]
 
     @property
     def destination(self):
@@ -235,7 +237,8 @@ def branch():
     #Create beampath
     return BeamPath(*devices, name='SIM')
 
-#Simplified LCLS layout
+
+# Simplified LCLS layout
 @pytest.fixture(scope='function')
 def lcls():
     return [Valve('FEE Valve 1',   z=0.,   beamline='HXR'),
@@ -257,3 +260,14 @@ def lcls():
             IPIMB('XCS IPM',       z=21.,  beamline='XCS'),
             Valve('XCS Valve',     z=22.,  beamline='XCS'),
               ]
+
+
+@pytest.fixture(scope='function')
+def lcls_client():
+    # Reset the configuration database
+    lightpath.controller.beamlines = {'MEC': {'HXR': {}},
+                                      'CXI': {'HXR': {}},
+                                      'XCS': {'HXR': {}}}
+    db = os.path.join(os.path.dirname(__file__), 'path.json')
+
+    return happi.Client(path=db)

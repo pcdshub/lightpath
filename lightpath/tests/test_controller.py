@@ -13,8 +13,9 @@
 from lightpath import LightController
 
 
-def test_controller_paths(lcls):
-    controller = LightController(*lcls)
+def test_controller_paths(lcls_client):
+    controller = LightController(lcls_client,
+                                 endstations=['MEC', 'CXI', 'HXR', 'XCS'])
     #See that we have all the beamlines accounted for
     assert all(line in controller.beamlines.keys()
                for line in ['CXI','HXR', 'XCS', 'MEC'])
@@ -24,53 +25,54 @@ def test_controller_paths(lcls):
     assert len(controller.cxi.devices) == 10
     assert len(controller.mec.devices) == 10
     #Range of each path is correct
-    assert controller.xcs.path[0]   == lcls[0]
-    assert controller.xcs.path[-1]  == lcls[10]
-    assert controller.hxr.path[0]   == lcls[0]
-    assert controller.hxr.path[-1]  == lcls[6]
-    assert controller.mec.path[0]   == lcls[0]
-    assert controller.mec.path[-1]  == lcls[11]
-    assert controller.cxi.path[0]   == lcls[0]
-    assert controller.cxi.path[-1]  == lcls[9]
+    assert controller.xcs.path[0].name == 'FEE Valve 1'
+    assert controller.hxr.path[0].name == 'FEE Valve 1'
+    assert controller.mec.path[0].name == 'FEE Valve 1'
+    assert controller.cxi.path[0].name == 'FEE Valve 1'
+    assert controller.xcs.path[-1].name == 'S4 Stopper'
+    assert controller.hxr.path[-1].name == 'XRT M2H'
+    assert controller.mec.path[-1].name == 'S6 Stopper'
+    assert controller.cxi.path[-1].name == 'S5 Stopper'
 
-def test_controller_device_summaries(lcls):
-    controller = LightController(*lcls)
+def test_controller_device_summaries(lcls_client):
+    controller = LightController(lcls_client,
+                                 endstations=['MEC', 'CXI', 'HXR', 'XCS'])
 
     #No impeding devices
     assert controller.destinations == []
     #Common impediment
     controller.hxr.path[0].insert()
-    assert controller.destinations == [lcls[0]]
+    assert controller.destinations[0].name == 'FEE Valve 1'
     controller.hxr.path[0].remove()
     #Use mirrors to change destination
     controller.xcs.path[-1].insert()
     controller.cxi.path[-1].insert()
-    assert controller.destinations == [controller.cxi.path[-1]]
-    lcls[4].insert()
-    assert controller.destinations == [controller.xcs.path[-1]]
+    assert controller.destinations[0].name == 'S5 Stopper'
+    controller.hxr.path[4].insert()
+    assert controller.destinations[0].name == 'S4 Stopper'
     controller.cxi.path[-1].remove()
     controller.xcs.path[-1].remove()
-    lcls[4].remove()
+    controller.hxr.path[4].remove()
 
     #No incident devices
     assert controller.incident_devices == []
     #Common incident devices
-    lcls[3].insert()
-    assert controller.incident_devices == [lcls[3]]
+    controller.hxr.path[3].insert()
+    assert controller.incident_devices[0].name == 'XRT IPM'
     #Multiple incident devices
-    lcls[6].insert()
+    controller.hxr.path[6].insert()
     assert len(controller.incident_devices) == 2
     controller.mec.path[-3].insert()
     assert len(controller.incident_devices) == 3
     controller.mec.path[-3].remove()
-    lcls[6].remove()
+    controller.hxr.path[6].remove()
     assert len(controller.incident_devices) == 1
-    lcls[3].remove()
 
-def test_path_to(lcls):
-    controller = LightController(*lcls)
-    bp = controller.path_to(lcls[12])
+
+def test_path_to(lcls_client):
+    controller = LightController(lcls_client)
+    bp = controller.path_to(controller.mec.path[-3])
     assert len(bp.path) == 8
-    assert controller.path_to(lcls[11]).path == controller.mec.path
+    assert controller.path_to(controller.mec.path[-1]).path == controller.mec.path
 
 

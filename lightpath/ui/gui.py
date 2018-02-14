@@ -35,12 +35,8 @@ class LightApp(Display):
 
     Parameters
     ----------
-    *args
-        List of instantiated devices that match :class:`.LightInterface`
-
-    containers : list, optional
-        Happi device containers to display in the GUI but not to use in the
-        lightpath logic
+    controller: LightController
+        LightController object
 
     beamline : str, optional
         Beamline to initialize the application with, otherwise the most
@@ -52,11 +48,11 @@ class LightApp(Display):
     parent : optional
     """
 
-    def __init__(self, *devices, beamline=None,
+    def __init__(self, controller, beamline=None,
                  parent=None, dark=True):
         super().__init__(parent=parent)
         #Store Lightpath information
-        self.light = LightController(*devices)
+        self.light = controller
         self.path  = None
         self._lock = threading.Lock()
         #Create empty layout

@@ -1,293 +1,428 @@
 {
-    "HFX:DG2:IPM": {
-        "_id": "HFX:DG2:IPM",
+    "FEE Valve 1": {
+        "_id": "FEE Valve 1",
         "active": true,
-        "beamline": "XRT 1",
-        "creation": "Tue Sep  5 14:22:28 2017",
-        "data": null,
-        "embedded_screen": null,
-        "last_edit": "Tue Sep  5 14:22:28 2017",
+        "args": [
+            "{{name}}"
+        ],
+        "beamline": "HXR",
+        "creation": "Sun Feb 11 11:46:18 2018",
+        "device_class": "lightpath.tests.conftest.Valve",
+        "kwargs": {
+            "beamline": "{{beamline}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "main_screen": null,
-        "name": "HFX DG2 IPM",
+        "name": "FEE Valve 1",
         "parent": null,
-        "prefix": "HFX:DG2:IPM",
-        "stand": "DG2",
-        "system": "diagnostic",
-        "type": "IPM",
-        "z": 958.856
-    },
-    "HFX:DG2:JAWS": {
-        "_id": "HFX:DG2:JAWS",
-        "active": true,
-        "beamline": "XRT 1",
-        "creation": "Tue Sep  5 14:21:33 2017",
-        "embedded_screen": null,
-        "last_edit": "Tue Sep  5 14:21:33 2017",
-        "macros": null,
-        "main_screen": null,
-        "name": "HFX DG2 Slits",
-        "parent": null,
-        "prefix": "HFX:DG2:JAWS",
-        "stand": "DG2",
-        "system": "beam control",
-        "type": "Slits",
-        "z": 958.689
-    },
-    "HFX:DG2:VGC:01": {
-        "_id": "HFX:DG2:VGC:01",
-        "active": true,
-        "beamline": "XRT 1",
-        "creation": "Tue Sep  5 14:44:21 2017",
-        "embedded_screen": null,
-        "last_edit": "Tue Sep  5 14:44:21 2017",
-        "macros": null,
-        "main_screen": null,
-        "mps": "False",
-        "name": "HFX DG2 Valve",
-        "parent": null,
-        "prefix": "HFX:DG2:VGC:01",
+        "prefix": "FEE Valve 1",
+        "screen": null,
         "stand": null,
-        "system": "vacuum",
-        "type": "GateValve",
-        "veto": false,
-        "z": 959.441
+        "system": null,
+        "type": "Device",
+        "z": 0.0
     },
-    "HFX:DG3:JAWS": {
-        "_id": "HFX:DG3:JAWS",
+    "FEE Valve 2": {
+        "_id": "FEE Valve 2",
         "active": true,
+        "args": [
+            "{{name}}"
+        ],
+        "beamline": "HXR",
+        "creation": "Sun Feb 11 11:46:18 2018",
+        "device_class": "lightpath.tests.conftest.Valve",
+        "kwargs": {
+            "beamline": "{{beamline}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Tue Feb 13 09:35:09 2018",
+        "macros": null,
+        "name": "FEE Valve 2",
+        "parent": null,
+        "prefix": "FEE Valve 2",
+        "screen": null,
+        "stand": null,
+        "system": null,
+        "type": "Device",
+        "z": 2.0
+    },
+    "HXR IPM": {
+        "_id": "HXR IPM",
+        "active": true,
+        "args": [
+            "{{name}}"
+        ],
         "beamline": "CXI",
-        "creation": "Tue Sep  5 14:48:10 2017",
-        "embedded_screen": null,
-        "last_edit": "Tue Sep  5 14:48:10 2017",
+        "creation": "Sun Feb 11 11:46:18 2018",
+        "device_class": "lightpath.tests.conftest.IPIMB",
+        "kwargs": {
+            "beamline": "{{beamline}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "main_screen": null,
-        "name": "HFX DG3 Slits",
+        "name": "HXR IPM",
         "parent": null,
-        "prefix": "HFX:DG3:JAWS",
-        "stand": "DG3",
-        "system": "beam control",
-        "type": "Slits",
-        "z": 978.813
-    },
-    "HFX:DVD:VGC:01": {
-        "_id": "HFX:DVD:VGC:01",
-        "active": true,
-        "beamline": "XRT 1",
-        "creation": "Tue Sep  5 14:15:42 2017",
-        "embedded_screen": null,
-        "last_edit": "Tue Sep  5 14:15:42 2017",
-        "macros": null,
-        "main_screen": null,
-        "mps": "False",
-        "name": "HFX DVD Valve",
-        "parent": null,
-        "prefix": "HFX:DVD:VGC:01",
+        "prefix": "HXR IPM",
+        "screen": null,
         "stand": null,
-        "system": "vacuum",
-        "type": "GateValve",
-        "veto": false,
-        "z": 945.963
+        "system": null,
+        "type": "Device",
+        "z": 24.0
     },
-    "HFX:MON:VGC:01": {
-        "_id": "HFX:MON:VGC:01",
+    "HXR Valve": {
+        "_id": "HXR Valve",
         "active": true,
+        "args": [
+            "{{name}}"
+        ],
         "beamline": "CXI",
-        "creation": "Tue Sep  5 14:46:44 2017",
-        "embedded_screen": null,
-        "last_edit": "Tue Sep  5 14:46:44 2017",
+        "creation": "Sun Feb 11 11:46:18 2018",
+        "device_class": "lightpath.tests.conftest.Valve",
+        "kwargs": {
+            "beamline": "{{beamline}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "main_screen": null,
-        "mps": "False",
-        "name": "HFX MON Valve 1",
+        "name": "HXR Valve",
         "parent": null,
-        "prefix": "HFX:MON:VGC:01",
+        "prefix": "HXR Valve",
+        "screen": null,
         "stand": null,
-        "system": "vacuum",
-        "type": "GateValve",
-        "veto": false,
-        "z": 969.209
+        "system": null,
+        "type": "Device",
+        "z": 25.0
     },
-    "HFX:MON:VGC:02": {
-        "_id": "HFX:MON:VGC:02",
+    "MEC IPM": {
+        "_id": "MEC IPM",
         "active": true,
+        "args": [
+            "{{name}}"
+        ],
+        "beamline": "MEC",
+        "creation": "Sun Feb 11 11:46:19 2018",
+        "device_class": "lightpath.tests.conftest.IPIMB",
+        "kwargs": {
+            "beamline": "{{beamline}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Tue Feb 13 09:35:09 2018",
+        "macros": null,
+        "name": "MEC IPM",
+        "parent": null,
+        "prefix": "MEC IPM",
+        "screen": null,
+        "stand": null,
+        "system": null,
+        "type": "Device",
+        "z": 24.0
+    },
+    "MEC Valve": {
+        "_id": "MEC Valve",
+        "active": true,
+        "args": [
+            "{{name}}"
+        ],
+        "beamline": "MEC",
+        "creation": "Sun Feb 11 11:46:19 2018",
+        "device_class": "lightpath.tests.conftest.Valve",
+        "kwargs": {
+            "beamline": "{{beamline}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Tue Feb 13 09:35:09 2018",
+        "macros": null,
+        "name": "MEC Valve",
+        "parent": null,
+        "prefix": "MEC Valve",
+        "screen": null,
+        "stand": null,
+        "system": null,
+        "type": "Device",
+        "z": 25.0
+    },
+    "S2 Stopper": {
+        "_id": "S2 Stopper",
+        "active": true,
+        "args": [
+            "{{name}}"
+        ],
+        "beamline": "HXR",
+        "creation": "Sun Feb 11 11:46:18 2018",
+        "device_class": "lightpath.tests.conftest.Stopper",
+        "kwargs": {
+            "beamline": "{{beamline}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Tue Feb 13 09:35:09 2018",
+        "macros": null,
+        "name": "S2 Stopper",
+        "parent": null,
+        "prefix": "S2 Stopper",
+        "screen": null,
+        "stand": null,
+        "system": null,
+        "type": "Device",
+        "z": 9.0
+    },
+    "S4 Stopper": {
+        "_id": "S4 Stopper",
+        "active": true,
+        "args": [
+            "{{name}}"
+        ],
+        "beamline": "XCS",
+        "creation": "Sun Feb 11 11:46:18 2018",
+        "device_class": "lightpath.tests.conftest.Stopper",
+        "kwargs": {
+            "beamline": "{{beamline}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Tue Feb 13 09:35:09 2018",
+        "macros": null,
+        "name": "S4 Stopper",
+        "parent": null,
+        "prefix": "S4 Stopper",
+        "screen": null,
+        "stand": null,
+        "system": null,
+        "type": "Device",
+        "z": 32.0
+    },
+    "S5 Stopper": {
+        "_id": "S5 Stopper",
+        "active": true,
+        "args": [
+            "{{name}}"
+        ],
         "beamline": "CXI",
-        "creation": "Tue Sep  5 14:47:12 2017",
-        "embedded_screen": null,
-        "last_edit": "Tue Sep  5 14:47:12 2017",
+        "creation": "Sun Feb 11 11:46:18 2018",
+        "device_class": "lightpath.tests.conftest.Stopper",
+        "kwargs": {
+            "beamline": "{{beamline}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "main_screen": null,
-        "mps": "False",
-        "name": "HFX MON Valve 2",
+        "name": "S5 Stopper",
         "parent": null,
-        "prefix": "HFX:MON:VGC:02",
+        "prefix": "S5 Stopper",
+        "screen": null,
         "stand": null,
-        "system": "vacuum",
-        "type": "GateValve",
-        "veto": false,
-        "z": 977.313
+        "system": null,
+        "type": "Device",
+        "z": 31.0
     },
-    "HX2:DVD:VGC:01": {
-        "_id": "HX2:DVD:VGC:01",
+    "S6 Stopper": {
+        "_id": "S6 Stopper",
         "active": true,
-        "beamline": "HXD",
-        "creation": "Tue Sep  5 13:46:41 2017",
-        "embedded_screen": null,
-        "last_edit": "Tue Sep  5 13:46:41 2017",
+        "args": [
+            "{{name}}"
+        ],
+        "beamline": "MEC",
+        "creation": "Sun Feb 11 11:46:18 2018",
+        "device_class": "lightpath.tests.conftest.Stopper",
+        "kwargs": {
+            "beamline": "{{beamline}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "main_screen": null,
-        "mps": "False",
-        "name": "HX2 DVD Valve",
+        "name": "S6 Stopper",
         "parent": null,
-        "prefix": "HX2:DVD:VGC:01",
+        "prefix": "S6 Stopper",
+        "screen": null,
         "stand": null,
-        "system": "vacuum",
-        "type": "GateValve",
-        "veto": false,
-        "z": 779.0
+        "system": null,
+        "type": "Device",
+        "z": 30.0
     },
-    "HX2:SB1:IPM": {
-        "_id": "HX2:SB1:IPM",
+    "Tst:Broke": {
+        "_id": "Tst:Broke",
         "active": true,
-        "beamline": "HXD",
-        "creation": "Tue Sep  5 13:43:06 2017",
-        "data": null,
-        "embedded_screen": null,
-        "last_edit": "Tue Sep  5 13:43:06 2017",
+        "args": [
+            "{{name}}"
+        ],
+        "beamline": "FEE",
+        "creation": "Mon Feb 12 14:26:54 2018",
+        "device_class": null,
+        "kwargs": {
+            "beamline": "{{beamline}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "main_screen": null,
-        "name": "HX2 IPM",
+        "name": "Broken",
         "parent": null,
-        "prefix": "HX2:SB1:IPM",
-        "stand": "SB1",
-        "system": "diagnostic",
-        "type": "IPM",
-        "z": 773.705
-    },
-    "HX2:SB1:JAWS": {
-        "_id": "HX2:SB1:JAWS",
-        "active": true,
-        "beamline": "HXD",
-        "creation": "Tue Sep  5 13:34:08 2017",
-        "embedded_screen": null,
-        "last_edit": "Tue Sep  5 13:34:08 2017",
-        "macros": null,
-        "main_screen": null,
-        "name": "HX2 Slits",
-        "parent": null,
-        "prefix": "HX2:SB1:JAWS",
-        "stand": "SB1",
-        "system": "beam control",
-        "type": "Slits",
-        "z": 773.605
-    },
-    "HX2:UVD:VGC:01": {
-        "_id": "HX2:UVD:VGC:01",
-        "active": true,
-        "beamline": "HXD",
-        "creation": "Tue Sep  5 13:28:39 2017",
-        "embedded_screen": null,
-        "last_edit": "Tue Sep  5 13:28:39 2017",
-        "macros": null,
-        "main_screen": null,
-        "mps": "False",
-        "name": "HX2 Valve",
-        "parent": null,
-        "prefix": "HX2:UVD:VGC:01",
+        "prefix": "Tst:Broke",
+        "screen": null,
         "stand": null,
-        "system": "vacuum",
-        "type": "GateValve",
-        "veto": false,
-        "z": 769.0
+        "system": null,
+        "type": "Device",
+        "z": 3.0
     },
-    "HX3:MON:VGC:01": {
-        "_id": "HX3:MON:VGC:01",
+    "XCS IPM": {
+        "_id": "XCS IPM",
         "active": true,
-        "beamline": "PINK",
-        "creation": "Tue Sep  5 13:57:28 2017",
-        "embedded_screen": null,
-        "last_edit": "Tue Sep  5 13:57:28 2017",
+        "args": [
+            "{{name}}"
+        ],
+        "beamline": "XCS",
+        "creation": "Sun Feb 11 11:46:19 2018",
+        "device_class": "lightpath.tests.conftest.IPIMB",
+        "kwargs": {
+            "beamline": "{{beamline}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "main_screen": null,
-        "mps": "False",
-        "name": "HX3 MON Valve 1",
+        "name": "XCS IPM",
         "parent": null,
-        "prefix": "HX3:MON:VGC:01",
+        "prefix": "XCS IPM",
+        "screen": null,
         "stand": null,
-        "system": "vacuum",
-        "type": "GateValve",
-        "veto": false,
-        "z": 782.5
+        "system": null,
+        "type": "Device",
+        "z": 21.0
     },
-    "HX3:MON:VGC:02": {
-        "_id": "HX3:MON:VGC:02",
+    "XCS Valve": {
+        "_id": "XCS Valve",
         "active": true,
-        "beamline": "PINK",
-        "creation": "Tue Sep  5 13:57:56 2017",
-        "embedded_screen": null,
-        "last_edit": "Tue Sep  5 13:57:56 2017",
+        "args": [
+            "{{name}}"
+        ],
+        "beamline": "XCS",
+        "creation": "Sun Feb 11 11:46:19 2018",
+        "device_class": "lightpath.tests.conftest.Valve",
+        "kwargs": {
+            "beamline": "{{beamline}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "main_screen": null,
-        "mps": "False",
-        "name": "HX3 MON Valve 2",
+        "name": "XCS Valve",
         "parent": null,
-        "prefix": "HX3:MON:VGC:02",
+        "prefix": "XCS Valve",
+        "screen": null,
         "stand": null,
-        "system": "vacuum",
-        "type": "GateValve",
-        "veto": false,
-        "z": 783.5
+        "system": null,
+        "type": "Device",
+        "z": 22.0
     },
-    "HXX:UM6:IPM": {
-        "_id": "HXX:UM6:IPM",
+    "XRT IPM": {
+        "_id": "XRT IPM",
         "active": true,
-        "beamline": "PINK",
-        "creation": "Tue Sep  5 14:09:39 2017",
-        "data": null,
-        "embedded_screen": null,
-        "last_edit": "Tue Sep  5 14:09:39 2017",
+        "args": [
+            "{{name}}"
+        ],
+        "beamline": "HXR",
+        "creation": "Sun Feb 11 11:46:18 2018",
+        "device_class": "lightpath.tests.conftest.IPIMB",
+        "kwargs": {
+            "beamline": "{{beamline}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "main_screen": null,
-        "name": "UM6 IPM",
+        "name": "XRT IPM",
         "parent": null,
-        "prefix": "HXX:UM6:IPM",
-        "stand": "UM6",
-        "system": "diagnostic",
-        "type": "IPM",
-        "z": 810.332
-    },
-    "HXX:UM6:JAWS": {
-        "_id": "HXX:UM6:JAWS",
-        "active": true,
-        "beamline": "PINK",
-        "creation": "Tue Sep  5 14:08:34 2017",
-        "embedded_screen": null,
-        "last_edit": "Tue Sep  5 14:08:34 2017",
-        "macros": null,
-        "main_screen": null,
-        "name": "UM6 Slits",
-        "parent": null,
-        "prefix": "HXX:UM6:JAWS",
-        "stand": "UM6",
-        "system": "beam control",
-        "type": "Slits",
-        "z": 809.966
-    },
-    "MFX:DG1:JAWS": {
-        "_id": "MFX:DG1:JAWS",
-        "active": true,
-        "beamline": "MFX",
-        "creation": "Wed Sep  6 11:25:32 2017",
-        "embedded_screen": null,
-        "last_edit": "Wed Sep  6 11:25:32 2017",
-        "macros": null,
-        "main_screen": null,
-        "name": "MFX DG1 Slits",
-        "parent": null,
-        "prefix": "MFX:DG1:JAWS",
+        "prefix": "XRT IPM",
+        "screen": null,
         "stand": null,
-        "system": "beam control",
-        "type": "Slits",
-        "z": 875.3
+        "system": null,
+        "type": "Device",
+        "z": 15.0
+    },
+    "XRT M1H": {
+        "_id": "XRT M1H",
+        "active": true,
+        "args": [
+            "{{name}}"
+        ],
+        "beamline": "HXR",
+        "creation": "Sun Feb 11 11:46:18 2018",
+        "device_class": "lightpath.tests.conftest.Crystal",
+        "kwargs": {
+            "beamline": "{{beamline}}",
+            "states": [
+                [
+                    "MEC",
+                    "CXI"
+                ],
+                [
+                    "XCS"
+                ]
+            ],
+            "z": "{{z}}"
+        },
+        "last_edit": "Tue Feb 13 09:37:21 2018",
+        "macros": null,
+        "name": "XRT M1H",
+        "parent": null,
+        "prefix": "XRT M1H",
+        "screen": null,
+        "stand": null,
+        "system": null,
+        "type": "Device",
+        "z": 16.0
+    },
+    "XRT M2H": {
+        "_id": "XRT M2H",
+        "active": true,
+        "args": [
+            "{{name}}"
+        ],
+        "beamline": "HXR",
+        "creation": "Sun Feb 11 11:46:18 2018",
+        "device_class": "lightpath.tests.conftest.Crystal",
+        "kwargs": {
+            "beamline": "{{beamline}}",
+            "states": [
+                [
+                    "CXI",
+                    "XCS"
+                ],
+                [
+                    "MEC"
+                ]
+            ],
+            "z": "{{z}}"
+        },
+        "last_edit": "Tue Feb 13 09:37:46 2018",
+        "macros": null,
+        "name": "XRT M2H",
+        "parent": null,
+        "prefix": "XRT M2H",
+        "screen": null,
+        "stand": null,
+        "system": null,
+        "type": "Device",
+        "z": 20.0
+    },
+    "XRT Valve": {
+        "_id": "XRT Valve",
+        "active": true,
+        "args": [
+            "{{name}}"
+        ],
+        "beamline": "HXR",
+        "creation": "Sun Feb 11 11:46:18 2018",
+        "device_class": "lightpath.tests.conftest.Valve",
+        "kwargs": {
+            "beamline": "{{beamline}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Tue Feb 13 09:35:09 2018",
+        "macros": null,
+        "name": "XRT Valve",
+        "parent": null,
+        "prefix": "XRT Valve",
+        "screen": null,
+        "stand": null,
+        "system": null,
+        "type": "Device",
+        "z": 18.0
     }
 }

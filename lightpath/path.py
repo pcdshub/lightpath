@@ -101,7 +101,7 @@ class BeamPath(OphydObject):
         """
         Branching devices along the path
         """
-        return [d for d in self.devices if getattr(d.md, 'branches', False)]
+        return [d for d in self.devices if getattr(d, 'branches', False)]
 
     @property
     def range(self):
@@ -141,7 +141,7 @@ class BeamPath(OphydObject):
             #If our last device was an optic, make sure it wasn't required
             #to continue along this beampath
             elif (prior in last_branches
-                and device.md.beamline in prior.md.branches
+                and device.md.beamline in prior.branches
                 and device.md.beamline not in prior.destination):
                 block.append(last_branches.pop(-1))
 

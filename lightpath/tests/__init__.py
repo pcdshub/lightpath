@@ -1,1 +1,1 @@
-from .conftest import path, lcls
+from .conftest import path, lcls_client
