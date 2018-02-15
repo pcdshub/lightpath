@@ -1,0 +1,381 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lightpath.controller &mdash; LCLS Lightpath 0.2.2+28.g4821a96 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="LCLS Lightpath 0.2.2+28.g4821a96 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> LCLS Lightpath
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.2+28.g4821a96
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Controlling the beamline</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../controller.html">LightController</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../path.html">BeamPath</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">LCLS Lightpath</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>lightpath.controller</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for lightpath.controller</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">While the :class:`.BeamPath` object provides basic control functionality, the</span>
+<span class="sd">:class:`.LightController` is what does the organization of all of LCLS&#39;s</span>
+<span class="sd">devices. After parsing through all of the given devices, each beamline is</span>
+<span class="sd">contsructed as a :class:`.BeamPath` object. This includes not only devices on</span>
+<span class="sd">the upstream beamline but all of the beamlines before it. For example, the MEC</span>
+<span class="sd">beampath will include devices in both the FEE and the XRT. The</span>
+<span class="sd">:class:`.LightController` handles this logic as well as a basic overview of</span>
+<span class="sd">where the beam is and what the state of the MPS system is currently.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">happi.loader</span> <span class="k">import</span> <span class="n">from_container</span>
+
+<span class="kn">from</span> <span class="nn">.path</span> <span class="k">import</span> <span class="n">BeamPath</span>
+<span class="kn">from</span> <span class="nn">.config</span> <span class="k">import</span> <span class="n">beamlines</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LightController"><a class="viewcode-back" href="../../controller.html#lightpath.LightController">[docs]</a><span class="k">class</span> <span class="nc">LightController</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Controller for the LCLS Lightpath</span>
+
+<span class="sd">    Handles grouping devices into beamlines and joining paths together. Also</span>
+<span class="sd">    provides an overview of the state of the entire beamline</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    containers: list</span>
+<span class="sd">        List of happi Device objects that were unable to be instantiated</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    client : happi.Client</span>
+<span class="sd">        Happi Client</span>
+
+<span class="sd">    endstations: list, optional</span>
+<span class="sd">        List of experimental endstations to load BeamPath objects for. If left</span>
+<span class="sd">        as None, all endstations will be loaded</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">endstations</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">containers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beamlines</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">endstations</span> <span class="o">=</span> <span class="n">endstations</span> <span class="ow">or</span> <span class="n">beamlines</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="c1"># Find the requisite beamlines to reach our endstation</span>
+        <span class="k">for</span> <span class="n">beamline</span> <span class="ow">in</span> <span class="n">endstations</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_beamline</span><span class="p">(</span><span class="n">beamline</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LightController.load_beamline"><a class="viewcode-back" href="../../controller.html#lightpath.LightController.load_beamline">[docs]</a>    <span class="k">def</span> <span class="nf">load_beamline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endstation</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load a beamline from the provided happi client</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        endstation : str</span>
+<span class="sd">            Name of endstation to load</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        path: BeamPath</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">beamlines</span><span class="p">[</span><span class="n">endstation</span><span class="p">]</span>
+            <span class="n">path</span><span class="p">[</span><span class="n">endstation</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unable to find </span><span class="si">%s</span><span class="s2"> as a configured endstation, &quot;</span>
+                           <span class="s2">&quot;assuming this is an independent path&quot;</span><span class="p">,</span> <span class="n">endstation</span><span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="p">{</span><span class="n">endstation</span><span class="p">:</span> <span class="p">{}}</span>
+
+        <span class="c1"># Load the devices specified in the configuration</span>
+        <span class="n">devices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">line</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># Find the happi containers for this section of beamlines</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;start&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;end&#39;</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Searching for devices on line </span><span class="si">%s</span><span class="s2"> between </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                         <span class="n">line</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+            <span class="n">containers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">beamline</span><span class="o">=</span><span class="n">line</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                            <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">)</span>
+            <span class="c1"># Ensure we actually found valid devices</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">containers</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No valid beamline devices found for </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="c1"># Load all the devices we found</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found </span><span class="si">%s</span><span class="s2"> devices along </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">containers</span><span class="p">),</span> <span class="n">line</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">containers</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">dev</span> <span class="o">=</span> <span class="n">from_container</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                    <span class="n">devices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dev</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Failure loading </span><span class="si">%s</span><span class="s2"> ...&quot;</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">containers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="c1"># Create the beamline from the loaded devices</span>
+        <span class="n">bp</span> <span class="o">=</span> <span class="n">BeamPath</span><span class="p">(</span><span class="o">*</span><span class="n">devices</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">line</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beamlines</span><span class="p">[</span><span class="n">line</span><span class="p">]</span> <span class="o">=</span> <span class="n">bp</span>
+        <span class="c1"># Set as attribute for easy access</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bp</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">bp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bp</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">destinations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Current device destinations for the LCLS photon beam</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">impediment</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">beamlines</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                         <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">impediment</span> <span class="ow">and</span> <span class="n">p</span><span class="o">.</span><span class="n">impediment</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">branches</span><span class="p">]))</span>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">devices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        All of the devices loaded into beampaths</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">devices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">beamlines</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">devices</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">devices</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">devices</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">incident_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        List of all devices in contact with photons along the beamline</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">devices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">beamlines</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">devices</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">incident_devices</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">devices</span><span class="p">))</span>
+
+<div class="viewcode-block" id="LightController.path_to"><a class="viewcode-back" href="../../controller.html#lightpath.LightController.path_to">[docs]</a>    <span class="k">def</span> <span class="nf">path_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a BeamPath from the source to the requested device</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        device : Device</span>
+<span class="sd">            A device somewhere in LCLS</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        path : :class:`BeamPath`</span>
+<span class="sd">            Path to and including given device</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">,</span> <span class="n">after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">beamlines</span><span class="p">[</span><span class="n">device</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">beamline</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Beamline </span><span class="si">{}</span><span class="s2"> not found&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">beamline</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">prior</span></div></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, SLAC National Accelerator Laboratory.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.2.2+28.g4821a96',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
