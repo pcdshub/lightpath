@@ -3,7 +3,7 @@ sudo: false
 env:
   global:
     - OFFICIAL_REPO="pcdshub/lightpath"
-    - secure: "tV+zuW0Wqt4pruoWfHAW3sNHSGXqPQjmhYf0qpxPvFyMFISP8tBxSnVlcPyQN0ILBdbkhTOXBUWuaRSYOBJdAleCPxcdR5A0dIjUsqVz7+0f2ec3ucDCi5Ge+xaZy6LzCI0ZJE0o/SvdOeSpLimj4+jKhEQUTqGphNNVXVct0R9sSP7wZopGlKs/6BQ3gbkdGGX7t5n0edUMrxZ9AfjA8eYcOQ8CIiKJ7viUGT7FG+bk8CyNrwcVy1r6Emh2gIPdgsCIspHsUrLYK4ll/lzrnkNR690Qqlo2HDcvlCpPUStJAtfMh8JDmZ/ECl8uT/A8O7x6PEE1+wfq4s6gO7e2xEgdscVnm3EgQE0/ixxf0ahX61BGZcNo2bWy5R027SeMGn0WEmvRL0jkHFrU4i7sglyiS/aFLIRg2zmq2zXovE7tmtBwxbKuA7K3RkpwOF3XDoRDh0sGGNf2XvzCVkdQds/ZSW4Ygw8PcQ7YwjEW9LQwponeFY/5Y1eZLFoz+i3UE7xbMFbfnmntXjvKCbpLZgbLC3u86jTMEx+F2LC/4RiGxGtNAI+igr+No5LdWiVo4ct2orloNvtXbB1xoBLG4T3z5fklhyN4wi6AjrapPqDP4dpNxMxw1pi6+yzBi1aHOi/trKJvTvfTqpXN9E3FPy68SjJCGDgyoK9SmJVJh4k="
+    - secure: "TsbDiFJe8vTjJCZJowjVkWFpBd2w+gCr+56F4TUlhLFN9aZvaUwyEEiWx3KWzFqYndUTLZsbZNSmekE63w4ZUGKhNa/DALxKo2Pt5esKfIWKoiiTM8YI39x3luiS8eiJ3t/XrC5R28MnH5dd8rCl+RaUkT/nJQcjz3YLl4bjbSnbr18HhsodmydW1zvFX8Jyxv42j8wyc2P0dZkX+SuaEZ0lsVH4QCK0seIf8f4uE6t/C1VuFWBPS+q5t3y2FwGQpH3CpAI5MEyHsnyCyQaP4khVQJRnjnSQ7M4oqy0t3WQYwPXSvwxZdswGmFLFru31GDpYVYcOFYtwOvF5NBr9Pg2yViLZOEY9niUgz0MEe6W+H2SDyGyZcRcSLciiK43jU0tqNEXOo/AN9FSup9FabmaBihxMbKYuKASsRW5/MelRJ+u6q2hun2+XUXd6VxRdTuIsqStR7q237ZTyTyiixH3zaeIpNRffPAg2u1SyLmLMVUkF+dsPtaQgWudBIjvSdSJFD3ZAWMnhC1xz9S4lLZqvHwWWp8BpCDkm8SsQkADvA6Y9j62shOtozv89qnSwaJB2MKNASireoOROCMxRSLB1N9BTDjTcQE0qC8U7JI/gRep+hVLannF8LpLksyrUn25jFE2diNvzvxbjYN6RLSuUiDhHieDFT7iKM1DUyL0=" 
 
 matrix:
   include:
@@ -44,7 +44,7 @@ script:
   - set -e
   # Build docs.
   - |
-    if [[ -n "$DOCTR_DEPLOY_ENCRYPTION_KEY" && $BUILD_DOCS ]]; then
+    if [[ -n "$DOCTR_DEPLOY_ENCRYPTION_KEY_PCDSHUB_LIGHTPATH" && $BUILD_DOCS ]]; then
       #Install doctr from a custom branch until
       #https://github.com/drdoctr/doctr/pull/190 is merged.
       pushd docs
