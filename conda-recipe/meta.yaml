@@ -25,6 +25,6 @@ test:
       - lightpath
 
 about:
-  home: https://github.com/slaclab/lightpath
+  home: https://github.com/pcdshub/lightpath
   license: SLAC Open License
   summary: LCLS Lightpath Module
