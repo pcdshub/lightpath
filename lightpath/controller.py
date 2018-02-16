@@ -18,6 +18,7 @@ from .config import beamlines
 
 logger = logging.getLogger(__name__)
 
+
 class LightController:
     """
     Controller for the LCLS Lightpath
@@ -97,7 +98,7 @@ class LightController:
         bp = BeamPath(*devices, name=line)
         self.beamlines[line] = bp
         # Set as attribute for easy access
-        setattr(self, bp.name.replace(' ','_').lower(), bp)
+        setattr(self, bp.name.replace(' ', '_').lower(), bp)
         return bp
 
     @property
@@ -107,7 +108,6 @@ class LightController:
         """
         return list(set([p.impediment for p in self.beamlines.values()
                          if p.impediment and p.impediment not in p.branches]))
-
 
     @property
     def devices(self):
@@ -148,9 +148,10 @@ class LightController:
             Path to and including given device
         """
         try:
-            prior, after = self.beamlines[device.md.beamline].split(device=device)
+            bl = self.beamlines[device.md.beamline]
+            prior, after = bl.split(device=device)
 
         except KeyError:
-            raise ValueError("Beamline {} not found".format(device.md.beamline))
+            raise ValueError("Beamline {} not found".format(bl.name))
 
         return prior

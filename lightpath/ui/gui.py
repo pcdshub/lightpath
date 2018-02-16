@@ -1,30 +1,20 @@
 """
 Full Application for Lightpath
 """
-############
-# Standard #
-############
 import logging
 import threading
 import os.path
 from functools import partial
 
-###############
-# Third Party #
-###############
 from pydm import Display
 from pydm.PyQt.QtCore import pyqtSlot, Qt
-from pydm.PyQt.QtGui  import QColor, QSpacerItem, QGridLayout
+from pydm.PyQt.QtGui import QSpacerItem, QGridLayout
 
-import happi
 
-##########
-# Module #
-##########
-from .widgets import LightRow, InactiveRow
-from ..controller import LightController
+from .widgets import LightRow
 
 logger = logging.getLogger(__name__)
+
 
 class LightApp(Display):
     """
@@ -51,40 +41,41 @@ class LightApp(Display):
     def __init__(self, controller, beamline=None,
                  parent=None, dark=True):
         super().__init__(parent=parent)
-        #Store Lightpath information
+        # Store Lightpath information
         self.light = controller
-        self.path  = None
+        self.path = None
         self._lock = threading.Lock()
-        #Create empty layout
+        # Create empty layout
         self.lightLayout = QGridLayout()
         self.lightLayout.setVerticalSpacing(1)
         self.lightLayout.setHorizontalSpacing(10)
         self.widget_rows.setLayout(self.lightLayout)
 
-        #Add destinations
+        # Add destinations
         for line in self.destinations():
             self.destination_combo.addItem(line)
 
-        #Connect signals to slots
+        # Connect signals to slots
         self.destination_combo.currentIndexChanged.connect(
                                             self.change_path_display)
         self.upstream_check.clicked.connect(self.change_path_display)
-        self.transmission_slider.valueChanged.connect(self.transmission_adjusted)
-        #Store LightRow objects to manage subscriptions
+        self.transmission_slider.valueChanged.connect(
+                                          self.transmission_adjusted)
+        # Store LightRow objects to manage subscriptions
         self.rows = list()
-        #Select the beamline to begin with
+        # Select the beamline to begin with
         beamline = beamline or self.destinations()[0]
         try:
             idx = self.destinations().index(beamline.upper())
         except ValueError:
             logger.error("%s is not a valid beamline", beamline)
             idx = 0
-        #Move the ComboBox
+        # Move the ComboBox
         self.destination_combo.setCurrentIndex(idx)
-        #Setup the UI
+        # Setup the UI
         self.change_path_display()
 
-        #Change the stylesheet
+        # Change the stylesheet
         if dark:
             try:
                 import qdarkstyle
@@ -99,7 +90,7 @@ class LightApp(Display):
         All possible beamline destinations sorted by end point
         """
         return sorted(list(self.light.beamlines.keys()),
-                      key= lambda x : self.light.beamlines[x].range[0])
+                      key=lambda x: self.light.beamlines[x].range[0])
 
     def load_device_row(self, device):
         """
@@ -119,14 +110,14 @@ class LightApp(Display):
         upstream : bool, optional
             Include upstream devices in the display
         """
-        #Clear any remaining subscriptions
+        # Clear any remaining subscriptions
         if self.path:
             self.clear_subs()
-        #Find pool of devices and create subscriptions
+        # Find pool of devices and create subscriptions
         self.path = self.light.beamlines[beamline]
-        #Defer running updates until UI is created 
+        # Defer running updates until UI is created
         self.path.subscribe(self.update_path, run=False)
-        #Only return devices if they are on the specified beamline
+        # Only return devices if they are on the specified beamline
         if not upstream:
             pool = [dev for dev in self.path.path
                     if dev.md.beamline == beamline]
@@ -188,45 +179,46 @@ class LightApp(Display):
         """
         with self._lock:
             logger.debug("Resorting beampath display ...")
-            #Grab all the light rows
+            # Grab all the light rows
             rows = [self.load_device_row(d)
                     for d in self.select_devices(self.selected_beamline(),
                                                  upstream=self.upstream())]
-            #Clear layout if previously loaded rows exist
+            # Clear layout if previously loaded rows exist
             if self.rows:
-                #Clear our subscribtions
-                for row in self.rows: row.clear_sub()
-                #Clear the widgets
+                # Clear our subscribtions
+                for row in self.rows:
+                    row.clear_sub()
+                # Clear the widgets
                 for i in reversed(range(self.lightLayout.count())):
                     old = self.lightLayout.takeAt(i).widget()
                     if old:
                         old.deleteLater()
-                #Clear subscribed row cache
+                # Clear subscribed row cache
                 self.rows.clear()
 
-            #Add all the widgets to the display
+            # Add all the widgets to the display
             for i, row in enumerate(rows):
-                #Cache row to later clear subscriptions
+                # Cache row to later clear subscriptions
                 self.rows.append(row)
-                #Connect up remove button
+                # Connect up remove button
                 if hasattr(row, 'remove_button'):
-                    row.remove_button.clicked.connect(partial(self.remove,
-                                                              device=row.device))
-                #Connect up insert button
+                    row.remove_button.clicked.connect(
+                                    partial(self.remove, device=row.device))
+                # Connect up insert button
                 if hasattr(row, 'insert_button'):
-                    row.insert_button.clicked.connect(partial(self.insert,
-                                                              device=row.device))
-                #Add widgets to layout
+                    row.insert_button.clicked.connect(
+                                    partial(self.insert, device=row.device))
+                # Add widgets to layout
                 for j, widget in enumerate(row.widgets):
                     if isinstance(widget, QSpacerItem):
                         self.lightLayout.addItem(widget, i, j)
                     else:
                         self.lightLayout.addWidget(widget, i, j)
-        #Initialize interface
+        # Initialize interface
         for row in self.rows:
             row.update_state()
-        #Update display
-        self.transmission_adjusted(self.transmission_slider.value()) #Calls .update_path
+        # Update display
+        self.transmission_adjusted(self.transmission_slider.value())
 
     def ui_filename(self):
         """
@@ -248,13 +240,13 @@ class LightApp(Display):
         with self._lock:
             block = self.path.impediment
             for row in self.rows:
-                #If our device is before or at the impediment, it is lit
+                # If our device is before or at the impediment, it is lit
                 if not block or (row.device.md.z <= block.md.z):
                     row.indicator._default_color = Qt.cyan
-                #Otherwise, it is off
+                # Otherwise, it is off
                 else:
                     row.indicator._default_color = Qt.gray
-                #Update widget display
+                # Update widget display
                 row.indicator.update()
 
     def clear_subs(self):

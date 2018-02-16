@@ -1,30 +1,19 @@
-############
-# Standard #
-############
-import os.path
-
-###############
-# Third Party #
-###############
-import pytest
-
-##########
-# Module #
-##########
 from lightpath.ui import LightApp
 from lightpath.controller import LightController
 
+
 def test_app_buttons(lcls_client):
     lightapp = LightApp(LightController(lcls_client))
-    #Check we initialized correctly
+    # Check we initialized correctly
     assert lightapp.upstream()
-    #Create widgets
+    # Create widgets
     assert len(lightapp.select_devices('MEC')) == 10
-    #Setup new display
+    # Setup new display
     mec_idx = lightapp.destination_combo.findText('MEC')
     lightapp.destination_combo.setCurrentIndex(mec_idx)
     lightapp.change_path_display()
     assert len(lightapp.rows) == 10
+
 
 def test_beampath_controls(lcls_client):
     lightapp = LightApp(LightController(lcls_client))

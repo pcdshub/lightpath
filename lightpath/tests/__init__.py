@@ -1,1 +1,1 @@
-from .conftest import path, lcls_client
+from .conftest import path, lcls_client  # noqa

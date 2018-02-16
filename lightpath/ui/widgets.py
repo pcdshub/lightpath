@@ -1,25 +1,14 @@
 """
 Definitions for Lightpath Widgets
 """
-############
-# Standard #
-############
 import logging
-import threading
 from enum import Enum
 
-###############
-# Third Party #
-###############
-from pydm.PyQt.QtCore     import pyqtSlot, Qt
-from pydm.PyQt.QtGui      import QPen, QSizePolicy
-from pydm.PyQt.QtGui      import QHBoxLayout, QWidget, QGridLayout, QLabel
-from pydm.PyQt.QtGui      import QFont, QFrame, QSpacerItem, QPushButton
+from pydm.PyQt.QtCore import Qt
+from pydm.PyQt.QtGui import QPen, QSizePolicy, QHBoxLayout, QWidget, QLabel
+from pydm.PyQt.QtGui import QFont, QSpacerItem, QPushButton
 from pydm.widgets.drawing import PyDMDrawingRectangle
 
-##########
-# Module #
-##########
 
 logger = logging.getLogger(__name__)
 
@@ -30,17 +19,17 @@ class InactiveRow:
     """
     font = QFont()
     font.setPointSize(14)
-    #Italic
+    # Italic
     italic = QFont()
     font.setPointSize(12)
     italic.setItalic(True)
-    #Bold
+    # Bold
     bold = QFont()
     bold.setBold(True)
 
     def __init__(self, device, parent=None):
         self.device = device
-        #Create labels 
+        # Create labels
         self.name_label = QLabel(parent=parent)
         self.name_label.setText(device.name)
         self.name_label.setFont(self.bold)
@@ -48,16 +37,16 @@ class InactiveRow:
         self.prefix_label.setObjectName('prefix_frame')
         self.prefix_label.setText('({})'.format(device.prefix))
         self.prefix_label.setFont(self.italic)
-        self.state_label = QLabel('Disconnected',parent=parent)
+        self.state_label = QLabel('Disconnected', parent=parent)
         self.state_label.setFont(self.bold)
         self.state_label.setStyleSheet("QLabel {color : rgb(255,0,255)}")
-        #Create Beam Indicator
+        # Create Beam Indicator
         self.indicator = PyDMDrawingRectangle(parent=parent)
         self.indicator.setMinimumSize(45, 55)
         self.indicator.setSizePolicy(QSizePolicy.Fixed,
                                      QSizePolicy.Expanding)
         self.indicator._pen = QPen(Qt.SolidLine)
-        #Spacer
+        # Spacer
         self.spacer = QSpacerItem(40, 20)
 
     @property
@@ -100,28 +89,28 @@ class LightRow(InactiveRow):
     """
     def __init__(self, device, parent=None):
         super().__init__(device, parent=parent)
-        #Create button widget
+        # Create button widget
         self.buttons = QWidget(parent=parent)
         self.button_layout = QHBoxLayout()
         self.buttons.setLayout(self.button_layout)
-        #Create Insert PushButton
+        # Create Insert PushButton
         if hasattr(device, 'insert'):
             self.insert_button = QPushButton('Insert', parent=parent)
             self.insert_button.setFont(self.font)
             self.button_layout.addWidget(self.insert_button)
             self.button_layout.addItem(QSpacerItem(10, 20))
-        #Create Remove PushButton
+        # Create Remove PushButton
         if hasattr(device, 'remove'):
             self.remove_button = QPushButton('Remove', parent=parent)
             self.remove_button.setFont(self.font)
             self.button_layout.addWidget(self.remove_button)
-        #Subscribe device to state changes
+        # Subscribe device to state changes
         try:
-            #Wait for later to update widget
+            # Wait for later to update widget
             self.device.subscribe(self.update_state,
                                   event_type=self.device.SUB_STATE,
                                   run=False)
-        except:
+        except Exception:
             logger.error("Widget is unable to subscribe to device %s",
                          device.name)
 
@@ -136,26 +125,26 @@ class LightRow(InactiveRow):
         green or red to quickly
         """
         states = Enum('states', ('Unknown', 'Inserted', 'Removed', 'Error'))
-        #Interpret state
+        # Interpret state
         try:
-            state  = 1 + int(self.device.inserted) + 2*int(self.device.removed)
+            state = 1 + int(self.device.inserted) + 2*int(self.device.removed)
         except Exception as exc:
             logger.error(exc)
             state = states.Error.value
-        #Set label to state description
+        # Set label to state description
         self.state_label.setText(states(state).name)
-        #Set the color of the label
+        # Set the color of the label
         if state == states.Removed.value:
             self.state_label.setStyleSheet("QLabel {color : rgb(124,252,0)}")
         elif state == states.Unknown.value:
             self.state_label.setStyleSheet("QLabel {color : rgb(255, 215, 0)}")
         else:
             self.state_label.setStyleSheet("QLabel {color : red}")
-        #Disable buttons if necessary
+        # Disable buttons if necessary
         if hasattr(self, 'insert_button'):
-            self.insert_button.setEnabled(state!=states.Inserted.value)
+            self.insert_button.setEnabled(state != states.Inserted.value)
         if hasattr(self, 'remove_button'):
-            self.remove_button.setEnabled(state!=states.Removed.value)
+            self.remove_button.setEnabled(state != states.Removed.value)
 
     @property
     def widgets(self):
