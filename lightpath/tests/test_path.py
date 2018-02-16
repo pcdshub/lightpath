@@ -29,21 +29,21 @@ def test_branching_finding(path):
 def test_clear_beamline(path, branch):
     # Completely removed beamline
     assert path.blocking_devices == []
-    assert path.impediment
+    assert not path.impediment
     assert path.cleared
 
     # Passive device inserted
     path.path[5].insert()
     assert path.blocking_devices == []
     assert path.incident_devices == [path.path[5]]
-    assert path.impediment
+    assert not path.impediment
     assert path.cleared
 
     # Branch with optic inserted
     branch.path[4].insert()
     assert branch.blocking_devices == []
     assert branch.incident_devices == [branch.path[4]]
-    assert branch.impediment
+    assert not branch.impediment
     assert branch.cleared
 
 
