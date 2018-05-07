@@ -1,0 +1,38 @@
+import argparse
+
+import happi
+import pydm
+from lightpath import LightController
+from lightpath.ui import LightApp
+
+DEVICE_CONFIG = '/reg/g/pcds/pyps/apps/hutch-python/device_config/db.json'
+
+
+def main(db):
+    """
+    Open the lightpath user interface for a configuration file
+
+    Parameters
+    ----------
+    db: str
+        Path to happi JSON database
+    """
+    # Create PyDM Application
+    app = pydm.PyDMApplication()
+    # Create Lightpath UI from provided database
+    lc = LightController(happi.Client(path=db))
+    lp = LightApp(lc)
+    # Execute
+    lp.show()
+    app.exec_()
+
+
+if __name__ == '__main__':
+    # Create ArgumentParser
+    parser = argparse.ArgumentParser(description='Launch the Lightpath UI')
+    parser.add_argument('--db', dest='db', type=str,
+                        help='Path to device configuration. {} by default'
+                             ''.format(DEVICE_CONFIG))
+    # Parse and launch
+    args = parser.parse_args()
+    main(args.db or DEVICE_CONFIG)
