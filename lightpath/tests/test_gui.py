@@ -1,3 +1,5 @@
+from distutils.spawn import find_executable
+
 from lightpath.ui import LightApp
 from lightpath.controller import LightController
 
@@ -23,3 +25,8 @@ def test_beampath_controls(lcls_client):
     assert lightapp.rows[0].device.inserted
     lightapp.transmission_adjusted(50)
     assert lightapp.path.minimum_transmission == 0.5
+
+
+def test_lightpath_launch_script():
+    # Check that the executable was installed
+    assert find_executable('lightpath')
