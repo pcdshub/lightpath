@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>BeamPath &mdash; LCLS Lightpath 0.2.2+31.g52c5742 documentation</title>
+  <title>BeamPath &mdash; LCLS Lightpath 0.3.0+4.g79e2ddc documentation</title>
   
 
   
@@ -25,25 +25,18 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="LCLS Lightpath 0.2.2+31.g52c5742 documentation" href="index.html"/>
-        <link rel="prev" title="LightController" href="controller.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="LightController" href="controller.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -65,7 +58,7 @@
             
             
               <div class="version">
-                0.2.2+31.g52c5742
+                0.3.0+4.g79e2ddc
               </div>
             
           
@@ -105,7 +98,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">LCLS Lightpath</a>
@@ -113,9 +106,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -159,14 +153,14 @@
             
   <div class="section" id="module-lightpath.path">
 <span id="beampath"></span><h1>BeamPath<a class="headerlink" href="#module-lightpath.path" title="Permalink to this headline">¶</a></h1>
-<p>The <a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal"><span class="pre">BeamPath</span></code></a> is the main abstraction for the lightpath module,
-grouping together a set of devices using the <code class="xref py py-class docutils literal"><span class="pre">LightInterface</span></code> and
+<p>The <a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BeamPath</span></code></a> is the main abstraction for the lightpath module,
+grouping together a set of devices using the <code class="xref py py-class docutils literal notranslate"><span class="pre">LightInterface</span></code> and
 representing the path between them as single object. While the manipulation of
 each of these object should be done at the device level, the
-<a class="reference internal" href="#lightpath.path.BeamPath.clear" title="lightpath.path.BeamPath.clear"><code class="xref py py-meth docutils literal"><span class="pre">BeamPath.clear()</span></code></a> does provide a powerful tool to quickly change the
+<a class="reference internal" href="#lightpath.path.BeamPath.clear" title="lightpath.path.BeamPath.clear"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BeamPath.clear()</span></code></a> does provide a powerful tool to quickly change the
 status of the path.</p>
-<p>The <a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal"><span class="pre">BeamPath</span></code></a> object is also not meant to be a rigid representation,
-<a class="reference internal" href="#lightpath.path.BeamPath.split" title="lightpath.path.BeamPath.split"><code class="xref py py-meth docutils literal"><span class="pre">BeamPath.split()</span></code></a> and <a class="reference internal" href="#lightpath.path.BeamPath.join" title="lightpath.path.BeamPath.join"><code class="xref py py-meth docutils literal"><span class="pre">BeamPath.join()</span></code></a> both allow for slicing and
+<p>The <a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BeamPath</span></code></a> object is also not meant to be a rigid representation,
+<a class="reference internal" href="#lightpath.path.BeamPath.split" title="lightpath.path.BeamPath.split"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BeamPath.split()</span></code></a> and <a class="reference internal" href="#lightpath.path.BeamPath.join" title="lightpath.path.BeamPath.join"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BeamPath.join()</span></code></a> both allow for slicing and
 combining of different areas of the LCLS beamline. However, keep in mind that
 the path only knows the state of the devices it contains, so certain methods
 might not return an accurate representation of reality if an upstream device is
@@ -182,7 +176,7 @@ multiple beamlines with appropriate reflecting devices in between.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>devices</strong> (<code class="xref py py-class docutils literal"><span class="pre">LightDevice</span></code>) – Arguments are interpreted as LightDevices along a common beamline.</li>
+<li><strong>devices</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">LightDevice</span></code>) – Arguments are interpreted as LightDevices along a common beamline.</li>
 <li><strong>= str</strong><strong>, </strong><strong>optional</strong> (<em>name</em>) – Name of the BeamPath</li>
 </ul>
 </td>
@@ -207,7 +201,7 @@ multiple beamlines with appropriate reflecting devices in between.</p>
 <code class="descname">blocking_devices</code><a class="headerlink" href="#lightpath.path.BeamPath.blocking_devices" title="Permalink to this definition">¶</a></dt>
 <dd><p>A list of devices that are currently inserted or are in unknown
 positions. This includes devices downstream of the first
-<a class="reference internal" href="#lightpath.path.BeamPath.impediment" title="lightpath.path.BeamPath.impediment"><code class="xref py py-attr docutils literal"><span class="pre">impediment</span></code></a></p>
+<a class="reference internal" href="#lightpath.path.BeamPath.impediment" title="lightpath.path.BeamPath.impediment"><code class="xref py py-attr docutils literal notranslate"><span class="pre">impediment</span></code></a></p>
 </dd></dl>
 
 <dl class="attribute">
@@ -229,12 +223,12 @@ positions. This includes devices downstream of the first
 <li><strong>timeout</strong> (<em>float</em><em>, </em><em>optional</em>) – Duration to wait for device movements</li>
 <li><strong>ignore</strong> (<em>device</em><em> or </em><em>iterable</em><em>, </em><em>optional</em>) – Leave devices in their current state without removing them</li>
 <li><strong>passive</strong> (<em>bool</em><em>, </em><em>optional</em>) – If False, devices that are inserted but don’t attenuate the beam
-below <code class="xref py py-attr docutils literal"><span class="pre">minimum_threshold</span></code> are ignored</li>
+below <code class="xref py py-attr docutils literal notranslate"><span class="pre">minimum_threshold</span></code> are ignored</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Returns list of status objects returned by
-<code class="xref py py-meth docutils literal"><span class="pre">LightInterface.remove()</span></code></p>
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">LightInterface.remove()</span></code></p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">statuses</p>
@@ -248,7 +242,7 @@ below <code class="xref py py-attr docutils literal"><span class="pre">minimum_t
 <dt id="lightpath.path.BeamPath.cleared">
 <code class="descname">cleared</code><a class="headerlink" href="#lightpath.path.BeamPath.cleared" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether beamline is clear of any devices that are below the
-<a class="reference internal" href="#lightpath.path.BeamPath.minimum_transmission" title="lightpath.path.BeamPath.minimum_transmission"><code class="xref py py-attr docutils literal"><span class="pre">minimum_transmission</span></code></a></p>
+<a class="reference internal" href="#lightpath.path.BeamPath.minimum_transmission" title="lightpath.path.BeamPath.minimum_transmission"><code class="xref py py-attr docutils literal notranslate"><span class="pre">minimum_transmission</span></code></a></p>
 </dd></dl>
 
 <dl class="classmethod">
@@ -269,7 +263,7 @@ irrelavant</li>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>BeamPath</strong> – A new object with all of the path devices</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal"><span class="pre">BeamPath</span></code></a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BeamPath</span></code></a></p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last">TypeError: – Raised if a non-BeamPath object is supplied</p>
@@ -289,8 +283,8 @@ irrelavant</li>
 <dt id="lightpath.path.BeamPath.incident_devices">
 <code class="descname">incident_devices</code><a class="headerlink" href="#lightpath.path.BeamPath.incident_devices" title="Permalink to this definition">¶</a></dt>
 <dd><p>A list of devices the beam is currently incident on. This includes the
-current <a class="reference internal" href="#lightpath.path.BeamPath.impediment" title="lightpath.path.BeamPath.impediment"><code class="xref py py-attr docutils literal"><span class="pre">impediment</span></code></a> and any upstream devices that may be
-inserted but have more transmission than <a class="reference internal" href="#lightpath.path.BeamPath.minimum_transmission" title="lightpath.path.BeamPath.minimum_transmission"><code class="xref py py-attr docutils literal"><span class="pre">minimum_transmission</span></code></a></p>
+current <a class="reference internal" href="#lightpath.path.BeamPath.impediment" title="lightpath.path.BeamPath.impediment"><code class="xref py py-attr docutils literal notranslate"><span class="pre">impediment</span></code></a> and any upstream devices that may be
+inserted but have more transmission than <a class="reference internal" href="#lightpath.path.BeamPath.minimum_transmission" title="lightpath.path.BeamPath.minimum_transmission"><code class="xref py py-attr docutils literal notranslate"><span class="pre">minimum_transmission</span></code></a></p>
 </dd></dl>
 
 <dl class="method">
@@ -306,7 +300,7 @@ irrelavant</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>BeamPath</strong> – A new object with all of the path devices</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal"><span class="pre">BeamPath</span></code></a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BeamPath</span></code></a></td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body">TypeError: – Raised if a non-BeamPath object is supplied</td>
 </tr>
@@ -352,7 +346,7 @@ specific position or a devices location</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>z</strong> (<em>float</em>) – Z position to split the paths</li>
 <li><strong>device</strong> (<em>LightDevice</em><em>, </em><em>name</em><em>, or </em><em>base PV</em>) – The specified device will be the last device in the first
-<a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal"><span class="pre">BeamPath</span></code></a> object</li>
+<a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BeamPath</span></code></a> object</li>
 </ul>
 </td>
 </tr>
@@ -391,9 +385,7 @@ specific position or a devices location</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -413,7 +405,7 @@ specific position or a devices location</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -431,7 +423,8 @@ specific position or a devices location</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.2.2+31.g52c5742',
+            VERSION:'0.3.0+4.g79e2ddc',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -449,14 +442,13 @@ specific position or a devices location</p>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

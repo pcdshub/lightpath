@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>LightController &mdash; LCLS Lightpath 0.2.2+31.g52c5742 documentation</title>
+  <title>LightController &mdash; LCLS Lightpath 0.3.0+4.g79e2ddc documentation</title>
   
 
   
@@ -25,26 +25,19 @@
   
 
   
-  
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="LCLS Lightpath 0.2.2+31.g52c5742 documentation" href="index.html"/>
-        <link rel="next" title="BeamPath" href="path.html"/>
-        <link rel="prev" title="Introduction" href="tutorial.html"/> 
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="BeamPath" href="path.html" />
+    <link rel="prev" title="Introduction" href="tutorial.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -66,7 +59,7 @@
             
             
               <div class="version">
-                0.2.2+31.g52c5742
+                0.3.0+4.g79e2ddc
               </div>
             
           
@@ -106,7 +99,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">LCLS Lightpath</a>
@@ -114,9 +107,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -160,13 +154,13 @@
             
   <div class="section" id="module-lightpath.controller">
 <span id="lightcontroller"></span><h1>LightController<a class="headerlink" href="#module-lightpath.controller" title="Permalink to this headline">¶</a></h1>
-<p>While the <a class="reference internal" href="path.html#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal"><span class="pre">BeamPath</span></code></a> object provides basic control functionality, the
-<a class="reference internal" href="#lightpath.LightController" title="lightpath.LightController"><code class="xref py py-class docutils literal"><span class="pre">LightController</span></code></a> is what does the organization of all of LCLS’s
+<p>While the <a class="reference internal" href="path.html#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BeamPath</span></code></a> object provides basic control functionality, the
+<a class="reference internal" href="#lightpath.LightController" title="lightpath.LightController"><code class="xref py py-class docutils literal notranslate"><span class="pre">LightController</span></code></a> is what does the organization of all of LCLS’s
 devices. After parsing through all of the given devices, each beamline is
-contsructed as a <a class="reference internal" href="path.html#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal"><span class="pre">BeamPath</span></code></a> object. This includes not only devices on
+contsructed as a <a class="reference internal" href="path.html#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BeamPath</span></code></a> object. This includes not only devices on
 the upstream beamline but all of the beamlines before it. For example, the MEC
 beampath will include devices in both the FEE and the XRT. The
-<a class="reference internal" href="#lightpath.LightController" title="lightpath.LightController"><code class="xref py py-class docutils literal"><span class="pre">LightController</span></code></a> handles this logic as well as a basic overview of
+<a class="reference internal" href="#lightpath.LightController" title="lightpath.LightController"><code class="xref py py-class docutils literal notranslate"><span class="pre">LightController</span></code></a> handles this logic as well as a basic overview of
 where the beam is and what the state of the MPS system is currently.</p>
 <dl class="class">
 <dt id="lightpath.LightController">
@@ -241,7 +235,7 @@ as None, all endstations will be loaded</li>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>path</strong> – Path to and including given device</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal"><span class="pre">BeamPath</span></code></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-class docutils literal notranslate"><span class="pre">BeamPath</span></code></td>
 </tr>
 </tbody>
 </table>
@@ -253,9 +247,7 @@ as None, all endstations will be loaded</li>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -277,7 +269,7 @@ as None, all endstations will be loaded</li>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -295,7 +287,8 @@ as None, all endstations will be loaded</li>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.2.2+31.g52c5742',
+            VERSION:'0.3.0+4.g79e2ddc',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -313,14 +306,13 @@ as None, all endstations will be loaded</li>
     <script type="text/javascript" src="_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>
