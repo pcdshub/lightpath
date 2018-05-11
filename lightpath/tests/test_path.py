@@ -97,6 +97,11 @@ def test_single_impediment(path, branch):
     assert branch.incident_devices == []
     assert branch.cleared is False
 
+    # Broken device
+    del path.path[0].status
+    assert find_device_state(path.path[0]) == DeviceState.Faulted
+    assert path.impediment == path.path[0]
+
 
 def test_multiple_insert_beamline(path):
     # Insert two devices
