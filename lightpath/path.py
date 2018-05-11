@@ -177,25 +177,20 @@ class BeamPath(OphydObject):
 
             # Find branching devices and store
             # They will be marked as blocking by downstream devices
-            try:
-                dev_state = find_device_state(device)
-                if device in self.branches:
-                    last_branches.append(device)
-                # Find inserted devices
-                elif dev_state == DeviceState.Inserted:
-                    # Ignore devices with low enough transmssion
-                    trans = getattr(device, 'transmission', 1)
-                    if trans < self.minimum_transmission:
-                        block.append(device)
-                elif dev_state != DeviceState.Removed:
+            dev_state = find_device_state(device)
+            if device in self.branches:
+                last_branches.append(device)
+            # Find inserted devices
+            elif dev_state == DeviceState.Inserted:
+                # Ignore devices with low enough transmssion
+                trans = getattr(device, 'transmission', 1)
+                if trans < self.minimum_transmission:
                     block.append(device)
-            except Exception as exc:
-                logger.error('Unable to determine state of %s', device.name)
-                logger.error(exc)
+            # Find unknown and faulted devices
+            elif dev_state != DeviceState.Removed:
                 block.append(device)
-            finally:
-                # Stache our prior device
-                prior = device
+            # Stache our prior device
+            prior = device
 
         return block
 
