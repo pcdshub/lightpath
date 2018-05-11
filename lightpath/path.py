@@ -178,16 +178,15 @@ class BeamPath(OphydObject):
             # Find branching devices and store
             # They will be marked as blocking by downstream devices
             try:
+                dev_state = find_device_state(device)
                 if device in self.branches:
                     last_branches.append(device)
-
                 # Find inserted devices
-                elif device.inserted and (device.transmission <
-                                          self.minimum_transmission):
-                    block.append(device)
-                # Find unknown devices
-                elif not device.removed and not device.inserted:
-                    block.append(device)
+                elif dev_state == DeviceState.Inserted:
+                    # Ignore devices with low enough transmssion
+                    trans = getattr(device, 'transmission', 1)
+                    if trans < self.minimum_transmission:
+                        block.append(device)
             except Exception as exc:
                 logger.error('Unable to determine state of %s', device.name)
                 logger.error(exc)
@@ -206,7 +205,8 @@ class BeamPath(OphydObject):
         inserted but have more transmission than :attr:`.minimum_transmission`
         """
         # Find device information
-        inserted = [d for d in self.path if d.inserted]
+        inserted = [d for d in self.path
+                    if find_device_state(d) == DeviceState.Inserted]
         impediment = self.impediment
         # No blocking devices, all inserted devices incident
         if not impediment:
@@ -224,7 +224,7 @@ class BeamPath(OphydObject):
             File to writable
         """
         # Initialize Table
-        pt = PrettyTable(['Name', 'Prefix', 'Position', 'Beamline', 'Removed'])
+        pt = PrettyTable(['Name', 'Prefix', 'Position', 'Beamline', 'State'])
         # Adjust Table settings
         pt.align = 'r'
         pt.align['Name'] = 'l'
@@ -233,7 +233,7 @@ class BeamPath(OphydObject):
         # Add info
         for d in self.path:
             pt.add_row([d.name, d.prefix, d.md.z,
-                        d.md.beamline, str(d.removed)])
+                        d.md.beamline, find_device_state(d).name])
         # Show table
         print(pt, file=file)
 
@@ -291,7 +291,9 @@ class BeamPath(OphydObject):
         logger.info('Removing devices along the beampath ...')
         status = [device.remove(timeout=timeout)
                   for device in target_devices
-                  if not device.removed and hasattr(device, 'remove')]
+                  if find_device_state(device) in (DeviceState.Inserted,
+                                                   DeviceState.Unknown)
+                  and hasattr(device, 'remove')]
         # Wait parameters
         if wait:
             logger.info('Waiting for all devices to be '
