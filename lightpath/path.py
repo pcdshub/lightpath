@@ -85,6 +85,8 @@ def find_device_state(device):
     # Gather device information
     try:
         _in, _out = device.inserted, device.removed
+        logger.debug("Device %s reporting; IN=%s, OUT=%s",
+                     device.name, _in, _out)
     except Exception as exc:
         # Catch DisconnectionError
         if isinstance(exc, DisconnectedError):
