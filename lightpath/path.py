@@ -87,12 +87,12 @@ def find_device_state(device):
         _in, _out = device.inserted, device.removed
         logger.debug("Device %s reporting; IN=%s, OUT=%s",
                      device.name, _in, _out)
+    # Check if this was an error with an EPICS connection
+    except (TimeoutError, DisconnectedError) as exc:
+        logger.warning("Unable to connect to %r", device)
+        logger.debug(exc, exc_info=True)
+        return DeviceState.Disconnected
     except Exception as exc:
-        # Catch DisconnectionError
-        if isinstance(exc, DisconnectedError):
-            logger.warning("Unable to connect to %r", device)
-            return DeviceState.Disconnected
-        # Check if this was an error with an EPICS connection
         logger.exception("Unable to determine device state for %r", device)
         return DeviceState.Error
     # Check state consistency and return proper Enum
