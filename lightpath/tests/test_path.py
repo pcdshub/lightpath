@@ -218,14 +218,14 @@ def test_complex_branching(lcls):
 
 known_table = """\
 +-------+--------+----------+----------+---------+
-| Name  | Prefix | Position | Beamline | Removed |
+| Name  | Prefix | Position | Beamline |   State |
 +-------+--------+----------+----------+---------+
-| zero  | zero   |  0.00000 |      TST |    True |
-| one   | one    |  2.00000 |      TST |    True |
-| two   | two    |  9.00000 |      TST |    True |
-| three | three  | 15.00000 |      TST |    True |
-| four  | four   | 16.00000 |      TST |    True |
-| five  | five   | 24.00000 |      TST |    True |
-| six   | six    | 30.00000 |      TST |    True |
+| zero  | zero   |  0.00000 |      TST | Removed |
+| one   | one    |  2.00000 |      TST | Removed |
+| two   | two    |  9.00000 |      TST | Removed |
+| three | three  | 15.00000 |      TST | Removed |
+| four  | four   | 16.00000 |      TST | Removed |
+| five  | five   | 24.00000 |      TST | Removed |
+| six   | six    | 30.00000 |      TST | Removed |
 +-------+--------+----------+----------+---------+
 """
