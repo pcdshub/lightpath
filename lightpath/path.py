@@ -14,6 +14,7 @@ might not return an accurate representation of reality if an upstream device is
 affecting the beam.
 """
 import math
+import enum
 import logging
 from collections import Iterable
 
@@ -25,6 +26,43 @@ from .errors import CoordinateError
 
 
 logger = logging.getLogger(__name__)
+
+
+class DeviceState(enum.Enum):
+    """Description of BeamStates"""
+    Removed = 0
+    Inserted = 1
+    Unknown = 2
+    Faulted = 3
+
+
+def find_device_state(device):
+    """
+    Report the state of a device
+
+    The device must implement ``.inserted`` and ``removed``.
+
+    Parameters
+    ----------
+    device : ophyd.Device
+
+    Returns
+    -------
+    state: DeviceState
+    """
+    # Gather device information
+    try:
+        _in, _out = device.inserted, device.removed
+    except Exception as exc:
+        logger.exception("Unable to determine device state for %r", device)
+        return DeviceState.Faulted
+    # Check state consistency and return proper Enum
+    if _in and not _out:
+        return DeviceState.Inserted
+    elif _out and not _in:
+        return DeviceState.Removed
+    else:
+        return DeviceState.Unknown
 
 
 class BeamPath(OphydObject):
