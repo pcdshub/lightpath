@@ -1,28 +1,26 @@
 import io
-from types import SimpleNamespace
 
 from unittest.mock import Mock
 from lightpath import BeamPath
 from lightpath.path import find_device_state, DeviceState
-from .conftest import Crystal
+from .conftest import Crystal, Status
 
 
-def test_find_device_state():
-    dev = SimpleNamespace()
+def test_find_device_state(device):
     # In
-    dev.inserted = True
-    dev.removed = False
-    assert find_device_state(dev) == DeviceState.Inserted
+    device.insert()
+    assert find_device_state(device) == DeviceState.Inserted
     # Out
-    dev.removed = True
-    dev.inserted = False
-    assert find_device_state(dev) == DeviceState.Removed
+    device.remove()
+    assert find_device_state(device) == DeviceState.Removed
     # Unknown
-    dev.inserted = True
-    assert find_device_state(dev) == DeviceState.Unknown
+    device.status = Status.unknown
+    assert find_device_state(device) == DeviceState.Unknown
+    # Disconnected
+    device.status = Status.disconnected
     # Error
-    del dev.inserted
-    assert find_device_state(dev) == DeviceState.Faulted
+    del device.status
+    assert find_device_state(device) == DeviceState.Error
 
 
 def test_range(path):
@@ -99,7 +97,7 @@ def test_single_impediment(path, branch):
 
     # Broken device
     del path.path[0].status
-    assert find_device_state(path.path[0]) == DeviceState.Faulted
+    assert find_device_state(path.path[0]) == DeviceState.Error
     assert path.impediment == path.path[0]
 
 
