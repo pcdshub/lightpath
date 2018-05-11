@@ -187,6 +187,8 @@ class BeamPath(OphydObject):
                     trans = getattr(device, 'transmission', 1)
                     if trans < self.minimum_transmission:
                         block.append(device)
+                elif dev_state != DeviceState.Removed:
+                    block.append(device)
             except Exception as exc:
                 logger.error('Unable to determine state of %s', device.name)
                 logger.error(exc)
