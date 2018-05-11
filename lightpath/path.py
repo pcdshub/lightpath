@@ -29,11 +29,42 @@ logger = logging.getLogger(__name__)
 
 
 class DeviceState(enum.Enum):
-    """Description of BeamStates"""
+    """
+    Description of BeamStates
+
+    The standard Inserted, Removed or Unknown have been expanded within
+    this state to help operators diagnose exact reasons for uncertainty in the
+    state of the beamline
+
+    Attributes
+    ----------
+    Removed:
+        Device is removed from the beamline.
+
+    Inserted:
+        Device is inserted into the beamline. This may or may not prevent beam
+        from reaching downstream devices.
+
+    Unknown:
+        Device is reporting neither an inserted or removed state.
+
+    Inconsistent:
+        The device is reporting that is both inserted and removed.
+
+    Disconnected:
+        We were unable to determine the state of the device because one or more
+        of the relevant signals was not available.
+
+    Error:
+        Catch-all state for any errors the device reported when asked for its
+        state that were not simply a failure to communicate with signals
+    """
     Removed = 0
     Inserted = 1
     Unknown = 2
-    Faulted = 3
+    Inconsistent = 3
+    Disconnected = 4
+    Error = 5
 
 
 def find_device_state(device):
