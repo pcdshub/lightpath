@@ -1,9 +1,28 @@
 import io
+from types import SimpleNamespace
 
 from unittest.mock import Mock
-
 from lightpath import BeamPath
+from lightpath.path import find_device_state, DeviceState
 from .conftest import Crystal
+
+
+def test_find_device_state():
+    dev = SimpleNamespace()
+    # In
+    dev.inserted = True
+    dev.removed = False
+    assert find_device_state(dev) == DeviceState.Inserted
+    # Out
+    dev.removed = True
+    dev.inserted = False
+    assert find_device_state(dev) == DeviceState.Removed
+    # Unknown
+    dev.inserted = True
+    assert find_device_state(dev) == DeviceState.Unknown
+    # Error
+    del dev.inserted
+    assert find_device_state(dev) == DeviceState.Faulted
 
 
 def test_range(path):
