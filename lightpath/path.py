@@ -21,6 +21,7 @@ from collections import Iterable
 from prettytable import PrettyTable
 from ophyd.ophydobj import OphydObject
 from ophyd.status import wait as status_wait
+from ophyd.utils import DisconnectedError
 
 from .errors import CoordinateError
 
@@ -85,13 +86,24 @@ def find_device_state(device):
     try:
         _in, _out = device.inserted, device.removed
     except Exception as exc:
+        # Catch DisconnectionError
+        if isinstance(exc, DisconnectedError):
+            logger.warning("Unable to connect to %r", device)
+            return DeviceState.Disconnected
+        # Check if this was an error with an EPICS connection
         logger.exception("Unable to determine device state for %r", device)
-        return DeviceState.Faulted
+        return DeviceState.Error
     # Check state consistency and return proper Enum
+    # In
     if _in and not _out:
         return DeviceState.Inserted
+    # Out
     elif _out and not _in:
         return DeviceState.Removed
+    # Both In and Out
+    elif _out and _in:
+        return DeviceState.Inconsistent
+    # Neither In or Out
     else:
         return DeviceState.Unknown
 
