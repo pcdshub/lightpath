@@ -14,17 +14,100 @@ might not return an accurate representation of reality if an upstream device is
 affecting the beam.
 """
 import math
+import enum
 import logging
 from collections import Iterable
 
 from prettytable import PrettyTable
 from ophyd.ophydobj import OphydObject
 from ophyd.status import wait as status_wait
+from ophyd.utils import DisconnectedError
 
 from .errors import CoordinateError
 
 
 logger = logging.getLogger(__name__)
+
+
+class DeviceState(enum.Enum):
+    """
+    Description of BeamStates
+
+    The standard Inserted, Removed or Unknown have been expanded within
+    this state to help operators diagnose exact reasons for uncertainty in the
+    state of the beamline
+
+    Attributes
+    ----------
+    Removed:
+        Device is removed from the beamline.
+
+    Inserted:
+        Device is inserted into the beamline. This may or may not prevent beam
+        from reaching downstream devices.
+
+    Unknown:
+        Device is reporting neither an inserted or removed state.
+
+    Inconsistent:
+        The device is reporting that is both inserted and removed.
+
+    Disconnected:
+        We were unable to determine the state of the device because one or more
+        of the relevant signals was not available.
+
+    Error:
+        Catch-all state for any errors the device reported when asked for its
+        state that were not simply a failure to communicate with signals
+    """
+    Removed = 0
+    Inserted = 1
+    Unknown = 2
+    Inconsistent = 3
+    Disconnected = 4
+    Error = 5
+
+
+def find_device_state(device):
+    """
+    Report the state of a device
+
+    The device must implement ``.inserted`` and ``removed``.
+
+    Parameters
+    ----------
+    device : ophyd.Device
+
+    Returns
+    -------
+    state: DeviceState
+    """
+    # Gather device information
+    try:
+        _in, _out = device.inserted, device.removed
+        logger.debug("Device %s reporting; IN=%s, OUT=%s",
+                     device.name, _in, _out)
+    # Check if this was an error with an EPICS connection
+    except (TimeoutError, DisconnectedError) as exc:
+        logger.warning("Unable to connect to %r", device)
+        logger.debug(exc, exc_info=True)
+        return DeviceState.Disconnected
+    except Exception as exc:
+        logger.exception("Unable to determine device state for %r", device)
+        return DeviceState.Error
+    # Check state consistency and return proper Enum
+    # In
+    if _in and not _out:
+        return DeviceState.Inserted
+    # Out
+    elif _out and not _in:
+        return DeviceState.Removed
+    # Both In and Out
+    elif _out and _in:
+        return DeviceState.Inconsistent
+    # Neither In or Out
+    else:
+        return DeviceState.Unknown
 
 
 class BeamPath(OphydObject):
@@ -139,24 +222,20 @@ class BeamPath(OphydObject):
 
             # Find branching devices and store
             # They will be marked as blocking by downstream devices
-            try:
-                if device in self.branches:
-                    last_branches.append(device)
-
-                # Find inserted devices
-                elif device.inserted and (device.transmission <
-                                          self.minimum_transmission):
+            dev_state = find_device_state(device)
+            if device in self.branches:
+                last_branches.append(device)
+            # Find inserted devices
+            elif dev_state == DeviceState.Inserted:
+                # Ignore devices with low enough transmssion
+                trans = getattr(device, 'transmission', 1)
+                if trans < self.minimum_transmission:
                     block.append(device)
-                # Find unknown devices
-                elif not device.removed and not device.inserted:
-                    block.append(device)
-            except Exception as exc:
-                logger.error('Unable to determine state of %s', device.name)
-                logger.error(exc)
+            # Find unknown and faulted devices
+            elif dev_state != DeviceState.Removed:
                 block.append(device)
-            finally:
-                # Stache our prior device
-                prior = device
+            # Stache our prior device
+            prior = device
 
         return block
 
@@ -168,7 +247,8 @@ class BeamPath(OphydObject):
         inserted but have more transmission than :attr:`.minimum_transmission`
         """
         # Find device information
-        inserted = [d for d in self.path if d.inserted]
+        inserted = [d for d in self.path
+                    if find_device_state(d) == DeviceState.Inserted]
         impediment = self.impediment
         # No blocking devices, all inserted devices incident
         if not impediment:
@@ -186,7 +266,7 @@ class BeamPath(OphydObject):
             File to writable
         """
         # Initialize Table
-        pt = PrettyTable(['Name', 'Prefix', 'Position', 'Beamline', 'Removed'])
+        pt = PrettyTable(['Name', 'Prefix', 'Position', 'Beamline', 'State'])
         # Adjust Table settings
         pt.align = 'r'
         pt.align['Name'] = 'l'
@@ -195,7 +275,7 @@ class BeamPath(OphydObject):
         # Add info
         for d in self.path:
             pt.add_row([d.name, d.prefix, d.md.z,
-                        d.md.beamline, str(d.removed)])
+                        d.md.beamline, find_device_state(d).name])
         # Show table
         print(pt, file=file)
 
@@ -253,7 +333,9 @@ class BeamPath(OphydObject):
         logger.info('Removing devices along the beampath ...')
         status = [device.remove(timeout=timeout)
                   for device in target_devices
-                  if not device.removed and hasattr(device, 'remove')]
+                  if find_device_state(device) in (DeviceState.Inserted,
+                                                   DeviceState.Unknown)
+                  and hasattr(device, 'remove')]
         # Wait parameters
         if wait:
             logger.info('Waiting for all devices to be '

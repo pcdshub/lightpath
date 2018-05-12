@@ -7,6 +7,7 @@ import happi
 import pytest
 from ophyd.device import Device
 from ophyd.status import DeviceStatus
+from ophyd.utils import DisconnectedError
 
 import lightpath
 from lightpath import BeamPath
@@ -17,7 +18,7 @@ from lightpath import BeamPath
 #################
 # Enable the logging level to be set from the command line
 def pytest_addoption(parser):
-    parser.addoption("--log", action="store", default="INFO",
+    parser.addoption("--log", action="store", default="DEBUG",
                      help="Set the level of the log")
     parser.addoption("--logfile", action="store", default='log',
                      help="Write the log output to specified file path")
@@ -53,6 +54,8 @@ class Status:
     inserted = 0
     removed = 1
     unknown = 2
+    inconsistent = 3
+    disconnected = 4
 
 
 class Valve(Device):
@@ -83,14 +86,16 @@ class Valve(Device):
         """
         Report if the device is inserted into the beam
         """
-        return self.status == Status.inserted
+        if self.status == Status.disconnected:
+            raise DisconnectedError("Simulated Disconnection")
+        return self.status in (Status.inserted, Status.inconsistent)
 
     @property
     def removed(self):
         """
         Report if the device is inserted into the beam
         """
-        return self.status == Status.removed
+        return self.status in (Status.removed, Status.inconsistent)
 
     def insert(self, timeout=None, finished_cb=None):
         """

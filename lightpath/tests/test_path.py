@@ -1,9 +1,26 @@
 import io
 
 from unittest.mock import Mock
-
 from lightpath import BeamPath
-from .conftest import Crystal
+from lightpath.path import find_device_state, DeviceState
+from .conftest import Crystal, Status
+
+
+def test_find_device_state(device):
+    # In
+    device.insert()
+    assert find_device_state(device) == DeviceState.Inserted
+    # Out
+    device.remove()
+    assert find_device_state(device) == DeviceState.Removed
+    # Unknown
+    device.status = Status.unknown
+    assert find_device_state(device) == DeviceState.Unknown
+    # Disconnected
+    device.status = Status.disconnected
+    # Error
+    del device.status
+    assert find_device_state(device) == DeviceState.Error
 
 
 def test_range(path):
@@ -77,6 +94,11 @@ def test_single_impediment(path, branch):
     assert branch.blocking_devices == [branch.impediment]
     assert branch.incident_devices == []
     assert branch.cleared is False
+
+    # Broken device
+    del path.path[0].status
+    assert find_device_state(path.path[0]) == DeviceState.Error
+    assert path.impediment == path.path[0]
 
 
 def test_multiple_insert_beamline(path):
@@ -199,14 +221,14 @@ def test_complex_branching(lcls):
 
 known_table = """\
 +-------+--------+----------+----------+---------+
-| Name  | Prefix | Position | Beamline | Removed |
+| Name  | Prefix | Position | Beamline |   State |
 +-------+--------+----------+----------+---------+
-| zero  | zero   |  0.00000 |      TST |    True |
-| one   | one    |  2.00000 |      TST |    True |
-| two   | two    |  9.00000 |      TST |    True |
-| three | three  | 15.00000 |      TST |    True |
-| four  | four   | 16.00000 |      TST |    True |
-| five  | five   | 24.00000 |      TST |    True |
-| six   | six    | 30.00000 |      TST |    True |
+| zero  | zero   |  0.00000 |      TST | Removed |
+| one   | one    |  2.00000 |      TST | Removed |
+| two   | two    |  9.00000 |      TST | Removed |
+| three | three  | 15.00000 |      TST | Removed |
+| four  | four   | 16.00000 |      TST | Removed |
+| five  | five   | 24.00000 |      TST | Removed |
+| six   | six    | 30.00000 |      TST | Removed |
 +-------+--------+----------+----------+---------+
 """
