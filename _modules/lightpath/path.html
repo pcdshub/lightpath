@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>lightpath.path &mdash; LCLS Lightpath 0.3.0+4.g79e2ddc documentation</title>
+  <title>lightpath.path &mdash; LCLS Lightpath 0.3.0+18.g1e273de documentation</title>
   
 
   
@@ -57,7 +57,7 @@
             
             
               <div class="version">
-                0.3.0+4.g79e2ddc
+                0.3.0+18.g1e273de
               </div>
             
           
@@ -165,17 +165,100 @@
 <span class="sd">affecting the beam.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">enum</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">Iterable</span>
 
 <span class="kn">from</span> <span class="nn">prettytable</span> <span class="k">import</span> <span class="n">PrettyTable</span>
 <span class="kn">from</span> <span class="nn">ophyd.ophydobj</span> <span class="k">import</span> <span class="n">OphydObject</span>
 <span class="kn">from</span> <span class="nn">ophyd.status</span> <span class="k">import</span> <span class="n">wait</span> <span class="k">as</span> <span class="n">status_wait</span>
+<span class="kn">from</span> <span class="nn">ophyd.utils</span> <span class="k">import</span> <span class="n">DisconnectedError</span>
 
 <span class="kn">from</span> <span class="nn">.errors</span> <span class="k">import</span> <span class="n">CoordinateError</span>
 
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">DeviceState</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Description of BeamStates</span>
+
+<span class="sd">    The standard Inserted, Removed or Unknown have been expanded within</span>
+<span class="sd">    this state to help operators diagnose exact reasons for uncertainty in the</span>
+<span class="sd">    state of the beamline</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Removed:</span>
+<span class="sd">        Device is removed from the beamline.</span>
+
+<span class="sd">    Inserted:</span>
+<span class="sd">        Device is inserted into the beamline. This may or may not prevent beam</span>
+<span class="sd">        from reaching downstream devices.</span>
+
+<span class="sd">    Unknown:</span>
+<span class="sd">        Device is reporting neither an inserted or removed state.</span>
+
+<span class="sd">    Inconsistent:</span>
+<span class="sd">        The device is reporting that is both inserted and removed.</span>
+
+<span class="sd">    Disconnected:</span>
+<span class="sd">        We were unable to determine the state of the device because one or more</span>
+<span class="sd">        of the relevant signals was not available.</span>
+
+<span class="sd">    Error:</span>
+<span class="sd">        Catch-all state for any errors the device reported when asked for its</span>
+<span class="sd">        state that were not simply a failure to communicate with signals</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Removed</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">Inserted</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">Unknown</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">Inconsistent</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">Disconnected</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">Error</span> <span class="o">=</span> <span class="mi">5</span>
+
+
+<span class="k">def</span> <span class="nf">find_device_state</span><span class="p">(</span><span class="n">device</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Report the state of a device</span>
+
+<span class="sd">    The device must implement ``.inserted`` and ``removed``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    device : ophyd.Device</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    state: DeviceState</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Gather device information</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">_in</span><span class="p">,</span> <span class="n">_out</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">inserted</span><span class="p">,</span> <span class="n">device</span><span class="o">.</span><span class="n">removed</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Device </span><span class="si">%s</span><span class="s2"> reporting; IN=</span><span class="si">%s</span><span class="s2">, OUT=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                     <span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">_in</span><span class="p">,</span> <span class="n">_out</span><span class="p">)</span>
+    <span class="c1"># Check if this was an error with an EPICS connection</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">TimeoutError</span><span class="p">,</span> <span class="n">DisconnectedError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unable to connect to </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Disconnected</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Unable to determine device state for </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Error</span>
+    <span class="c1"># Check state consistency and return proper Enum</span>
+    <span class="c1"># In</span>
+    <span class="k">if</span> <span class="n">_in</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_out</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Inserted</span>
+    <span class="c1"># Out</span>
+    <span class="k">elif</span> <span class="n">_out</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_in</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Removed</span>
+    <span class="c1"># Both In and Out</span>
+    <span class="k">elif</span> <span class="n">_out</span> <span class="ow">and</span> <span class="n">_in</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Inconsistent</span>
+    <span class="c1"># Neither In or Out</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Unknown</span>
 
 
 <div class="viewcode-block" id="BeamPath"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath">[docs]</a><span class="k">class</span> <span class="nc">BeamPath</span><span class="p">(</span><span class="n">OphydObject</span><span class="p">):</span>
@@ -290,24 +373,20 @@
 
             <span class="c1"># Find branching devices and store</span>
             <span class="c1"># They will be marked as blocking by downstream devices</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">device</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">branches</span><span class="p">:</span>
-                    <span class="n">last_branches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-
-                <span class="c1"># Find inserted devices</span>
-                <span class="k">elif</span> <span class="n">device</span><span class="o">.</span><span class="n">inserted</span> <span class="ow">and</span> <span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">transmission</span> <span class="o">&lt;</span>
-                                          <span class="bp">self</span><span class="o">.</span><span class="n">minimum_transmission</span><span class="p">):</span>
+            <span class="n">dev_state</span> <span class="o">=</span> <span class="n">find_device_state</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">device</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">branches</span><span class="p">:</span>
+                <span class="n">last_branches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="c1"># Find inserted devices</span>
+            <span class="k">elif</span> <span class="n">dev_state</span> <span class="o">==</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Inserted</span><span class="p">:</span>
+                <span class="c1"># Ignore devices with low enough transmssion</span>
+                <span class="n">trans</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="s1">&#39;transmission&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">trans</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_transmission</span><span class="p">:</span>
                     <span class="n">block</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-                <span class="c1"># Find unknown devices</span>
-                <span class="k">elif</span> <span class="ow">not</span> <span class="n">device</span><span class="o">.</span><span class="n">removed</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">device</span><span class="o">.</span><span class="n">inserted</span><span class="p">:</span>
-                    <span class="n">block</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Unable to determine state of </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+            <span class="c1"># Find unknown and faulted devices</span>
+            <span class="k">elif</span> <span class="n">dev_state</span> <span class="o">!=</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Removed</span><span class="p">:</span>
                 <span class="n">block</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-            <span class="k">finally</span><span class="p">:</span>
-                <span class="c1"># Stache our prior device</span>
-                <span class="n">prior</span> <span class="o">=</span> <span class="n">device</span>
+            <span class="c1"># Stache our prior device</span>
+            <span class="n">prior</span> <span class="o">=</span> <span class="n">device</span>
 
         <span class="k">return</span> <span class="n">block</span>
 
@@ -319,7 +398,8 @@
 <span class="sd">        inserted but have more transmission than :attr:`.minimum_transmission`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Find device information</span>
-        <span class="n">inserted</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">inserted</span><span class="p">]</span>
+        <span class="n">inserted</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span>
+                    <span class="k">if</span> <span class="n">find_device_state</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">==</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Inserted</span><span class="p">]</span>
         <span class="n">impediment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">impediment</span>
         <span class="c1"># No blocking devices, all inserted devices incident</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">impediment</span><span class="p">:</span>
@@ -337,7 +417,7 @@
 <span class="sd">            File to writable</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Initialize Table</span>
-        <span class="n">pt</span> <span class="o">=</span> <span class="n">PrettyTable</span><span class="p">([</span><span class="s1">&#39;Name&#39;</span><span class="p">,</span> <span class="s1">&#39;Prefix&#39;</span><span class="p">,</span> <span class="s1">&#39;Position&#39;</span><span class="p">,</span> <span class="s1">&#39;Beamline&#39;</span><span class="p">,</span> <span class="s1">&#39;Removed&#39;</span><span class="p">])</span>
+        <span class="n">pt</span> <span class="o">=</span> <span class="n">PrettyTable</span><span class="p">([</span><span class="s1">&#39;Name&#39;</span><span class="p">,</span> <span class="s1">&#39;Prefix&#39;</span><span class="p">,</span> <span class="s1">&#39;Position&#39;</span><span class="p">,</span> <span class="s1">&#39;Beamline&#39;</span><span class="p">,</span> <span class="s1">&#39;State&#39;</span><span class="p">])</span>
         <span class="c1"># Adjust Table settings</span>
         <span class="n">pt</span><span class="o">.</span><span class="n">align</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span>
         <span class="n">pt</span><span class="o">.</span><span class="n">align</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;l&#39;</span>
@@ -346,7 +426,7 @@
         <span class="c1"># Add info</span>
         <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
             <span class="n">pt</span><span class="o">.</span><span class="n">add_row</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span><span class="p">,</span>
-                        <span class="n">d</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">beamline</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">removed</span><span class="p">)])</span>
+                        <span class="n">d</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">beamline</span><span class="p">,</span> <span class="n">find_device_state</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
         <span class="c1"># Show table</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">pt</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">file</span><span class="p">)</span></div>
 
@@ -404,7 +484,9 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Removing devices along the beampath ...&#39;</span><span class="p">)</span>
         <span class="n">status</span> <span class="o">=</span> <span class="p">[</span><span class="n">device</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
                   <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">target_devices</span>
-                  <span class="k">if</span> <span class="ow">not</span> <span class="n">device</span><span class="o">.</span><span class="n">removed</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="s1">&#39;remove&#39;</span><span class="p">)]</span>
+                  <span class="k">if</span> <span class="n">find_device_state</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="n">DeviceState</span><span class="o">.</span><span class="n">Inserted</span><span class="p">,</span>
+                                                   <span class="n">DeviceState</span><span class="o">.</span><span class="n">Unknown</span><span class="p">)</span>
+                  <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="s1">&#39;remove&#39;</span><span class="p">)]</span>
         <span class="c1"># Wait parameters</span>
         <span class="k">if</span> <span class="n">wait</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Waiting for all devices to be &#39;</span>
@@ -629,7 +711,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.3.0+4.g79e2ddc',
+            VERSION:'0.3.0+18.g1e273de',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
