@@ -2,15 +2,24 @@
 Definitions for Lightpath Widgets
 """
 import logging
-from enum import Enum
 
 from pydm.PyQt.QtCore import Qt
 from pydm.PyQt.QtGui import QPen, QSizePolicy, QHBoxLayout, QWidget, QLabel
 from pydm.PyQt.QtGui import QFont, QSpacerItem, QPushButton
 from pydm.widgets.drawing import PyDMDrawingRectangle
 
+from lightpath.path import find_device_state, DeviceState
+
 
 logger = logging.getLogger(__name__)
+
+# Define the state colors that correspond to DeviceState
+state_colors = ['rgb(124, 252, 0)',  # Removed
+                'red',  # Inserted
+                'rgb(255, 215, 0)',  # Unknown
+                'rgb(255, 215, 0)',  # Inconsistent
+                'rgb(255, 0, 255)',  # Disconnected
+                'rgb(255, 0, 255)']  # Error
 
 
 class InactiveRow:
@@ -124,27 +133,17 @@ class LightRow(InactiveRow):
         inserted and removed. The color of the label is also adjusted to either
         green or red to quickly
         """
-        states = Enum('states', ('Unknown', 'Inserted', 'Removed', 'Error'))
         # Interpret state
-        try:
-            state = 1 + int(self.device.inserted) + 2*int(self.device.removed)
-        except Exception as exc:
-            logger.error(exc)
-            state = states.Error.value
+        state = find_device_state(self.device)
         # Set label to state description
-        self.state_label.setText(states(state).name)
-        # Set the color of the label
-        if state == states.Removed.value:
-            self.state_label.setStyleSheet("QLabel {color : rgb(124,252,0)}")
-        elif state == states.Unknown.value:
-            self.state_label.setStyleSheet("QLabel {color : rgb(255, 215, 0)}")
-        else:
-            self.state_label.setStyleSheet("QLabel {color : red}")
+        self.state_label.setText(state.name)
+        color = state_colors[state.value]
+        self.state_label.setStyleSheet("QLabel {color: %s}" % color)
         # Disable buttons if necessary
         if hasattr(self, 'insert_button'):
-            self.insert_button.setEnabled(state != states.Inserted.value)
+            self.insert_button.setEnabled(state != DeviceState.Inserted)
         if hasattr(self, 'remove_button'):
-            self.remove_button.setEnabled(state != states.Removed.value)
+            self.remove_button.setEnabled(state != DeviceState.Removed)
 
     @property
     def widgets(self):

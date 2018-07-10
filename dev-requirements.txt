@@ -5,3 +5,4 @@ ipython
 matplotlib
 sphinx
 sphinx_rtd_theme
+flake8
