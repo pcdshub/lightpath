@@ -20,9 +20,6 @@ install:
   - conda install conda-build anaconda-client
   - conda update -q conda conda-build
   - conda config --append channels pcds-tag
-  - conda config --append channels pydm-dev
-  - conda config --append channels lightsource2-tag
-  - conda config --append channels gsecars
   - conda config --append channels conda-forge
   # Useful for debugging any issues with conda
   - conda info -a
