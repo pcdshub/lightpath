@@ -1,6 +1,8 @@
 import argparse
 import logging
 
+import coloredlogs
+
 import happi
 import pydm
 from lightpath import LightController
@@ -8,6 +10,7 @@ from lightpath.ui import LightApp
 
 DEVICE_CONFIG = '/reg/g/pcds/pyps/apps/hutch-python/device_config/db.json'
 
+logger = logging.getLogger('lightpath')
 
 def main(db, hutches):
     """
@@ -18,6 +21,7 @@ def main(db, hutches):
     db: str
         Path to happi JSON database
     """
+    logger.info("Launching LCLS Lightpath ...")
     # Create PyDM Application
     app = pydm.PyDMApplication()
     # Create Lightpath UI from provided database
@@ -31,8 +35,8 @@ def main(db, hutches):
 
 if __name__ == '__main__':
     # Configure logging
-    logging.basicConfig(level=logging.INFO,
-                        format='%(levelname)s: %(message)s')
+    coloredlogs.install(level='INFO', logger=logger,
+                        fmt='[%(asctime)s] - %(levelname)s -  %(message)s')
     # Create ArgumentParser
     parser = argparse.ArgumentParser(description='Launch the Lightpath UI')
     parser.add_argument('--db', dest='db', type=str,
