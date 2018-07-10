@@ -1,4 +1,7 @@
 import argparse
+import logging
+
+import coloredlogs
 
 import happi
 import pydm
@@ -7,8 +10,9 @@ from lightpath.ui import LightApp
 
 DEVICE_CONFIG = '/reg/g/pcds/pyps/apps/hutch-python/device_config/db.json'
 
+logger = logging.getLogger('lightpath')
 
-def main(db):
+def main(db, hutches):
     """
     Open the lightpath user interface for a configuration file
 
@@ -17,10 +21,12 @@ def main(db):
     db: str
         Path to happi JSON database
     """
+    logger.info("Launching LCLS Lightpath ...")
     # Create PyDM Application
     app = pydm.PyDMApplication()
     # Create Lightpath UI from provided database
-    lc = LightController(happi.Client(path=db))
+    lc = LightController(happi.Client(path=db),
+                         endstations=hutches)
     lp = LightApp(lc)
     # Execute
     lp.show()
@@ -33,6 +39,22 @@ if __name__ == '__main__':
     parser.add_argument('--db', dest='db', type=str,
                         help='Path to device configuration. {} by default'
                              ''.format(DEVICE_CONFIG))
+    parser.add_argument('--hutches', dest='hutches', nargs='+',
+                        help='Experimental Endstation to show the Lightpath')
+    parser.add_argument('--debug', dest='debug', action='store_true',
+                        help='Show the DEBUG logging stream')
     # Parse and launch
     args = parser.parse_args()
-    main(args.db or DEVICE_CONFIG)
+    # Clean user input for hutches
+    if args.hutches:
+        hutches = [hutch.upper() for hutch in args.hutches]
+    else:
+        hutches = None
+    # Configure logging
+    if args.debug:
+        level = 'DEBUG'
+    else:
+        level='INFO'
+    coloredlogs.install(level=level, logger=logger,
+                        fmt='[%(asctime)s] - %(levelname)s -  %(message)s')
+    main(args.db or DEVICE_CONFIG, hutches)
