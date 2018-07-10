@@ -42,8 +42,6 @@ script:
   # Build docs.
   - |
     if [[ -n "$DOCTR_DEPLOY_ENCRYPTION_KEY_PCDSHUB_LIGHTPATH" && $BUILD_DOCS ]]; then
-      #Install doctr from a custom branch until
-      #https://github.com/drdoctr/doctr/pull/190 is merged.
       pushd docs
       make html
       popd
