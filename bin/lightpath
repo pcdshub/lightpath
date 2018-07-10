@@ -8,7 +8,7 @@ from lightpath.ui import LightApp
 DEVICE_CONFIG = '/reg/g/pcds/pyps/apps/hutch-python/device_config/db.json'
 
 
-def main(db):
+def main(db, hutches):
     """
     Open the lightpath user interface for a configuration file
 
@@ -20,7 +20,8 @@ def main(db):
     # Create PyDM Application
     app = pydm.PyDMApplication()
     # Create Lightpath UI from provided database
-    lc = LightController(happi.Client(path=db))
+    lc = LightController(happi.Client(path=db),
+                         endstations=hutches)
     lp = LightApp(lc)
     # Execute
     lp.show()
@@ -33,6 +34,13 @@ if __name__ == '__main__':
     parser.add_argument('--db', dest='db', type=str,
                         help='Path to device configuration. {} by default'
                              ''.format(DEVICE_CONFIG))
+    parser.add_argument('--hutches', dest='hutches', nargs='+',
+                        help='Experimental Endstation to show the Lightpath')
     # Parse and launch
     args = parser.parse_args()
-    main(args.db or DEVICE_CONFIG)
+    # Clean user input for hutches
+    if args.hutches:
+        hutches = [hutch.upper() for hutch in args.hutches]
+    else:
+        hutches = None
+    main(args.db or DEVICE_CONFIG, hutches)
