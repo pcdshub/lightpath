@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>620</width>
-    <height>94</height>
+    <width>737</width>
+    <height>100</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>700</width>
+    <height>100</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Form</string>
@@ -30,10 +36,10 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QWidget" name="widget" native="true">
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0">
+    <widget class="QWidget" name="device_layout" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,1,1">
       <property name="spacing">
-       <number>2</number>
+       <number>10</number>
       </property>
       <property name="topMargin">
        <number>0</number>
@@ -76,17 +82,20 @@
         </property>
        </widget>
       </item>
-      <item>
+      <item alignment="Qt::AlignVCenter">
        <widget class="QWidget" name="device_information" native="true">
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <property name="spacing">
           <number>5</number>
          </property>
          <property name="leftMargin">
-          <number>9</number>
+          <number>2</number>
          </property>
          <property name="topMargin">
           <number>20</number>
+         </property>
+         <property name="rightMargin">
+          <number>2</number>
          </property>
          <property name="bottomMargin">
           <number>20</number>
@@ -138,7 +147,7 @@
         </property>
        </widget>
       </item>
-      <item>
+      <item alignment="Qt::AlignVCenter">
        <widget class="QWidget" name="widget" native="true">
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
