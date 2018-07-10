@@ -24,10 +24,10 @@ Install the most recent tagged build:
 
 .. code::
 
-  conda install lightpath -c pcds-tag -c lightsource2-tag -c conda-forge
+  conda install lightpath -c pcds-tag  -c conda-forge
 
 Install the most recent development build:
 
 .. code::
 
-  conda install lightpath -c pcds-dev -c lightsource2-tag -c conda-forge
+  conda install lightpath -c pcds-dev -c conda-forge
