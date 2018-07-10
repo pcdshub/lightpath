@@ -38,6 +38,7 @@ before_script:
 script:
   - coverage run run_tests.py
   - coverage report -m
+  - flake8 lightpath
   - set -e
   # Build docs.
   - |
