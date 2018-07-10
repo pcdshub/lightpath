@@ -13,6 +13,14 @@ from lightpath.path import find_device_state, DeviceState
 
 logger = logging.getLogger(__name__)
 
+# Define the state colors that correspond to DeviceState
+state_colors = ['rgb(124, 252, 0)',  # Removed
+                'red',  # Inserted
+                'rgb(255, 215, 0)',  # Unknown
+                'rgb(255, 215, 0)',  # Inconsistent
+                'rgb(255, 0, 255)',  # Disconnected
+                'rgb(255, 0, 255)']  # Error
+
 
 class InactiveRow:
     """
@@ -129,16 +137,8 @@ class LightRow(InactiveRow):
         state = find_device_state(self.device)
         # Set label to state description
         self.state_label.setText(state.name)
-        # Set the color of the label
-        if state == DeviceState.Removed:
-            # Neon Green
-            self.state_label.setStyleSheet("QLabel {color : rgb(124,252,0)}")
-        elif state == DeviceState.Inserted:
-            # Red
-            self.state_label.setStyleSheet("QLabel {color : red}")
-        else:
-            # Purple / Pink
-            self.state_label.setStyleSheet("QLabel {color : rgb(255, 215, 0)}")
+        color = state_colors[state.value]
+        self.state_label.setStyleSheet("QLabel {color: %s}" % color)
         # Disable buttons if necessary
         if hasattr(self, 'insert_button'):
             self.insert_button.setEnabled(state != DeviceState.Inserted)
