@@ -34,9 +34,6 @@ def main(db, hutches):
 
 
 if __name__ == '__main__':
-    # Configure logging
-    coloredlogs.install(level='INFO', logger=logger,
-                        fmt='[%(asctime)s] - %(levelname)s -  %(message)s')
     # Create ArgumentParser
     parser = argparse.ArgumentParser(description='Launch the Lightpath UI')
     parser.add_argument('--db', dest='db', type=str,
@@ -44,6 +41,8 @@ if __name__ == '__main__':
                              ''.format(DEVICE_CONFIG))
     parser.add_argument('--hutches', dest='hutches', nargs='+',
                         help='Experimental Endstation to show the Lightpath')
+    parser.add_argument('--debug', dest='debug', action='store_true',
+                        help='Show the DEBUG logging stream')
     # Parse and launch
     args = parser.parse_args()
     # Clean user input for hutches
@@ -51,4 +50,11 @@ if __name__ == '__main__':
         hutches = [hutch.upper() for hutch in args.hutches]
     else:
         hutches = None
+    # Configure logging
+    if args.debug:
+        level = 'DEBUG'
+    else:
+        level='INFO'
+    coloredlogs.install(level=level, logger=logger,
+                        fmt='[%(asctime)s] - %(levelname)s -  %(message)s')
     main(args.db or DEVICE_CONFIG, hutches)
