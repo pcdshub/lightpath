@@ -8,8 +8,7 @@ from functools import partial
 
 from pydm import Display
 from pydm.PyQt.QtCore import pyqtSlot, Qt
-from pydm.PyQt.QtGui import QSpacerItem, QGridLayout
-
+from pydm.PyQt.QtGui import QVBoxLayout
 
 from .widgets import LightRow
 
@@ -46,9 +45,8 @@ class LightApp(Display):
         self.path = None
         self._lock = threading.Lock()
         # Create empty layout
-        self.lightLayout = QGridLayout()
-        self.lightLayout.setVerticalSpacing(1)
-        self.lightLayout.setHorizontalSpacing(10)
+        self.lightLayout = QVBoxLayout()
+        self.lightLayout.setSpacing(1)
         self.widget_rows.setLayout(self.lightLayout)
 
         # Add destinations
@@ -188,11 +186,8 @@ class LightApp(Display):
                 # Clear our subscribtions
                 for row in self.rows:
                     row.clear_sub()
-                # Clear the widgets
-                for i in reversed(range(self.lightLayout.count())):
-                    old = self.lightLayout.takeAt(i).widget()
-                    if old:
-                        old.deleteLater()
+                    self.lightLayout.removeWidget(row)
+                    row.deleteLater()
                 # Clear subscribed row cache
                 self.rows.clear()
 
@@ -201,19 +196,15 @@ class LightApp(Display):
                 # Cache row to later clear subscriptions
                 self.rows.append(row)
                 # Connect up remove button
-                if hasattr(row, 'remove_button'):
+                if not row.remove_button.isHidden():
                     row.remove_button.clicked.connect(
                                     partial(self.remove, device=row.device))
                 # Connect up insert button
-                if hasattr(row, 'insert_button'):
+                if not row.insert_button.isHidden():
                     row.insert_button.clicked.connect(
                                     partial(self.insert, device=row.device))
-                # Add widgets to layout
-                for j, widget in enumerate(row.widgets):
-                    if isinstance(widget, QSpacerItem):
-                        self.lightLayout.addItem(widget, i, j)
-                    else:
-                        self.lightLayout.addWidget(widget, i, j)
+                # Add widget to layout
+                self.lightLayout.addWidget(row)
         # Initialize interface
         for row in self.rows:
             row.update_state()
