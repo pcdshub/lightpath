@@ -1,4 +1,5 @@
 import argparse
+import logging
 
 import happi
 import pydm
@@ -29,6 +30,9 @@ def main(db, hutches):
 
 
 if __name__ == '__main__':
+    # Configure logging
+    logging.basicConfig(level=logging.INFO,
+                        format='%(levelname)s: %(message)s')
     # Create ArgumentParser
     parser = argparse.ArgumentParser(description='Launch the Lightpath UI')
     parser.add_argument('--db', dest='db', type=str,
