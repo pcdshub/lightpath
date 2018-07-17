@@ -5,6 +5,7 @@ import logging
 import os.path
 
 from pydm import Display
+from pydm.PyQt.QtCore import pyqtSlot
 
 from lightpath.path import find_device_state, DeviceState
 
@@ -76,12 +77,9 @@ class LightRow(InactiveRow):
     """
     def __init__(self, device, parent=None):
         super().__init__(device, parent=parent)
-        # Create Insert PushButton
-        if not hasattr(device, 'insert'):
-            self.insert_button.hide()
-        # Create Remove PushButton
-        if not hasattr(device, 'remove'):
-            self.remove_button.hide()
+        # Connect up action buttons
+        self.remove_button.clicked.connect(self.remove)
+        self.insert_button.clicked.connect(self.insert)
         # Subscribe device to state changes
         try:
             # Wait for later to update widget
@@ -91,6 +89,26 @@ class LightRow(InactiveRow):
         except Exception:
             logger.error("Widget is unable to subscribe to device %s",
                          device.name)
+
+    @pyqtSlot()
+    def remove(self):
+        """
+        Remove the device from the beamline
+        """
+        logger.info("Removing device %s ...", self.device.name)
+        try:
+            self.device.remove()
+        except Exception as exc:
+            logger.error(exc)
+
+    @pyqtSlot()
+    def insert(self):
+        """Insert the device from the beamline"""
+        logger.info("Inserting device %s ...", self.device.name)
+        try:
+            self.device.insert()
+        except Exception as exc:
+            logger.error(exc)
 
     def update_state(self, *args, **kwargs):
         """
@@ -109,10 +127,10 @@ class LightRow(InactiveRow):
         color = state_colors[state.value]
         self.state_label.setStyleSheet("QLabel {color: %s}" % color)
         # Disable buttons if necessary
-        if hasattr(self, 'insert_button'):
-            self.insert_button.setEnabled(state != DeviceState.Inserted)
-        if hasattr(self, 'remove_button'):
-            self.remove_button.setEnabled(state != DeviceState.Removed)
+        self.insert_button.setEnabled((state != DeviceState.Inserted
+                                       and hasattr(self.device, 'insert')))
+        self.remove_button.setEnabled((state != DeviceState.Removed
+                                       and hasattr(self.device, 'remove')))
 
     def clear_sub(self):
         """

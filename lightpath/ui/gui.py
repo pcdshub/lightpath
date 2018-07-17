@@ -4,7 +4,6 @@ Full Application for Lightpath
 import logging
 import threading
 import os.path
-from functools import partial
 
 from pydm import Display
 from pydm.PyQt.QtCore import pyqtSlot, Qt
@@ -136,30 +135,6 @@ class LightApp(Display):
         """
         return self.upstream_check.isChecked()
 
-    @pyqtSlot(bool)
-    def remove(self, value, device=None):
-        """
-        Remove the device from the beamline
-        """
-        if device:
-            logger.info("Removing device %s ...", device.name)
-            try:
-                device.remove()
-            except Exception as exc:
-                logger.error(exc)
-
-    @pyqtSlot(bool)
-    def insert(self, value, device=None):
-        """
-        Insert the device from the beamline
-        """
-        if device:
-            logger.info("Inserting device %s ...", device.name)
-            try:
-                device.insert()
-            except Exception as exc:
-                logger.error(exc)
-
     @pyqtSlot(int)
     def transmission_adjusted(self, value):
         """
@@ -195,14 +170,6 @@ class LightApp(Display):
             for i, row in enumerate(rows):
                 # Cache row to later clear subscriptions
                 self.rows.append(row)
-                # Connect up remove button
-                if not row.remove_button.isHidden():
-                    row.remove_button.clicked.connect(
-                                    partial(self.remove, device=row.device))
-                # Connect up insert button
-                if not row.insert_button.isHidden():
-                    row.insert_button.clicked.connect(
-                                    partial(self.insert, device=row.device))
                 # Add widget to layout
                 self.lightLayout.addWidget(row)
         # Initialize interface
