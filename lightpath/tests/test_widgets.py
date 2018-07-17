@@ -19,7 +19,18 @@ def test_widget_updates(lightrow):
     # Toggle device to trigger callbacks
     lightrow.device.remove()
     assert state_colors[0] in lightrow.state_label.styleSheet()
+    assert lightrow.insert_button.isEnabled()
+    assert not lightrow.remove_button.isEnabled()
     lightrow.device.insert()
+    assert not lightrow.insert_button.isEnabled()
+    assert lightrow.remove_button.isEnabled()
     assert state_colors[1] in lightrow.state_label.styleSheet()
     # Check that callbacks have been called
     assert lightrow.state_label.setText.called
+
+
+def test_widget_controls(lightrow):
+    lightrow.remove()
+    assert lightrow.device.removed
+    lightrow.insert()
+    assert lightrow.device.inserted
