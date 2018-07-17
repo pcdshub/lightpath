@@ -2,11 +2,10 @@
 Definitions for Lightpath Widgets
 """
 import logging
+import os.path
 
-from pydm.PyQt.QtCore import Qt
-from pydm.PyQt.QtGui import QPen, QSizePolicy, QHBoxLayout, QWidget, QLabel
-from pydm.PyQt.QtGui import QFont, QSpacerItem, QPushButton
-from pydm.widgets.drawing import PyDMDrawingRectangle
+from pydm import Display
+from pydm.PyQt.QtCore import pyqtSlot
 
 from lightpath.path import find_device_state, DeviceState
 
@@ -22,52 +21,32 @@ state_colors = ['rgb(124, 252, 0)',  # Removed
                 'rgb(255, 0, 255)']  # Error
 
 
-class InactiveRow:
+class InactiveRow(Display):
     """
     Inactive row for happi container
     """
-    font = QFont()
-    font.setPointSize(14)
-    # Italic
-    italic = QFont()
-    font.setPointSize(12)
-    italic.setItalic(True)
-    # Bold
-    bold = QFont()
-    bold.setBold(True)
-
     def __init__(self, device, parent=None):
+        super().__init__(parent=parent)
         self.device = device
         # Create labels
-        self.name_label = QLabel(parent=parent)
         self.name_label.setText(device.name)
-        self.name_label.setFont(self.bold)
-        self.prefix_label = QLabel(parent=parent)
-        self.prefix_label.setObjectName('prefix_frame')
         self.prefix_label.setText('({})'.format(device.prefix))
-        self.prefix_label.setFont(self.italic)
-        self.state_label = QLabel('Disconnected', parent=parent)
-        self.state_label.setFont(self.bold)
+        # By default we mark the device as Disconnected
+        self.state_label.setText('Disconnected')
         self.state_label.setStyleSheet("QLabel {color : rgb(255,0,255)}")
-        # Create Beam Indicator
-        self.indicator = PyDMDrawingRectangle(parent=parent)
-        self.indicator.setMinimumSize(45, 55)
-        self.indicator.setSizePolicy(QSizePolicy.Fixed,
-                                     QSizePolicy.Expanding)
-        self.indicator._pen = QPen(Qt.SolidLine)
-        # Spacer
-        self.spacer = QSpacerItem(40, 20)
 
-    @property
-    def widgets(self):
+    def ui_filename(self):
         """
-        Ordered list of widgets to add to designer
+        Name of designer UI file
         """
-        return [self.indicator,
-                self.name_label,
-                self.prefix_label,
-                self.spacer,
-                self.state_label]
+        return 'device.ui'
+
+    def ui_filepath(self):
+        """
+        Full path to :attr:`.ui_filename`
+        """
+        return os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            self.ui_filename())
 
     def clear_sub(self):
         """
@@ -98,21 +77,9 @@ class LightRow(InactiveRow):
     """
     def __init__(self, device, parent=None):
         super().__init__(device, parent=parent)
-        # Create button widget
-        self.buttons = QWidget(parent=parent)
-        self.button_layout = QHBoxLayout()
-        self.buttons.setLayout(self.button_layout)
-        # Create Insert PushButton
-        if hasattr(device, 'insert'):
-            self.insert_button = QPushButton('Insert', parent=parent)
-            self.insert_button.setFont(self.font)
-            self.button_layout.addWidget(self.insert_button)
-            self.button_layout.addItem(QSpacerItem(10, 20))
-        # Create Remove PushButton
-        if hasattr(device, 'remove'):
-            self.remove_button = QPushButton('Remove', parent=parent)
-            self.remove_button.setFont(self.font)
-            self.button_layout.addWidget(self.remove_button)
+        # Connect up action buttons
+        self.remove_button.clicked.connect(self.remove)
+        self.insert_button.clicked.connect(self.insert)
         # Subscribe device to state changes
         try:
             # Wait for later to update widget
@@ -122,6 +89,26 @@ class LightRow(InactiveRow):
         except Exception:
             logger.error("Widget is unable to subscribe to device %s",
                          device.name)
+
+    @pyqtSlot()
+    def remove(self):
+        """
+        Remove the device from the beamline
+        """
+        logger.info("Removing device %s ...", self.device.name)
+        try:
+            self.device.remove()
+        except Exception as exc:
+            logger.error(exc)
+
+    @pyqtSlot()
+    def insert(self):
+        """Insert the device from the beamline"""
+        logger.info("Inserting device %s ...", self.device.name)
+        try:
+            self.device.insert()
+        except Exception as exc:
+            logger.error(exc)
 
     def update_state(self, *args, **kwargs):
         """
@@ -140,22 +127,10 @@ class LightRow(InactiveRow):
         color = state_colors[state.value]
         self.state_label.setStyleSheet("QLabel {color: %s}" % color)
         # Disable buttons if necessary
-        if hasattr(self, 'insert_button'):
-            self.insert_button.setEnabled(state != DeviceState.Inserted)
-        if hasattr(self, 'remove_button'):
-            self.remove_button.setEnabled(state != DeviceState.Removed)
-
-    @property
-    def widgets(self):
-        """
-        Ordered list of widgets to add to designer
-        """
-        return [self.indicator,
-                self.name_label,
-                self.prefix_label,
-                self.spacer,
-                self.state_label,
-                self.buttons]
+        self.insert_button.setEnabled((state != DeviceState.Inserted
+                                       and hasattr(self.device, 'insert')))
+        self.remove_button.setEnabled((state != DeviceState.Removed
+                                       and hasattr(self.device, 'remove')))
 
     def clear_sub(self):
         """
