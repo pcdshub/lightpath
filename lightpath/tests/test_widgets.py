@@ -5,6 +5,7 @@ import pytest
 import lightpath.ui
 from lightpath.ui.widgets import state_colors, to_stylesheet_color
 
+
 @pytest.fixture(scope='function')
 def lightrow(path):
     # Generate lightpath
