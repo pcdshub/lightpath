@@ -3,8 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 import lightpath.ui
-from lightpath.ui.widgets import state_colors
-
+from lightpath.ui.widgets import state_colors, to_stylesheet_color
 
 @pytest.fixture(scope='function')
 def lightrow(path):
@@ -18,13 +17,15 @@ def lightrow(path):
 def test_widget_updates(lightrow):
     # Toggle device to trigger callbacks
     lightrow.device.remove()
-    assert state_colors[0] in lightrow.state_label.styleSheet()
+    assert (to_stylesheet_color(state_colors[0])
+            in lightrow.state_label.styleSheet())
     assert lightrow.insert_button.isEnabled()
     assert not lightrow.remove_button.isEnabled()
     lightrow.device.insert()
     assert not lightrow.insert_button.isEnabled()
     assert lightrow.remove_button.isEnabled()
-    assert state_colors[1] in lightrow.state_label.styleSheet()
+    assert (to_stylesheet_color(state_colors[1])
+            in lightrow.state_label.styleSheet())
     # Check that callbacks have been called
     assert lightrow.state_label.setText.called
 
