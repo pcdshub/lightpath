@@ -7,7 +7,7 @@ import os.path
 
 from pydm import Display
 from pydm.PyQt.QtCore import pyqtSlot, Qt
-from pydm.PyQt.QtGui import QVBoxLayout
+from pydm.PyQt.QtGui import QHBoxLayout
 
 from .widgets import LightRow
 
@@ -44,7 +44,7 @@ class LightApp(Display):
         self.path = None
         self._lock = threading.Lock()
         # Create empty layout
-        self.lightLayout = QVBoxLayout()
+        self.lightLayout = QHBoxLayout()
         self.lightLayout.setSpacing(1)
         self.widget_rows.setLayout(self.lightLayout)
 
