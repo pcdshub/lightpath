@@ -56,8 +56,6 @@ class LightApp(Display):
         self.destination_combo.currentIndexChanged.connect(
                                             self.change_path_display)
         self.upstream_check.clicked.connect(self.change_path_display)
-        self.transmission_slider.valueChanged.connect(
-                                          self.transmission_adjusted)
         # Store LightRow objects to manage subscriptions
         self.rows = list()
         # Select the beamline to begin with
@@ -135,15 +133,6 @@ class LightApp(Display):
         """
         return self.upstream_check.isChecked()
 
-    @pyqtSlot(int)
-    def transmission_adjusted(self, value):
-        """
-        Adjust the :attr:`.BeamPath.minimum_transmission`
-        """
-        logger.debug("Adjusted minimum transmission to %s percent", value)
-        self.path.minimum_transmission = value/100.
-        self.update_path()
-
     @pyqtSlot()
     @pyqtSlot(bool)
     def change_path_display(self, value=None):
@@ -175,8 +164,8 @@ class LightApp(Display):
         # Initialize interface
         for row in self.rows:
             row.update_state()
-        # Update display
-        self.transmission_adjusted(self.transmission_slider.value())
+        # Update the state of the path
+        self.update_path()
 
     def ui_filename(self):
         """
