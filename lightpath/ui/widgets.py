@@ -133,7 +133,10 @@ class LightRow(InactiveRow):
         # Set label to state description
         self.state_label.setText(state.name)
         color = state_colors[state.value]
-        self.state_label.setStyleSheet("QLabel {color: %s}" % color)
+        style_color = to_stylesheet_color(color)
+        self.state_label.setStyleSheet("QLabel {color: %s}" % style_color)
+        self.device_drawing._default_color = color
+        self.device_drawing.update()
         # Disable buttons if necessary
         self.insert_button.setEnabled((state != DeviceState.Inserted
                                        and hasattr(self.device, 'insert')))
