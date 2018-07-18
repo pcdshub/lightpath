@@ -6,6 +6,7 @@ import os.path
 
 from pydm import Display
 from pydm.PyQt.QtCore import pyqtSlot
+from pydm.PyQt.QtGui import QColor
 
 from lightpath.path import find_device_state, DeviceState
 
@@ -13,12 +14,19 @@ from lightpath.path import find_device_state, DeviceState
 logger = logging.getLogger(__name__)
 
 # Define the state colors that correspond to DeviceState
-state_colors = ['rgb(124, 252, 0)',  # Removed
-                'red',  # Inserted
-                'rgb(255, 215, 0)',  # Unknown
-                'rgb(255, 215, 0)',  # Inconsistent
-                'rgb(255, 0, 255)',  # Disconnected
-                'rgb(255, 0, 255)']  # Error
+state_colors = [QColor(124, 252, 0),  # Removed
+                QColor(255, 0, 0),  # Inserted
+                QColor(255, 215, 0),  # Unknown
+                QColor(255, 215, 0),  # Disconnected
+                QColor(255, 0, 255),  # Disconnected
+                QColor(255, 0, 255)]  # Error
+
+
+def to_stylesheet_color(color):
+    """Utility to convert QColor to stylesheet specification"""
+    return 'rgb({!r}, {!r}, {!r})'.format(color.red(),
+                                          color.green(),
+                                          color.blue())
 
 
 class InactiveRow(Display):
@@ -125,7 +133,10 @@ class LightRow(InactiveRow):
         # Set label to state description
         self.state_label.setText(state.name)
         color = state_colors[state.value]
-        self.state_label.setStyleSheet("QLabel {color: %s}" % color)
+        style_color = to_stylesheet_color(color)
+        self.state_label.setStyleSheet("QLabel {color: %s}" % style_color)
+        self.device_drawing._default_color = color
+        self.device_drawing.update()
         # Disable buttons if necessary
         self.insert_button.setEnabled((state != DeviceState.Inserted
                                        and hasattr(self.device, 'insert')))

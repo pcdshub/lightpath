@@ -7,7 +7,7 @@ import os.path
 
 from pydm import Display
 from pydm.PyQt.QtCore import pyqtSlot, Qt
-from pydm.PyQt.QtGui import QVBoxLayout
+from pydm.PyQt.QtGui import QHBoxLayout
 
 from .widgets import LightRow
 
@@ -44,7 +44,7 @@ class LightApp(Display):
         self.path = None
         self._lock = threading.Lock()
         # Create empty layout
-        self.lightLayout = QVBoxLayout()
+        self.lightLayout = QHBoxLayout()
         self.lightLayout.setSpacing(1)
         self.widget_rows.setLayout(self.lightLayout)
 
@@ -200,12 +200,20 @@ class LightApp(Display):
             for row in self.rows:
                 # If our device is before or at the impediment, it is lit
                 if not block or (row.device.md.z <= block.md.z):
-                    row.indicator._default_color = Qt.cyan
+                    # This device is being hit by the beam
+                    row.beam_indicator._default_color = Qt.cyan
+                    # Check whether this device is passing beam
+                    if block != row.device:
+                        row.out_indicator._default_color = Qt.cyan
+                    else:
+                        row.out_indicator._default_color = Qt.gray
                 # Otherwise, it is off
                 else:
-                    row.indicator._default_color = Qt.gray
+                    row.beam_indicator._default_color = Qt.gray
+                    row.out_indicator._default_color = Qt.gray
                 # Update widget display
-                row.indicator.update()
+                row.beam_indicator.update()
+                row.out_indicator.update()
 
     def clear_subs(self):
         """
