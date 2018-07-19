@@ -8,8 +8,6 @@ from lightpath.tests.conftest import Crystal
 
 def test_app_buttons(lcls_client):
     lightapp = LightApp(LightController(lcls_client))
-    # Check we initialized correctly
-    assert lightapp.upstream()
     # Create widgets
     assert len(lightapp.select_devices('MEC')) == 10
     # Setup new display
