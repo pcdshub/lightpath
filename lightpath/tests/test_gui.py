@@ -26,9 +26,16 @@ def test_lightpath_launch_script():
 def test_focus_on_device(lcls_client, monkeypatch):
     lightapp = LightApp(LightController(lcls_client))
     row = lightapp.rows[8]
-    monkeypatch.setattr(row, 'setFocus', Mock())
+    monkeypatch.setattr(lightapp.scroll,
+                        'ensureWidgetVisible',
+                        Mock())
     # Grab the focus
-    lightapp.focus_on_device(row.device.name)
-    assert row.setFocus.called
+    lightapp.focus_on_device(name=row.device.name)
+    lightapp.scroll.ensureWidgetVisible.assert_called_with(row)
+    # Go to impediment if no device is provided
+    first_row = lightapp.rows[0]
+    first_row.insert()
+    lightapp.focus_on_device()
+    lightapp.scroll.ensureWidgetVisible.assert_called_with(first_row)
     # Smoke test a bad device string
     lightapp.focus_on_device('blah')
