@@ -61,10 +61,10 @@ class LightApp(Display):
         # Connect signals to slots
         self.destination_combo.currentIndexChanged.connect(
                                             self.change_path_display)
-        self.upstream_check.clicked.connect(self.change_path_display)
         self.device_combo.activated[str].connect(self.focus_on_device)
         self.impediment_button.pressed.connect(self.focus_on_device)
         self.remove_check.toggled.connect(self.show_removed)
+        self.upstream_check.toggled.connect(self.show_upstream)
         # Store LightRow objects to manage subscriptions
         self.rows = list()
         # Select the beamline to begin with
@@ -114,7 +114,7 @@ class LightApp(Display):
         """
         return LightRow(device, parent=self.widget_rows)
 
-    def select_devices(self, beamline, upstream=True):
+    def select_devices(self, beamline):
         """
         Select a subset of beamline devices to show in the display
 
@@ -133,14 +133,8 @@ class LightApp(Display):
         self.path = self.light.beamlines[beamline]
         # Defer running updates until UI is created
         self.path.subscribe(self.update_path, run=False)
-        # Only return devices if they are on the specified beamline
-        if not upstream:
-            pool = [dev for dev in self.path.path
-                    if dev.md.beamline == beamline]
-        else:
-            pool = self.path.path
-        logger.debug("Selected %s devices ...", len(pool))
-        return pool
+        logger.debug("Selected %s devices ...", len(self.path.path))
+        return self.path.path
 
     def selected_beamline(self):
         """
@@ -164,8 +158,7 @@ class LightApp(Display):
             logger.debug("Resorting beampath display ...")
             # Grab all the light rows
             rows = [self.load_device_row(d)
-                    for d in self.select_devices(self.selected_beamline(),
-                                                 upstream=self.upstream())]
+                    for d in self.select_devices(self.selected_beamline())]
             # Clear layout if previously loaded rows exist
             if self.rows:
                 # Clear our subscribtions
@@ -264,6 +257,12 @@ class LightApp(Display):
         """Show or hide all instances of a specific device"""
         return self._filter(show,
                             lambda x: x.last_state == DeviceState.Removed)
+
+    @pyqtSlot(bool)
+    def show_upstream(self, show):
+        """Show or hide upstream devices from the destination beamline"""
+        beamline = self.selected_beamline()
+        self._filter(show, lambda x: x.device.md.beamline != beamline)
 
     def _filter(self, show, func):
         """Helper function to hide a device based on a condition"""
