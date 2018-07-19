@@ -43,22 +43,22 @@ def test_focus_on_device(lcls_client, monkeypatch):
 def test_filtering(lcls_client, monkeypatch):
     lightapp = LightApp(LightController(lcls_client))
     monkeypatch.setattr(LightRow,
-                        'setHidden',
+                        'setVisible',
                         Mock())
     # Hide Crystal devices
     lightapp.show_devicetype(False, Crystal)
     for row in lightapp.rows:
         if isinstance(row.device, Crystal):
-            row.setHidden.assert_called_with(True)
+            row.setVisible.assert_called_with(False)
     # Show Crystal devices
     lightapp.show_devicetype(True, Crystal)
     for row in lightapp.rows:
         if isinstance(row.device, Crystal):
-            row.setHidden.assert_called_with(False)
+            row.setVisible.assert_called_with(True)
     # Insert at least one device then hide
     device_row = lightapp.rows[2]
     device_row.device.insert()
     lightapp.show_removed(False)
     for row in lightapp.rows:
         if row.device.inserted:
-            row.setHidden.assert_called_with(True)
+            row.setVisible.assert_called_with(False)

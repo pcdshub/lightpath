@@ -267,7 +267,7 @@ class LightApp(Display):
         """Helper function to hide a device based on a condition"""
         for row in self.rows:
             if func(row):
-                row.setHidden(not show)
+                row.setVisible(show)
 
     def clear_subs(self):
         """
