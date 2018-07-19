@@ -221,8 +221,7 @@ class LightApp(Display):
     def focus_on_device(self, name=None):
         """Scroll to the desired device"""
         # If not provided a name, use the impediment
-        if not name and self.path.impediment:
-            name = self.path.impediment.name
+        name = name or self.current_impediment.text()
         # Map of names
         names = [row.device.name for row in self.rows]
         # Find index
