@@ -108,12 +108,12 @@
       </layout>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,2,0">
+      <layout class="QHBoxLayout" name="impediment" stretch="1,2,0">
        <property name="bottomMargin">
         <number>0</number>
        </property>
        <item>
-        <widget class="QLabel" name="label">
+        <widget class="QLabel" name="impediment_label">
          <property name="font">
           <font>
            <weight>75</weight>
@@ -126,7 +126,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_2">
+        <widget class="QLabel" name="current_impediment">
          <property name="autoFillBackground">
           <bool>true</bool>
          </property>
@@ -139,7 +139,13 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="impediment_button">
+         <property name="minimumSize">
+          <size>
+           <width>75</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="text">
           <string>Go</string>
          </property>
