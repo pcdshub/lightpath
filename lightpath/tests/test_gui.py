@@ -1,3 +1,4 @@
+from unittest.mock import Mock
 from distutils.spawn import find_executable
 
 from lightpath.ui import LightApp
@@ -20,3 +21,14 @@ def test_app_buttons(lcls_client):
 def test_lightpath_launch_script():
     # Check that the executable was installed
     assert find_executable('lightpath')
+
+
+def test_focus_on_device(lcls_client, monkeypatch):
+    lightapp = LightApp(LightController(lcls_client))
+    row = lightapp.rows[8]
+    monkeypatch.setattr(row, 'setFocus', Mock())
+    # Grab the focus
+    lightapp.focus_on_device(row.device.name)
+    assert row.setFocus.called
+    # Smoke test a bad device string
+    lightapp.focus_on_device('blah')
