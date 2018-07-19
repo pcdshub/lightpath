@@ -129,18 +129,18 @@ class LightRow(InactiveRow):
         green or red to quickly
         """
         # Interpret state
-        state = find_device_state(self.device)
+        self.last_state = find_device_state(self.device)
         # Set label to state description
-        self.state_label.setText(state.name)
-        color = state_colors[state.value]
+        self.state_label.setText(self.last_state.name)
+        color = state_colors[self.last_state.value]
         style_color = to_stylesheet_color(color)
         self.state_label.setStyleSheet("QLabel {color: %s}" % style_color)
         self.device_drawing._default_color = color
         self.device_drawing.update()
         # Disable buttons if necessary
-        self.insert_button.setEnabled((state != DeviceState.Inserted
+        self.insert_button.setEnabled((self.last_state != DeviceState.Inserted
                                        and hasattr(self.device, 'insert')))
-        self.remove_button.setEnabled((state != DeviceState.Removed
+        self.remove_button.setEnabled((self.last_state != DeviceState.Removed
                                        and hasattr(self.device, 'remove')))
 
     def clear_sub(self):
