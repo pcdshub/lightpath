@@ -213,7 +213,7 @@ class LightApp(Display):
         try:
             idx = names.index(name)
         except ValueError:
-            logger.error("%r is not a visibile device",
+            logger.error("Can not set focus on device %r",
                          name)
             return
         # Grab widget
