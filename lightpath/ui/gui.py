@@ -164,6 +164,12 @@ class LightApp(Display):
                 self.rows.clear()
                 self.device_combo.clear()
 
+            # Hide nothing when switching beamlines
+            boxes = self.device_types.children()
+            boxes.extend([self.upstream_check, self.remove_check])
+            for box in boxes:
+                if isinstance(box, QCheckBox):
+                    box.setChecked(True)
             # Add all the widgets to the display
             for i, row in enumerate(rows):
                 # Cache row to later clear subscriptions
