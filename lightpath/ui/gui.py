@@ -204,6 +204,21 @@ class LightApp(Display):
                 row.beam_indicator.update()
                 row.out_indicator.update()
 
+    @pyqtSlot(str)
+    def focus_on_device(self, name):
+        """Scroll to the desired device"""
+        # Map of names
+        names = [row.device.name for row in self.rows]
+        # Find index
+        try:
+            idx = names.index(name)
+        except ValueError:
+            logger.error("%r is not a visibile device",
+                         name)
+            return
+        # Grab widget
+        self.rows[idx].setFocus()
+
     def clear_subs(self):
         """
         Clear the subscription event
