@@ -251,6 +251,7 @@ class LightApp(Display):
             return
         # Grab widget
         self.scroll.ensureWidgetVisible(self.rows[idx])
+        self.rows[idx].setHidden(False)
 
     @pyqtSlot(bool)
     def show_devicetype(self, show, device):
