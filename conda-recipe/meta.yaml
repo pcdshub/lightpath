@@ -17,9 +17,11 @@ requirements:
       - coloredlogs
       - ophyd
       - happi
+      - numpy
+      - prettytable
+      - pcdsdevices
       - pydm
       - pyqt >=5 
-      - prettytable
 
 test:
     imports:

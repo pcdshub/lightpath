@@ -1,7 +1,8 @@
 coloredlogs
-prettytable
-ophyd
-pydm
 happi
+numpy
+ophyd
 pcdsdevices
+prettytable
+pydm
 pyqt
