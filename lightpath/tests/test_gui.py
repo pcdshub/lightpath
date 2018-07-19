@@ -1,8 +1,9 @@
 from unittest.mock import Mock
 from distutils.spawn import find_executable
 
-from lightpath.ui import LightApp
+from lightpath.ui import LightApp, LightRow
 from lightpath.controller import LightController
+from lightpath.tests.conftest import Crystal
 
 
 def test_app_buttons(lcls_client):
@@ -39,3 +40,27 @@ def test_focus_on_device(lcls_client, monkeypatch):
     lightapp.scroll.ensureWidgetVisible.assert_called_with(first_row)
     # Smoke test a bad device string
     lightapp.focus_on_device('blah')
+
+
+def test_filtering(lcls_client, monkeypatch):
+    lightapp = LightApp(LightController(lcls_client))
+    monkeypatch.setattr(LightRow,
+                        'setHidden',
+                        Mock())
+    # Hide Crystal devices
+    lightapp.show_devicetype(False, Crystal)
+    for row in lightapp.rows:
+        if isinstance(row.device, Crystal):
+            row.setHidden.assert_called_with(True)
+    # Show Crystal devices
+    lightapp.show_devicetype(True, Crystal)
+    for row in lightapp.rows:
+        if isinstance(row.device, Crystal):
+            row.setHidden.assert_called_with(False)
+    # Insert at least one device then hide
+    device_row = lightapp.rows[2]
+    device_row.device.insert()
+    lightapp.show_removed(False)
+    for row in lightapp.rows:
+        if row.device.inserted:
+            row.setHidden.assert_called_with(True)
