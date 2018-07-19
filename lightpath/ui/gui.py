@@ -238,19 +238,18 @@ class LightApp(Display):
                          name)
             return
         # Grab widget
-        self.scroll.ensureWidgetVisible(self.rows[idx])
         self.rows[idx].setHidden(False)
+        self.scroll.ensureWidgetVisible(self.rows[idx])
 
     @pyqtSlot(bool)
     def show_devicetype(self, show, device):
         """Show or hide all instances of a specific row"""
-        return self._filter(show, lambda x: type(x.device) == device)
+        self._filter(show, lambda x: type(x.device) == device)
 
     @pyqtSlot(bool)
     def show_removed(self, show):
         """Show or hide all instances of a specific device"""
-        return self._filter(show,
-                            lambda x: x.last_state == DeviceState.Removed)
+        self._filter(show, lambda x: x.last_state == DeviceState.Removed)
 
     @pyqtSlot(bool)
     def show_upstream(self, show):
