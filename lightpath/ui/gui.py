@@ -1,14 +1,18 @@
 """
 Full Application for Lightpath
 """
+from functools import partial
 import logging
 import threading
 import os.path
 
+import numpy as np
+from pcdsdevices.device_types import *
 from pydm import Display
 from pydm.PyQt.QtCore import pyqtSlot, Qt
-from pydm.PyQt.QtGui import QHBoxLayout
+from pydm.PyQt.QtGui import QHBoxLayout, QGridLayout, QCheckBox
 
+from lightpath.path import DeviceState
 from .widgets import LightRow
 
 logger = logging.getLogger(__name__)
@@ -35,7 +39,8 @@ class LightApp(Display):
 
     parent : optional
     """
-
+    shown_types = [Attenuator, IPM, XFLS, LODCM, OffsetMirror, PIM,
+                   PulsePicker, Slits, Stopper, GateValve]
     def __init__(self, controller, beamline=None,
                  parent=None, dark=True):
         super().__init__(parent=parent)
@@ -47,7 +52,7 @@ class LightApp(Display):
         self.lightLayout = QHBoxLayout()
         self.lightLayout.setSpacing(1)
         self.widget_rows.setLayout(self.lightLayout)
-
+        self.device_types.setLayout(QGridLayout())
         # Add destinations
         for line in self.destinations():
             self.destination_combo.addItem(line)
@@ -58,6 +63,7 @@ class LightApp(Display):
         self.upstream_check.clicked.connect(self.change_path_display)
         self.device_combo.activated[str].connect(self.focus_on_device)
         self.impediment_button.pressed.connect(self.focus_on_device)
+        self.remove_check.toggled.connect(self.show_removed)
         # Store LightRow objects to manage subscriptions
         self.rows = list()
         # Select the beamline to begin with
@@ -69,6 +75,18 @@ class LightApp(Display):
             idx = 0
         # Move the ComboBox
         self.destination_combo.setCurrentIndex(idx)
+        # Add all of our device type options
+        max_columns = 3
+        for i, row in enumerate(np.array_split(self.shown_types,
+                                               max_columns)):
+            for j, device_type in enumerate(row):
+                # Add box to layout
+                box = QCheckBox(device_type.__name__)
+                box.setChecked(True)
+                self.device_types.layout().addWidget(box, j, i)
+                # Hook up box to hide function
+                box.toggled.connect(partial(self.show_devicetype,
+                                            device=device_type))
         # Setup the UI
         self.change_path_display()
 
@@ -233,6 +251,23 @@ class LightApp(Display):
             return
         # Grab widget
         self.scroll.ensureWidgetVisible(self.rows[idx])
+
+    @pyqtSlot(bool)
+    def show_devicetype(self, show, device):
+        """Show or hide all instances of a specific row"""
+        return self._filter(show, lambda x: type(x.device) == device)
+
+    @pyqtSlot(bool)
+    def show_removed(self, show):
+        """Show or hide all instances of a specific device"""
+        return self._filter(show,
+                            lambda x: x.last_state == DeviceState.Removed)
+
+    def _filter(self, show, func):
+        """Helper function to hide a device based on a condition"""
+        for row in self.rows:
+            if func(row):
+                row.setHidden(not show)
 
     def clear_subs(self):
         """
