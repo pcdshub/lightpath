@@ -142,12 +142,6 @@ class LightApp(Display):
         """
         return self.destination_combo.currentText()
 
-    def upstream(self):
-        """
-        Whether the user has selected to display upstream devices
-        """
-        return self.upstream_check.isChecked()
-
     @pyqtSlot()
     @pyqtSlot(bool)
     def change_path_display(self, value=None):
