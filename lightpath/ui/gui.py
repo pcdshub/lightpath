@@ -56,6 +56,8 @@ class LightApp(Display):
         self.destination_combo.currentIndexChanged.connect(
                                             self.change_path_display)
         self.upstream_check.clicked.connect(self.change_path_display)
+        self.device_combo.activated[str].connect(self.focus_on_device)
+        self.impediment_button.pressed.connect(self.focus_on_device)
         # Store LightRow objects to manage subscriptions
         self.rows = list()
         # Select the beamline to begin with
@@ -154,6 +156,7 @@ class LightApp(Display):
                     row.deleteLater()
                 # Clear subscribed row cache
                 self.rows.clear()
+                self.device_combo.clear()
 
             # Add all the widgets to the display
             for i, row in enumerate(rows):
@@ -161,6 +164,8 @@ class LightApp(Display):
                 self.rows.append(row)
                 # Add widget to layout
                 self.lightLayout.addWidget(row)
+                # Add device to combo
+                self.device_combo.addItem(row.device.name)
         # Initialize interface
         for row in self.rows:
             row.update_state()
@@ -186,6 +191,13 @@ class LightApp(Display):
         """
         with self._lock:
             block = self.path.impediment
+            # Set the current impediment label
+            if block:
+                self.current_impediment.setText(block.name)
+                self.impediment_button.setEnabled(True)
+            else:
+                self.current_impediment.setText('None')
+                self.impediment_button.setEnabled(False)
             for row in self.rows:
                 # If our device is before or at the impediment, it is lit
                 if not block or (row.device.md.z <= block.md.z):
@@ -204,9 +216,13 @@ class LightApp(Display):
                 row.beam_indicator.update()
                 row.out_indicator.update()
 
+    @pyqtSlot()
     @pyqtSlot(str)
-    def focus_on_device(self, name):
+    def focus_on_device(self, name=None):
         """Scroll to the desired device"""
+        # If not provided a name, use the impediment
+        if not name and self.path.impediment:
+            name = self.path.impediment.name
         # Map of names
         names = [row.device.name for row in self.rows]
         # Find index
@@ -217,7 +233,7 @@ class LightApp(Display):
                          name)
             return
         # Grab widget
-        self.rows[idx].setFocus()
+        self.scroll.ensureWidgetVisible(self.rows[idx])
 
     def clear_subs(self):
         """
