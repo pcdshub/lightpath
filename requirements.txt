@@ -6,3 +6,4 @@ pcdsdevices
 prettytable
 pydm
 pyqt
+typhon
