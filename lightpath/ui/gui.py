@@ -8,6 +8,7 @@ import os.path
 
 import numpy as np
 import pcdsdevices.device_types as dtypes
+from pcdsdevices.valve import PPSStopper
 from pydm import Display
 from pydm.PyQt.QtCore import pyqtSlot, Qt
 from pydm.PyQt.QtGui import QHBoxLayout, QGridLayout, QCheckBox
@@ -39,10 +40,10 @@ class LightApp(Display):
 
     parent : optional
     """
-    shown_types = [dtypes.Attenuator, dtypes.IPM, dtypes.XFLS,
-                   dtypes.LODCM, dtypes.OffsetMirror, dtypes.PIM,
+    shown_types = [dtypes.Attenuator, dtypes.GateValve, dtypes.IPM,
+                   dtypes.LODCM, dtypes.OffsetMirror, dtypes.PIM, PPSStopper,
                    dtypes.PulsePicker, dtypes.Slits, dtypes.Stopper,
-                   dtypes.GateValve]
+                   dtypes.XFLS]
 
     def __init__(self, controller, beamline=None,
                  parent=None, dark=True):
