@@ -62,3 +62,9 @@ def test_filtering(lcls_client, monkeypatch):
     for row in lightapp.rows:
         if row.device.inserted:
             row.setVisible.assert_called_with(False)
+    # Hide upstream devices
+    lightapp.select_devices('MEC')
+    lightapp.show_upstream(False)
+    for row in lightapp.rows:
+        if row.device.md.beamline != 'MEC':
+            row.setVisible.assert_called_with(False)
