@@ -12,6 +12,7 @@ from pcdsdevices.valve import PPSStopper
 from pydm import Display
 from pydm.PyQt.QtCore import pyqtSlot
 from pydm.PyQt.QtGui import QHBoxLayout, QGridLayout, QCheckBox
+import typhon
 
 from lightpath.path import DeviceState
 from .widgets import LightRow
@@ -106,13 +107,7 @@ class LightApp(Display):
         self.resizeSlider()
         # Change the stylesheet
         if dark:
-            try:
-                import qdarkstyle
-            except ImportError:
-                logger.error("Can not use dark theme, "
-                             "qdarkstyle package not available")
-            else:
-                self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+            typhon.use_stylesheet(dark=True)
 
     def destinations(self):
         """
