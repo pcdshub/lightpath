@@ -7,7 +7,7 @@ import threading
 import os.path
 
 import numpy as np
-from pcdsdevices.device_types import *  # noqa
+import pcdsdevices.device_types as dtypes
 from pydm import Display
 from pydm.PyQt.QtCore import pyqtSlot, Qt
 from pydm.PyQt.QtGui import QHBoxLayout, QGridLayout, QCheckBox
@@ -39,8 +39,10 @@ class LightApp(Display):
 
     parent : optional
     """
-    shown_types = [Attenuator, IPM, XFLS, LODCM, OffsetMirror, PIM,  # noqa
-                   PulsePicker, Slits, Stopper, GateValve]  # noqa
+    shown_types = [dtypes.Attenuator, dtypes.IPM, dtypes.XFLS,
+                   dtypes.LODCM, dtypes.OffsetMirror, dtypes.PIM,
+                   dtypes.PulsePicker, dtypes.Slits, dtypes.Stopper,
+                   dtypes.GateValve]
 
     def __init__(self, controller, beamline=None,
                  parent=None, dark=True):
