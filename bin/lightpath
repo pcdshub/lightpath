@@ -5,8 +5,8 @@ import coloredlogs
 
 import happi
 import pydm
+
 import lightpath
-from lightpath import LightController
 from lightpath.ui import LightApp
 
 DEVICE_CONFIG = '/reg/g/pcds/pyps/apps/hutch-python/device_config/db.json'
@@ -26,8 +26,8 @@ def main(db, hutches):
     # Create PyDM Application
     app = pydm.PyDMApplication()
     # Create Lightpath UI from provided database
-    lc = LightController(happi.Client(path=db),
-                         endstations=hutches)
+    lc = lightpath.LightController(happi.Client(path=db),
+                                   endstations=hutches)
     lp = LightApp(lc)
     # Execute
     lp.show()
