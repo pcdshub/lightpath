@@ -327,7 +327,7 @@
     </widget>
    </item>
    <item alignment="Qt::AlignHCenter">
-    <widget class="QWidget" name="widget" native="true">
+    <widget class="QWidget" name="commands" native="true">
      <layout class="QVBoxLayout" name="command_layout">
       <property name="leftMargin">
        <number>5</number>
