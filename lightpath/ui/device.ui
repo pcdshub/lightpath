@@ -11,15 +11,15 @@
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>145</width>
-    <height>250</height>
+    <width>25</width>
+    <height>25</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -150,7 +150,10 @@
        <height>16777215</height>
       </size>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,1">
+      <property name="spacing">
+       <number>5</number>
+      </property>
       <property name="sizeConstraint">
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
@@ -220,8 +223,8 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>50</width>
-          <height>50</height>
+          <width>5</width>
+          <height>5</height>
          </size>
         </property>
         <property name="maximumSize">
