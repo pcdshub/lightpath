@@ -62,6 +62,26 @@ class InactiveRow(Display):
         """
         pass
 
+    def condense(self):
+        """Reduce the size of the widget when the device is hidden"""
+        # Hide commands and labels
+        self.device_information.hide()
+        self.commands.hide()
+        # Resize drawings
+        self.out_indicator.hide()
+        self.device_drawing.setFixedSize(15, 15)
+        self.horizontalWidget.layout().setSpacing(2)
+
+    def expand(self):
+        """Re-expand the size of the widget to show the device"""
+        # Show commands and labels
+        self.device_information.show()
+        self.commands.show()
+        # Resize drawings
+        self.out_indicator.show()
+        self.device_drawing.setFixedSize(50, 50)
+        self.horizontalWidget.layout().setSpacing(5)
+
 
 class LightRow(InactiveRow):
     """
