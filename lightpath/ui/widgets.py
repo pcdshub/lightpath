@@ -5,7 +5,7 @@ import logging
 import os.path
 
 from pydm import Display
-from pydm.PyQt.QtCore import pyqtSlot
+from pydm.PyQt.QtCore import pyqtSlot, Qt
 from pydm.PyQt.QtGui import QColor
 
 from lightpath.path import find_device_state, DeviceState
@@ -162,6 +162,18 @@ class LightRow(InactiveRow):
                                        and hasattr(self.device, 'insert')))
         self.remove_button.setEnabled((self.last_state != DeviceState.Removed
                                        and hasattr(self.device, 'remove')))
+
+    def update_light(self, _in, _out):
+        """Update the light beams striking and emitting from the device"""
+        for (widget, state) in zip((self.beam_indicator, self.out_indicator),
+                                   (_in, _out)):
+            # Set color
+            if state:
+                widget._default_color = Qt.cyan
+            else:
+                widget._default_color = Qt.gray
+            # Update
+            widget.update()
 
     def clear_sub(self):
         """
