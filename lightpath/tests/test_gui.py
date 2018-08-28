@@ -24,7 +24,7 @@ def test_lightpath_launch_script():
 
 def test_focus_on_device(lcls_client, monkeypatch):
     lightapp = LightApp(LightController(lcls_client))
-    row = lightapp.rows[8]
+    row = lightapp.rows[8][0]
     monkeypatch.setattr(lightapp.scroll,
                         'ensureWidgetVisible',
                         Mock())
@@ -32,7 +32,7 @@ def test_focus_on_device(lcls_client, monkeypatch):
     lightapp.focus_on_device(name=row.device.name)
     lightapp.scroll.ensureWidgetVisible.assert_called_with(row)
     # Go to impediment if no device is provided
-    first_row = lightapp.rows[0]
+    first_row = lightapp.rows[0][0]
     first_row.insert()
     lightapp.focus_on_device()
     lightapp.scroll.ensureWidgetVisible.assert_called_with(first_row)
@@ -48,23 +48,23 @@ def test_filtering(lcls_client, monkeypatch):
     # Hide Crystal devices
     lightapp.show_devicetype(False, Crystal)
     for row in lightapp.rows:
-        if isinstance(row.device, Crystal):
-            row.setVisible.assert_called_with(False)
+        if isinstance(row[0].device, Crystal):
+            row[0].setVisible.assert_called_with(False)
     # Show Crystal devices
     lightapp.show_devicetype(True, Crystal)
     for row in lightapp.rows:
-        if isinstance(row.device, Crystal):
-            row.setVisible.assert_called_with(True)
+        if isinstance(row[0].device, Crystal):
+            row[0].setVisible.assert_called_with(True)
     # Insert at least one device then hide
-    device_row = lightapp.rows[2]
+    device_row = lightapp.rows[2][0]
     device_row.device.insert()
     lightapp.show_removed(False)
     for row in lightapp.rows:
-        if row.device.inserted:
-            row.setVisible.assert_called_with(False)
+        if row[0].device.inserted:
+            row[0].setVisible.assert_called_with(False)
     # Hide upstream devices
     lightapp.select_devices('MEC')
     lightapp.show_upstream(False)
     for row in lightapp.rows:
-        if row.device.md.beamline != 'MEC':
-            row.setVisible.assert_called_with(False)
+        if row[0].device.md.beamline != 'MEC':
+            row[0].setVisible.assert_called_with(False)
