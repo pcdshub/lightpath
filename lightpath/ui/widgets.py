@@ -69,9 +69,9 @@ class InactiveRow(Display):
         self.commands.hide()
         # Resize drawings
         self.out_indicator.hide()
-        self.device_drawing.setFixedSize(15, 15)
-        self.horizontalWidget.layout().setSpacing(2)
-
+        self.device_drawing.setFixedHeight(15)
+        self.device_drawing.setMaximumWidth(15)
+        self.horizontalWidget.layout().setSpacing(1)
 
 
 class LightRow(InactiveRow):
