@@ -31,7 +31,29 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,1">
+  <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,1">
+   <item>
+    <widget class="QSlider" name="slide">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>5</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>5</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
    <item>
     <widget class="QFrame" name="overview">
      <property name="frameShape">
@@ -319,7 +341,7 @@
            <x>0</x>
            <y>0</y>
            <width>815</width>
-           <height>439</height>
+           <height>428</height>
           </rect>
          </property>
          <property name="sizePolicy">
