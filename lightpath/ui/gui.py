@@ -59,6 +59,13 @@ class LightApp(Display):
         self.device_types.setLayout(QGridLayout())
         self.overview.setLayout(QHBoxLayout())
         self.overview.layout().setSpacing(1)
+        # Setup the fancy overview slider
+        slide_scroll = self.scroll.horizontalScrollBar()
+        self.slide.setRange(slide_scroll.minimum(),
+                            slide_scroll.maximum())
+        self.slide.sliderMoved.connect(slide_scroll.setSliderPosition)
+        slide_scroll.rangeChanged.connect(self.slide.setRange)
+        slide_scroll.valueChanged.connect(self.slide.setSliderPosition)
         # Add destinations
         for line in self.destinations():
             self.destination_combo.addItem(line)
@@ -95,7 +102,7 @@ class LightApp(Display):
                                             device=device_type))
         # Setup the UI
         self.change_path_display()
-
+        self.resizeSlider()
         # Change the stylesheet
         if dark:
             try:
@@ -286,3 +293,24 @@ class LightApp(Display):
         Clear the subscription event
         """
         self.path.clear_sub(self.update_path)
+
+    def resizeSlider(self):
+        # Visible area of beamline
+        visible = self.scroll.width() / self.scroll.widget().width()
+        # Take same fraction of bar up in handle width
+        slider_size = round(self.slide.width() * visible)
+        # Set Stylesheet
+        self.slide.setStyleSheet('QSlider::handle'
+                                 '{width: %spx;'
+                                 'background: rgb(124, 252, 0);}'
+                                 '' % slider_size)
+
+    def show(self):
+        # Comandeered to assure that slider is initialized properly
+        super().show()
+        self.resizeSlider()
+
+    def resizeEvent(self, evt):
+        # Further resize-ing of the widget should affect the fancy slider
+        super().resizeEvent(evt)
+        self.resizeSlider()
