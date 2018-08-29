@@ -284,9 +284,12 @@ class LightApp(Display):
 
     def _filter(self, show, func):
         """Helper function to hide a device based on a condition"""
+        # Hide widgets
         for row in self.rows:
             if func(row[0]):
                 row[0].setVisible(show)
+        # Resize slider
+        self.resizeSlider()
 
     def clear_subs(self):
         """
