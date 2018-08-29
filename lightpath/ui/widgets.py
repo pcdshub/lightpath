@@ -72,15 +72,6 @@ class InactiveRow(Display):
         self.device_drawing.setFixedSize(15, 15)
         self.horizontalWidget.layout().setSpacing(2)
 
-    def expand(self):
-        """Re-expand the size of the widget to show the device"""
-        # Show commands and labels
-        self.device_information.show()
-        self.commands.show()
-        # Resize drawings
-        self.out_indicator.show()
-        self.device_drawing.setFixedSize(50, 50)
-        self.horizontalWidget.layout().setSpacing(5)
 
 
 class LightRow(InactiveRow):
