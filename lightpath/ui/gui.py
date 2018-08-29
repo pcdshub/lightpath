@@ -58,7 +58,8 @@ class LightApp(Display):
         self.widget_rows.setLayout(self.lightLayout)
         self.device_types.setLayout(QGridLayout())
         self.overview.setLayout(QHBoxLayout())
-        self.overview.layout().setSpacing(1)
+        self.overview.layout().setSpacing(2)
+        self.overview.layout().setContentsMargins(2, 2, 2, 2)
         # Setup the fancy overview slider
         slide_scroll = self.scroll.horizontalScrollBar()
         self.slide.setRange(slide_scroll.minimum(),
