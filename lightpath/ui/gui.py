@@ -10,7 +10,7 @@ import numpy as np
 import pcdsdevices.device_types as dtypes
 from pcdsdevices.valve import PPSStopper
 from pydm import Display
-from pydm.PyQt.QtCore import pyqtSlot, Qt
+from pydm.PyQt.QtCore import pyqtSlot
 from pydm.PyQt.QtGui import QHBoxLayout, QGridLayout, QCheckBox
 
 from lightpath.path import DeviceState
@@ -57,6 +57,16 @@ class LightApp(Display):
         self.lightLayout.setSpacing(1)
         self.widget_rows.setLayout(self.lightLayout)
         self.device_types.setLayout(QGridLayout())
+        self.overview.setLayout(QHBoxLayout())
+        self.overview.layout().setSpacing(2)
+        self.overview.layout().setContentsMargins(2, 2, 2, 2)
+        # Setup the fancy overview slider
+        slide_scroll = self.scroll.horizontalScrollBar()
+        self.slide.setRange(slide_scroll.minimum(),
+                            slide_scroll.maximum())
+        self.slide.sliderMoved.connect(slide_scroll.setSliderPosition)
+        slide_scroll.rangeChanged.connect(self.slide.setRange)
+        slide_scroll.valueChanged.connect(self.slide.setSliderPosition)
         # Add destinations
         for line in self.destinations():
             self.destination_combo.addItem(line)
@@ -93,7 +103,7 @@ class LightApp(Display):
                                             device=device_type))
         # Setup the UI
         self.change_path_display()
-
+        self.resizeSlider()
         # Change the stylesheet
         if dark:
             try:
@@ -115,7 +125,12 @@ class LightApp(Display):
         """
         Create LightRow for device
         """
-        return LightRow(device, parent=self.widget_rows)
+        # Create two widgets
+        widgets = (LightRow(device),
+                   LightRow(device))
+        # Condense the second
+        widgets[1].condense()
+        return widgets
 
     def select_devices(self, beamline):
         """
@@ -160,9 +175,13 @@ class LightApp(Display):
             if self.rows:
                 # Clear our subscribtions
                 for row in self.rows:
-                    row.clear_sub()
-                    self.lightLayout.removeWidget(row)
-                    row.deleteLater()
+                    # Remove from layout
+                    self.lightLayout.removeWidget(row[0])
+                    self.overview.layout().removeWidget(row[1])
+                    # Disconnect
+                    for widget in row:
+                        widget.clear_sub()
+                        widget.deleteLater()
                 # Clear subscribed row cache
                 self.rows.clear()
                 self.device_combo.clear()
@@ -178,12 +197,14 @@ class LightApp(Display):
                 # Cache row to later clear subscriptions
                 self.rows.append(row)
                 # Add widget to layout
-                self.lightLayout.addWidget(row)
+                self.lightLayout.addWidget(row[0])
+                self.overview.layout().addWidget(row[1])
                 # Add device to combo
-                self.device_combo.addItem(row.device.name)
+                self.device_combo.addItem(row[0].device.name)
         # Initialize interface
         for row in self.rows:
-            row.update_state()
+            for widget in row:
+                widget.update_state()
         # Update the state of the path
         self.update_path()
 
@@ -214,22 +235,18 @@ class LightApp(Display):
                 self.current_impediment.setText('None')
                 self.impediment_button.setEnabled(False)
             for row in self.rows:
+                device = row[0].device
                 # If our device is before or at the impediment, it is lit
-                if not block or (row.device.md.z <= block.md.z):
-                    # This device is being hit by the beam
-                    row.beam_indicator._default_color = Qt.cyan
+                if not block or (device.md.z <= block.md.z):
+                    _in = True
                     # Check whether this device is passing beam
-                    if block != row.device:
-                        row.out_indicator._default_color = Qt.cyan
-                    else:
-                        row.out_indicator._default_color = Qt.gray
+                    _out = block != device
                 # Otherwise, it is off
                 else:
-                    row.beam_indicator._default_color = Qt.gray
-                    row.out_indicator._default_color = Qt.gray
+                    _in, _out = (False, False)
                 # Update widget display
-                row.beam_indicator.update()
-                row.out_indicator.update()
+                for widget in row:
+                    widget.update_light(_in, _out)
 
     @pyqtSlot()
     @pyqtSlot(str)
@@ -238,7 +255,7 @@ class LightApp(Display):
         # If not provided a name, use the impediment
         name = name or self.current_impediment.text()
         # Map of names
-        names = [row.device.name for row in self.rows]
+        names = [row[0].device.name for row in self.rows]
         # Find index
         try:
             idx = names.index(name)
@@ -247,8 +264,8 @@ class LightApp(Display):
                          name)
             return
         # Grab widget
-        self.rows[idx].setHidden(False)
-        self.scroll.ensureWidgetVisible(self.rows[idx])
+        self.rows[idx][0].setHidden(False)
+        self.scroll.ensureWidgetVisible(self.rows[idx][0])
 
     @pyqtSlot(bool)
     def show_devicetype(self, show, device):
@@ -268,12 +285,36 @@ class LightApp(Display):
 
     def _filter(self, show, func):
         """Helper function to hide a device based on a condition"""
+        # Hide widgets
         for row in self.rows:
-            if func(row):
-                row.setVisible(show)
+            if func(row[0]):
+                row[0].setVisible(show)
+        # Resize slider
+        self.resizeSlider()
 
     def clear_subs(self):
         """
         Clear the subscription event
         """
         self.path.clear_sub(self.update_path)
+
+    def resizeSlider(self):
+        # Visible area of beamline
+        visible = self.scroll.width() / self.scroll.widget().width()
+        # Take same fraction of bar up in handle width
+        slider_size = round(self.slide.width() * visible)
+        # Set Stylesheet
+        self.slide.setStyleSheet('QSlider::handle'
+                                 '{width: %spx;'
+                                 'background: rgb(124, 252, 0);}'
+                                 '' % slider_size)
+
+    def show(self):
+        # Comandeered to assure that slider is initialized properly
+        super().show()
+        self.resizeSlider()
+
+    def resizeEvent(self, evt):
+        # Further resize-ing of the widget should affect the fancy slider
+        super().resizeEvent(evt)
+        self.resizeSlider()
