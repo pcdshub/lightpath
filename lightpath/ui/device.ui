@@ -150,7 +150,7 @@
        <height>16777215</height>
       </size>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,1">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,1">
       <property name="spacing">
        <number>2</number>
       </property>
@@ -213,66 +213,6 @@
         </property>
         <property name="penStyle" stdset="0">
          <enum>Qt::SolidLine</enum>
-        </property>
-        <property name="penWidth" stdset="0">
-         <double>2.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-       <widget class="PyDMDrawingRectangle" name="device_drawing">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>10</width>
-          <height>10</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>50</width>
-          <height>50</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string/>
-        </property>
-        <property name="whatsThis">
-         <string>
-    A widget with a rectangle drawn in it.
-    This class inherits from PyDMDrawing.
-
-    Parameters
-    ----------
-    parent : QWidget
-        The parent widget for the Label
-    init_channel : str, optional
-        The channel to be used by the widget.
-    </string>
-        </property>
-        <property name="brush" stdset="0">
-         <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>185</red>
-           <green>185</green>
-           <blue>185</blue>
-          </color>
-         </brush>
-        </property>
-        <property name="penStyle" stdset="0">
-         <enum>Qt::SolidLine</enum>
-        </property>
-        <property name="penColor" stdset="0">
-         <color>
-          <red>0</red>
-          <green>0</green>
-          <blue>0</blue>
-         </color>
         </property>
         <property name="penWidth" stdset="0">
          <double>2.000000000000000</double>

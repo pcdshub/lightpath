@@ -42,6 +42,8 @@ class InactiveRow(Display):
         # By default we mark the device as Disconnected
         self.state_label.setText('Disconnected')
         self.state_label.setStyleSheet("QLabel {color : rgb(255,0,255)}")
+        self.device_drawing = DeviceWidget('default.ui')
+        self.horizontalWidget.layout().insertWidget(1, self.device_drawing)
 
     def ui_filename(self):
         """
@@ -146,8 +148,7 @@ class LightRow(InactiveRow):
         color = state_colors[self.last_state.value]
         style_color = to_stylesheet_color(color)
         self.state_label.setStyleSheet("QLabel {color: %s}" % style_color)
-        self.device_drawing._default_color = color
-        self.device_drawing.update()
+        self.device_drawing.setColor(color)
         # Disable buttons if necessary
         self.insert_button.setEnabled((self.last_state != DeviceState.Inserted
                                        and hasattr(self.device, 'insert')))
