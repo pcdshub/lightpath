@@ -194,6 +194,10 @@ class LightApp(Display):
                 # Add widget to layout
                 self.lightLayout.addWidget(row[0])
                 self.overview.layout().addWidget(row[1])
+                # Connect condensed widget to focus_on_device
+                row[1].device_drawing.clicked.connect(
+                        partial(self.focus_on_device,
+                                name=row[1].device.name))
                 # Add device to combo
                 self.device_combo.addItem(row[0].device.name)
         # Initialize interface
