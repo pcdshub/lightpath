@@ -5,7 +5,7 @@ import logging
 import os.path
 
 from pydm import Display
-from pydm.PyQt.QtCore import pyqtSlot, Qt
+from pydm.PyQt.QtCore import pyqtSlot, pyqtSignal, Qt
 from pydm.PyQt.QtGui import QColor
 
 from lightpath.path import find_device_state, DeviceState
@@ -171,3 +171,54 @@ class LightRow(InactiveRow):
         Clear the subscription event
         """
         self.device.clear_sub(self.update_state)
+
+
+class DeviceWidget(Display):
+    """
+    Colored Symbol for Lightpath Display
+
+    Parameters
+    ----------
+    symbol_file : str
+        Path to file that contains the Lightpath Symbol
+    """
+    clicked = pyqtSignal()
+
+    def __init__(self, symbol_file, parent=None):
+        self.symbol_file = symbol_file
+        super().__init__(parent=parent)
+        # Default UI settings for conformity
+        self.setMinimumSize(10, 10)
+        self.setMaximumSize(50, 50)
+
+    def ui_filename(self):
+        """
+        Name of designer UI file
+        """
+        return self.symbol_file
+
+    def ui_filepath(self):
+        """
+        Full path to :attr:`.ui_filename`
+        """
+        return os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            self.ui_filename())
+
+    def setColor(self, color):
+        """
+        Set the color of all PyDMDrawings contained in the widget
+        """
+        style_color = to_stylesheet_color(color)
+        styleSheet = 'PyDMDrawing {qproperty-brush: %s;\
+                                   qproperty-penWidth: 2;\
+                                   qproperty-penStyle: SolidLine;\
+                                   qproperty-penColor: rgb(0, 0, 0);\
+                                   }' % style_color
+        self.setStyleSheet(styleSheet)
+
+    def mousePressEvent(self, evt):
+        """Catch mousePressEvent to emit "`clicked`" pyqtSignal"""
+        # Push MouseEvent through
+        super().mousePressEvent(evt)
+        # Emit click
+        self.clicked.emit()
