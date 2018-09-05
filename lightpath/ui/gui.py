@@ -181,7 +181,8 @@ class LightApp(Display):
                 # Clear subscribed row cache
                 self.rows.clear()
                 self.device_combo.clear()
-
+                # Remove old detailed screen
+                self.hide_detailed()
             # Hide nothing when switching beamlines
             boxes = self.device_types.children()
             boxes.extend([self.upstream_check, self.remove_check])
@@ -199,6 +200,9 @@ class LightApp(Display):
                 row[1].device_drawing.clicked.connect(
                         partial(self.focus_on_device,
                                 name=row[1].device.name))
+                # Connect large widget to show Typhon screen
+                row[0].device_drawing.clicked.connect(
+                        partial(self.show_detailed, row[0].device))
                 # Add device to combo
                 self.device_combo.addItem(row[0].device.name)
         # Initialize interface
