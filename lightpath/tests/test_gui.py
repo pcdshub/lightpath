@@ -74,9 +74,12 @@ def test_typhon_display(lcls_client):
     lightapp = LightApp(LightController(lcls_client))
     # Smoke test the hide button without a detailed display
     lightapp.hide_detailed()
-    assert lightapp.horizontalLayout.count() == 2
+    assert lightapp.detail_layout.count() == 2
+    assert lightapp.device_detail.isHidden()
     lightapp.show_detailed(lightapp.rows[0][0].device)
-    assert lightapp.horizontalLayout.count() == 3
+    assert lightapp.detail_layout.count() == 3
+    assert not lightapp.device_detail.isHidden()
     # Smoke test the hide button without a detailed display
     lightapp.hide_detailed()
-    assert lightapp.horizontalLayout.count() == 2
+    assert lightapp.detail_layout.count() == 2
+    assert lightapp.device_detail.isHidden()
