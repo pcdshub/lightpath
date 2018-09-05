@@ -68,3 +68,15 @@ def test_filtering(lcls_client, monkeypatch):
     for row in lightapp.rows:
         if row[0].device.md.beamline != 'MEC':
             row[0].setVisible.assert_called_with(False)
+
+
+def test_typhon_display(lcls_client):
+    lightapp = LightApp(LightController(lcls_client))
+    # Smoke test the hide button without a detailed display
+    lightapp.hide_detailed()
+    assert lightapp.horizontalLayout.count() == 2
+    lightapp.show_detailed(lightapp.rows[0][0].device)
+    assert lightapp.horizontalLayout.count() == 3
+    # Smoke test the hide button without a detailed display
+    lightapp.hide_detailed()
+    assert lightapp.horizontalLayout.count() == 2
