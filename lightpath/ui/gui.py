@@ -10,7 +10,7 @@ import numpy as np
 import pcdsdevices.device_types as dtypes
 from pcdsdevices.valve import PPSStopper
 from pydm import Display, PyDMApplication
-from pydm.PyQt.QtCore import pyqtSlot
+from pydm.PyQt.QtCore import pyqtSlot, Qt
 from pydm.PyQt.QtGui import QHBoxLayout, QGridLayout, QCheckBox
 import typhon
 
@@ -80,6 +80,7 @@ class LightApp(Display):
         self.impediment_button.pressed.connect(self.focus_on_device)
         self.remove_check.toggled.connect(self.show_removed)
         self.upstream_check.toggled.connect(self.show_upstream)
+        self.detail_hide.clicked.connect(self.hide_detailed)
         # Store LightRow objects to manage subscriptions
         self.rows = list()
         # Select the beamline to begin with
@@ -164,6 +165,8 @@ class LightApp(Display):
         """
         with self._lock:
             logger.debug("Resorting beampath display ...")
+            # Remove old detailed screen
+            self.hide_detailed()
             # Grab all the light rows
             rows = [self.load_device_row(d)
                     for d in self.select_devices(self.selected_beamline())]
@@ -181,8 +184,6 @@ class LightApp(Display):
                 # Clear subscribed row cache
                 self.rows.clear()
                 self.device_combo.clear()
-                # Remove old detailed screen
-                self.hide_detailed()
             # Hide nothing when switching beamlines
             boxes = self.device_types.children()
             boxes.extend([self.upstream_check, self.remove_check])
@@ -309,19 +310,24 @@ class LightApp(Display):
         self.hide_detailed()
         # Create a Typhon display
         self.detail_screen = typhon.DeviceDisplay(device)
+        self.detail_screen.sidebar.hide()
+        self.detail_screen.signal_tab.hide()
         # Establish connections
         app = PyDMApplication.instance()
         app.establish_widget_connections(self.detail_screen)
         # Add to widget
-        self.horizontalLayout.addWidget(self.detail_screen)
+        self.detail_layout.insertWidget(1, self.detail_screen,
+                                        0, Qt.AlignHCenter)
+        self.device_detail.show()
 
     @pyqtSlot()
     def hide_detailed(self):
         """Hide Typhon display for a device"""
         # Catch the issue when there is no detail_screen already
+        self.device_detail.hide()
         if self.detail_screen:
             # Remove from layout
-            self.horizontalLayout.removeWidget(self.detail_screen)
+            self.detail_layout.removeWidget(self.detail_screen)
             # Destroy widget
             self.detail_screen.deleteLater()
             self.detail_screen = None
