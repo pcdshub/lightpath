@@ -22,7 +22,7 @@ requirements:
       - pcdsdevices
       - pydm
       - pyqt >=5 
-
+      - typhon
 test:
     imports:
       - lightpath

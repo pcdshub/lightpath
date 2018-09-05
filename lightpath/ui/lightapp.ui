@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -24,7 +24,7 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>10000</width>
+    <width>16777215</width>
     <height>16777215</height>
    </size>
   </property>
@@ -68,7 +68,7 @@
     <widget class="QWidget" name="detailed" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <layout class="QVBoxLayout" name="option_layout" stretch="1,1,2,0">
+       <layout class="QVBoxLayout" name="option_layout" stretch="1,1,3,2">
         <property name="spacing">
          <number>5</number>
         </property>
@@ -302,7 +302,7 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>0</width>
+          <width>400</width>
           <height>0</height>
          </size>
         </property>
@@ -340,8 +340,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>815</width>
-           <height>428</height>
+           <width>423</width>
+           <height>434</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -357,6 +357,51 @@
           </size>
          </property>
         </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="device_detail" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>400</width>
+          <height>0</height>
+         </size>
+        </property>
+        <layout class="QVBoxLayout" name="detail_layout">
+         <item>
+          <layout class="QHBoxLayout" name="detail_buttons">
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="detail_hide">
+             <property name="text">
+              <string>Hide</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>

@@ -25,7 +25,7 @@ def main():
     #Gather devices
     cntrl = LightController(lightpath.tests.lcls_client())
     #Create Application
-    app   = pydm.PyQt.QtGui.QApplication([])
+    app = pydm.PyDMApplication()
     #Create Lightpath
     light = LightApp(cntrl)
     light.show()

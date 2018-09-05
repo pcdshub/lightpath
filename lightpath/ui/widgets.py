@@ -5,8 +5,8 @@ import logging
 import os.path
 
 from pydm import Display
-from pydm.PyQt.QtCore import pyqtSlot, Qt
-from pydm.PyQt.QtGui import QColor
+from pydm.PyQt.QtCore import pyqtSlot, pyqtSignal
+from pydm.PyQt.QtGui import QColor, QBrush
 
 from lightpath.path import find_device_state, DeviceState
 
@@ -42,6 +42,8 @@ class InactiveRow(Display):
         # By default we mark the device as Disconnected
         self.state_label.setText('Disconnected')
         self.state_label.setStyleSheet("QLabel {color : rgb(255,0,255)}")
+        self.device_drawing = DeviceWidget('default.ui')
+        self.horizontalWidget.layout().insertWidget(1, self.device_drawing)
 
     def ui_filename(self):
         """
@@ -146,8 +148,7 @@ class LightRow(InactiveRow):
         color = state_colors[self.last_state.value]
         style_color = to_stylesheet_color(color)
         self.state_label.setStyleSheet("QLabel {color: %s}" % style_color)
-        self.device_drawing._default_color = color
-        self.device_drawing.update()
+        self.device_drawing.setColor(color)
         # Disable buttons if necessary
         self.insert_button.setEnabled((self.last_state != DeviceState.Inserted
                                        and hasattr(self.device, 'insert')))
@@ -160,14 +161,63 @@ class LightRow(InactiveRow):
                                    (_in, _out)):
             # Set color
             if state:
-                widget._default_color = Qt.cyan
+                widget.brush = QBrush(QColor('#00ffff'))
             else:
-                widget._default_color = Qt.gray
-            # Update
-            widget.update()
+                widget.brush = QBrush(QColor('#a0a0a4'))
 
     def clear_sub(self):
         """
         Clear the subscription event
         """
         self.device.clear_sub(self.update_state)
+
+
+class DeviceWidget(Display):
+    """
+    Colored Symbol for Lightpath Display
+
+    Parameters
+    ----------
+    symbol_file : str
+        Path to file that contains the Lightpath Symbol
+    """
+    clicked = pyqtSignal()
+
+    def __init__(self, symbol_file, parent=None):
+        self.symbol_file = symbol_file
+        super().__init__(parent=parent)
+        # Default UI settings for conformity
+        self.setMinimumSize(10, 10)
+        self.setMaximumSize(50, 50)
+
+    def ui_filename(self):
+        """
+        Name of designer UI file
+        """
+        return self.symbol_file
+
+    def ui_filepath(self):
+        """
+        Full path to :attr:`.ui_filename`
+        """
+        return os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            self.ui_filename())
+
+    def setColor(self, color):
+        """
+        Set the color of all PyDMDrawings contained in the widget
+        """
+        style_color = to_stylesheet_color(color)
+        styleSheet = 'PyDMDrawing {qproperty-brush: %s;\
+                                   qproperty-penWidth: 2;\
+                                   qproperty-penStyle: SolidLine;\
+                                   qproperty-penColor: rgb(0, 0, 0);\
+                                   }' % style_color
+        self.setStyleSheet(styleSheet)
+
+    def mousePressEvent(self, evt):
+        """Catch mousePressEvent to emit "`clicked`" pyqtSignal"""
+        # Push MouseEvent through
+        super().mousePressEvent(evt)
+        # Emit click
+        self.clicked.emit()

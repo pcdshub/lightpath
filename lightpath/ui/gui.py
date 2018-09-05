@@ -9,9 +9,10 @@ import os.path
 import numpy as np
 import pcdsdevices.device_types as dtypes
 from pcdsdevices.valve import PPSStopper
-from pydm import Display
-from pydm.PyQt.QtCore import pyqtSlot
+from pydm import Display, PyDMApplication
+from pydm.PyQt.QtCore import pyqtSlot, Qt
 from pydm.PyQt.QtGui import QHBoxLayout, QGridLayout, QCheckBox
+import typhon
 
 from lightpath.path import DeviceState
 from .widgets import LightRow
@@ -51,6 +52,7 @@ class LightApp(Display):
         # Store Lightpath information
         self.light = controller
         self.path = None
+        self.detail_screen = None
         self._lock = threading.Lock()
         # Create empty layout
         self.lightLayout = QHBoxLayout()
@@ -78,6 +80,7 @@ class LightApp(Display):
         self.impediment_button.pressed.connect(self.focus_on_device)
         self.remove_check.toggled.connect(self.show_removed)
         self.upstream_check.toggled.connect(self.show_upstream)
+        self.detail_hide.clicked.connect(self.hide_detailed)
         # Store LightRow objects to manage subscriptions
         self.rows = list()
         # Select the beamline to begin with
@@ -106,13 +109,7 @@ class LightApp(Display):
         self.resizeSlider()
         # Change the stylesheet
         if dark:
-            try:
-                import qdarkstyle
-            except ImportError:
-                logger.error("Can not use dark theme, "
-                             "qdarkstyle package not available")
-            else:
-                self.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+            typhon.use_stylesheet(dark=True)
 
     def destinations(self):
         """
@@ -168,6 +165,8 @@ class LightApp(Display):
         """
         with self._lock:
             logger.debug("Resorting beampath display ...")
+            # Remove old detailed screen
+            self.hide_detailed()
             # Grab all the light rows
             rows = [self.load_device_row(d)
                     for d in self.select_devices(self.selected_beamline())]
@@ -185,7 +184,6 @@ class LightApp(Display):
                 # Clear subscribed row cache
                 self.rows.clear()
                 self.device_combo.clear()
-
             # Hide nothing when switching beamlines
             boxes = self.device_types.children()
             boxes.extend([self.upstream_check, self.remove_check])
@@ -199,6 +197,13 @@ class LightApp(Display):
                 # Add widget to layout
                 self.lightLayout.addWidget(row[0])
                 self.overview.layout().addWidget(row[1])
+                # Connect condensed widget to focus_on_device
+                row[1].device_drawing.clicked.connect(
+                        partial(self.focus_on_device,
+                                name=row[1].device.name))
+                # Connect large widget to show Typhon screen
+                row[0].device_drawing.clicked.connect(
+                        partial(self.show_detailed, row[0].device))
                 # Add device to combo
                 self.device_combo.addItem(row[0].device.name)
         # Initialize interface
@@ -297,6 +302,35 @@ class LightApp(Display):
         Clear the subscription event
         """
         self.path.clear_sub(self.update_path)
+
+    @pyqtSlot()
+    def show_detailed(self, device):
+        """Show the Typhon display for a device"""
+        # Hide the last widget
+        self.hide_detailed()
+        # Create a Typhon display
+        self.detail_screen = typhon.DeviceDisplay(device)
+        self.detail_screen.sidebar.hide()
+        self.detail_screen.signal_tab.hide()
+        # Establish connections
+        app = PyDMApplication.instance()
+        app.establish_widget_connections(self.detail_screen)
+        # Add to widget
+        self.detail_layout.insertWidget(1, self.detail_screen,
+                                        0, Qt.AlignHCenter)
+        self.device_detail.show()
+
+    @pyqtSlot()
+    def hide_detailed(self):
+        """Hide Typhon display for a device"""
+        # Catch the issue when there is no detail_screen already
+        self.device_detail.hide()
+        if self.detail_screen:
+            # Remove from layout
+            self.detail_layout.removeWidget(self.detail_screen)
+            # Destroy widget
+            self.detail_screen.deleteLater()
+            self.detail_screen = None
 
     def resizeSlider(self):
         # Visible area of beamline
