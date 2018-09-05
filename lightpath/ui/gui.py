@@ -9,7 +9,7 @@ import os.path
 import numpy as np
 import pcdsdevices.device_types as dtypes
 from pcdsdevices.valve import PPSStopper
-from pydm import Display
+from pydm import Display, PyDMApplication
 from pydm.PyQt.QtCore import pyqtSlot
 from pydm.PyQt.QtGui import QHBoxLayout, QGridLayout, QCheckBox
 import typhon
@@ -52,6 +52,7 @@ class LightApp(Display):
         # Store Lightpath information
         self.light = controller
         self.path = None
+        self.detail_screen = None
         self._lock = threading.Lock()
         # Create empty layout
         self.lightLayout = QHBoxLayout()
@@ -296,6 +297,30 @@ class LightApp(Display):
         Clear the subscription event
         """
         self.path.clear_sub(self.update_path)
+
+    @pyqtSlot()
+    def show_detailed(self, device):
+        """Show the Typhon display for a device"""
+        # Hide the last widget
+        self.hide_detailed()
+        # Create a Typhon display
+        self.detail_screen = typhon.DeviceDisplay(device)
+        # Establish connections
+        app = PyDMApplication.instance()
+        app.establish_widget_connections(self.detail_screen)
+        # Add to widget
+        self.horizontalLayout.addWidget(self.detail_screen)
+
+    @pyqtSlot()
+    def hide_detailed(self):
+        """Hide Typhon display for a device"""
+        # Catch the issue when there is no detail_screen already
+        if self.detail_screen:
+            # Remove from layout
+            self.horizontalLayout.removeWidget(self.detail_screen)
+            # Destroy widget
+            self.detail_screen.deleteLater()
+            self.detail_screen = None
 
     def resizeSlider(self):
         # Visible area of beamline
