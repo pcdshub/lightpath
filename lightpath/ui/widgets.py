@@ -5,8 +5,8 @@ import logging
 import os.path
 
 from pydm import Display
-from pydm.PyQt.QtCore import pyqtSlot, pyqtSignal, Qt
-from pydm.PyQt.QtGui import QColor
+from pydm.PyQt.QtCore import pyqtSlot, pyqtSignal
+from pydm.PyQt.QtGui import QColor, QBrush
 
 from lightpath.path import find_device_state, DeviceState
 
@@ -161,11 +161,9 @@ class LightRow(InactiveRow):
                                    (_in, _out)):
             # Set color
             if state:
-                widget._default_color = Qt.cyan
+                widget.brush = QBrush(QColor('#00ffff'))
             else:
-                widget._default_color = Qt.gray
-            # Update
-            widget.update()
+                widget.brush = QBrush(QColor('#a0a0a4'))
 
     def clear_sub(self):
         """
