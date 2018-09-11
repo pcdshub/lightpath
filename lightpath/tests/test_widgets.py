@@ -49,4 +49,3 @@ def test_widget_icon(lightrow):
     device._icon = 'definetly not an icon'
     lr = lightpath.ui.LightRow(device)
     lr.update_state()
-
