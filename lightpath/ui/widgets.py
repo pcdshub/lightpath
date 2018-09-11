@@ -215,7 +215,13 @@ class DeviceWidget(QLabel):
         """
         Set the color of the QIcon contained in the widget
         """
-        icon = qta.icon(self.symbol, color=color)
+        try:
+            icon = qta.icon(self.symbol, color=color)
+        # Capture any errors loading icons
+        except Exception as exc:
+            logger.error("Unable to load icon %r", self.symbol)
+            return
+        # Set the proper pixmap
         self.setPixmap(icon.pixmap(self.width(), self.height()))
 
     def mousePressEvent(self, evt):
