@@ -6,10 +6,10 @@ import os.path
 
 from pydm import Display
 from pydm.PyQt.QtCore import pyqtSlot, pyqtSignal
-from pydm.PyQt.QtGui import QColor, QBrush
+from pydm.PyQt.QtGui import QColor, QBrush, QLabel
+import qtawesome as qta
 
 from lightpath.path import find_device_state, DeviceState
-
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +29,21 @@ def to_stylesheet_color(color):
                                           color.blue())
 
 
+def symbol_for_device(device):
+    """
+    Find a symbol for the ophyd.Device
+
+    This depends on the hidden attribute ``_icon`` that specifies a valid icon
+    name to be loaded by the ``qtawesome`` library. If no icon is specified,
+    ``"fa.square"` is used instead."""
+    try:
+        symbol = getattr(device, '_icon')
+    except AttributeError as exc:
+        logger.debug("No symbol found %s", device.name)
+        symbol = 'fa.square'
+    return symbol
+
+
 class InactiveRow(Display):
     """
     Inactive row for happi container
@@ -42,7 +57,7 @@ class InactiveRow(Display):
         # By default we mark the device as Disconnected
         self.state_label.setText('Disconnected')
         self.state_label.setStyleSheet("QLabel {color : rgb(255,0,255)}")
-        self.device_drawing = DeviceWidget('default.ui')
+        self.device_drawing = DeviceWidget(device)
         self.horizontalWidget.layout().insertWidget(1, self.device_drawing)
 
     def ui_filename(self):
@@ -172,48 +187,36 @@ class LightRow(InactiveRow):
         self.device.clear_sub(self.update_state)
 
 
-class DeviceWidget(Display):
+class DeviceWidget(QLabel):
     """
     Colored Symbol for Lightpath Display
 
+    i
     Parameters
     ----------
-    symbol_file : str
-        Path to file that contains the Lightpath Symbol
+    symbol : str
+        QIcon to load for device
     """
     clicked = pyqtSignal()
 
-    def __init__(self, symbol_file, parent=None):
-        self.symbol_file = symbol_file
+    def __init__(self, device, parent=None):
         super().__init__(parent=parent)
+        # Grab the symbol of the device
+        # NOTE: The symbol will not actually be created until setColor is
+        # called. We want to avoid unnecessary widget creation and there is no
+        # point in drawing a widget until we know more about the state of the
+        # device
+        self.symbol = symbol_for_device(device)
         # Default UI settings for conformity
         self.setMinimumSize(10, 10)
         self.setMaximumSize(50, 50)
 
-    def ui_filename(self):
-        """
-        Name of designer UI file
-        """
-        return self.symbol_file
-
-    def ui_filepath(self):
-        """
-        Full path to :attr:`.ui_filename`
-        """
-        return os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            self.ui_filename())
-
     def setColor(self, color):
         """
-        Set the color of all PyDMDrawings contained in the widget
+        Set the color of the QIcon contained in the widget
         """
-        style_color = to_stylesheet_color(color)
-        styleSheet = 'PyDMDrawing {qproperty-brush: %s;\
-                                   qproperty-penWidth: 2;\
-                                   qproperty-penStyle: SolidLine;\
-                                   qproperty-penColor: rgb(0, 0, 0);\
-                                   }' % style_color
-        self.setStyleSheet(styleSheet)
+        icon = qta.icon(self.symbol, color=color)
+        self.setPixmap(icon.pixmap(self.width(), self.height()))
 
     def mousePressEvent(self, evt):
         """Catch mousePressEvent to emit "`clicked`" pyqtSignal"""
