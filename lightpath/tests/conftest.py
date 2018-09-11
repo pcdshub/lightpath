@@ -66,6 +66,7 @@ class Valve(Device):
     _veto = False
     SUB_STATE = 'sub_state_changed'
     _default_sub = SUB_STATE
+    _icon = 'fa.adjust'
 
     def __init__(self, name, z, beamline):
         super().__init__(name, name=name)
@@ -125,6 +126,7 @@ class IPIMB(Valve):
     Generic Passive Device
     """
     _transmission = 0.6
+    _icon = 'fa.th-large'
 
 
 class Stopper(Valve):
@@ -132,12 +134,15 @@ class Stopper(Valve):
     Generic Veto Device
     """
     _veto = True
+    _icon = 'fa.times-circle'
 
 
 class Crystal(Valve):
     """
     Generic branching device
     """
+    _icon = 'fa.star'
+
     def __init__(self, name, z, beamline, states):
         super().__init__(name, z, beamline)
         self.states = states
