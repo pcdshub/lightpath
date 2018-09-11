@@ -43,4 +43,8 @@ def test_widget_controls(lightrow):
 def test_widget_icon(lightrow):
     assert symbol_for_device(lightrow.device) == lightrow.device._icon
     # Smoke test a device without an icon
-    symbol_for_device(Device(name='test'))
+    device = Device(name='test')
+    symbol_for_device(device)
+    # Smoke test a device with a malformed icon
+    lightrow.device._icon = 'definetly not an icon'
+    lightrow.update_state()
