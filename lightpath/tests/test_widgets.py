@@ -1,9 +1,11 @@
 from unittest.mock import Mock
 
+from ophyd import Device
 import pytest
 
 import lightpath.ui
-from lightpath.ui.widgets import state_colors, to_stylesheet_color
+from lightpath.ui.widgets import (state_colors, to_stylesheet_color,
+                                  symbol_for_device)
 
 
 @pytest.fixture(scope='function')
@@ -36,3 +38,14 @@ def test_widget_controls(lightrow):
     assert lightrow.device.removed
     lightrow.insert()
     assert lightrow.device.inserted
+
+
+def test_widget_icon(lightrow):
+    assert symbol_for_device(lightrow.device) == lightrow.device._icon
+    # Smoke test a device without an icon
+    device = Device(name='test')
+    symbol_for_device(device)
+    # Smoke test a device with a malformed icon
+    device._icon = 'definetly not an icon'
+    lr = lightpath.ui.LightRow(device)
+    lr.update_state()
