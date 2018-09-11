@@ -191,11 +191,13 @@ class DeviceWidget(QLabel):
     """
     Colored Symbol for Lightpath Display
 
-    i
+    See :func:`.symbol_for_device` for more information on how the proper
+    symbol for the provided device is determined.
+
     Parameters
     ----------
-    symbol : str
-        QIcon to load for device
+    device: ophyd.Device
+        Object that will have a drawing created for it.
     """
     clicked = pyqtSignal()
 
