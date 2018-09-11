@@ -46,5 +46,7 @@ def test_widget_icon(lightrow):
     device = Device(name='test')
     symbol_for_device(device)
     # Smoke test a device with a malformed icon
-    lightrow.device._icon = 'definetly not an icon'
-    lightrow.update_state()
+    device._icon = 'definetly not an icon'
+    lr = lightpath.ui.LightRow(device)
+    lr.update_state()
+
