@@ -23,6 +23,8 @@ requirements:
       - pydm
       - pyqt >=5 
       - typhon
+      - qtawesome
+
 test:
     imports:
       - lightpath
