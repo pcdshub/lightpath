@@ -1,6 +1,7 @@
 from unittest.mock import Mock
 from distutils.spawn import find_executable
 
+from lightpath.ui import LightApp
 from lightpath.controller import LightController
 
 
