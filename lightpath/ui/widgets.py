@@ -51,6 +51,8 @@ class InactiveRow(Display):
     def __init__(self, device, parent=None):
         super().__init__(parent=parent)
         self.device = device
+        # Initialize prior state variable
+        self.last_state = DeviceState.Disconnected
         # Create labels
         self.name_label.setText(device.name)
         self.prefix_label.setText('({})'.format(device.prefix))
