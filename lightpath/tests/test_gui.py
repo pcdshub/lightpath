@@ -1,9 +1,7 @@
 from unittest.mock import Mock
 from distutils.spawn import find_executable
 
-from lightpath.ui import LightApp, LightRow
 from lightpath.controller import LightController
-from lightpath.tests.conftest import Crystal
 
 
 def test_app_buttons(lcls_client):
