@@ -42,32 +42,45 @@ def test_focus_on_device(lcls_client, monkeypatch):
 
 def test_filtering(lcls_client, monkeypatch):
     lightapp = LightApp(LightController(lcls_client))
-    monkeypatch.setattr(LightRow,
-                        'setVisible',
-                        Mock())
-    # Hide Crystal devices
-    lightapp.show_devicetype(False, Crystal)
+    # Create mock functions
     for row in lightapp.rows:
-        if isinstance(row[0].device, Crystal):
-            row[0].setVisible.assert_called_with(False)
-    # Show Crystal devices
-    lightapp.show_devicetype(True, Crystal)
+        monkeypatch.setattr(row[0], 'setHidden', Mock())
+    # Initialize properly with nothing hidden
+    lightapp.filter()
     for row in lightapp.rows:
-        if isinstance(row[0].device, Crystal):
-            row[0].setVisible.assert_called_with(True)
+        row[0].setHidden.assert_called_with(False)
     # Insert at least one device then hide
     device_row = lightapp.rows[2][0]
     device_row.device.insert()
-    lightapp.show_removed(False)
+    lightapp.remove_check.setChecked(False)
+    lightapp.upstream_check.setChecked(True)
+    # Reset mock
     for row in lightapp.rows:
-        if row[0].device.inserted:
-            row[0].setVisible.assert_called_with(False)
+        row[0].setHidden.reset_mock()
+    lightapp.filter()
+    for row in lightapp.rows:
+        if row[0].device.removed:
+            row[0].setHidden.assert_called_with(True)
+        else:
+            row[0].setHidden.assert_called_with(False)
     # Hide upstream devices
     lightapp.select_devices('MEC')
-    lightapp.show_upstream(False)
+    lightapp.remove_check.setChecked(True)
+    lightapp.upstream_check.setChecked(False)
+    lightapp.filter()
     for row in lightapp.rows:
         if row[0].device.md.beamline != 'MEC':
-            row[0].setVisible.assert_called_with(False)
+            row[0].setHidden.assert_called_with(True)
+        else:
+            row[0].setHidden.assert_called_with(False)
+    # Dual hidden categories will not fight
+    lightapp.remove_check.setChecked(False)
+    lightapp.filter()
+    for row in lightapp.rows:
+        if row[0].device.md.beamline != 'MEC' or row[0].device.removed:
+            row[0].setHidden.assert_called_with(True)
+        else:
+            row[0].setHidden.assert_called_with(False)
 
 
 def test_typhon_display(lcls_client):
