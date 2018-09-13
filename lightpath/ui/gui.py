@@ -53,6 +53,7 @@ class LightApp(Display):
         self.light = controller
         self.path = None
         self.detail_screen = None
+        self.device_buttons = dict()
         self._lock = threading.Lock()
         # Create empty layout
         self.lightLayout = QHBoxLayout()
@@ -78,8 +79,8 @@ class LightApp(Display):
                                             self.change_path_display)
         self.device_combo.activated[str].connect(self.focus_on_device)
         self.impediment_button.pressed.connect(self.focus_on_device)
-        self.remove_check.toggled.connect(self.show_removed)
-        self.upstream_check.toggled.connect(self.show_upstream)
+        self.remove_check.toggled.connect(self.filter)
+        self.upstream_check.toggled.connect(self.filter)
         self.detail_hide.clicked.connect(self.hide_detailed)
         # Store LightRow objects to manage subscriptions
         self.rows = list()
@@ -102,8 +103,8 @@ class LightApp(Display):
                 box.setChecked(True)
                 self.device_types.layout().addWidget(box, j, i)
                 # Hook up box to hide function
-                box.toggled.connect(partial(self.show_devicetype,
-                                            device=device_type))
+                self.device_buttons[box] = device_type
+                box.toggled.connect(self.filter)
         # Setup the UI
         self.change_path_display()
         self.resizeSlider()
@@ -156,6 +157,12 @@ class LightApp(Display):
         Current beamline selected by the combo box
         """
         return self.destination_combo.currentText()
+
+    @property
+    def hidden_devices(self):
+        """Device types set to currently be visible"""
+        return [dtype for button, dtype in self.device_buttons.items()
+                if not button.isChecked()]
 
     @pyqtSlot()
     @pyqtSlot(bool)
@@ -273,28 +280,24 @@ class LightApp(Display):
         self.scroll.ensureWidgetVisible(self.rows[idx][0])
 
     @pyqtSlot(bool)
-    def show_devicetype(self, show, device):
-        """Show or hide all instances of a specific row"""
-        self._filter(show, lambda x: type(x.device) == device)
-
-    @pyqtSlot(bool)
-    def show_removed(self, show):
-        """Show or hide all instances of a specific device"""
-        self._filter(show, lambda x: x.last_state == DeviceState.Removed)
-
-    @pyqtSlot(bool)
-    def show_upstream(self, show):
-        """Show or hide upstream devices from the destination beamline"""
-        beamline = self.selected_beamline()
-        self._filter(show, lambda x: x.device.md.beamline != beamline)
-
-    def _filter(self, show, func):
-        """Helper function to hide a device based on a condition"""
-        # Hide widgets
+    def filter(self, *args):
+        """Hide devices along the beamline for a more succinct view"""
         for row in self.rows:
-            if func(row[0]):
-                row[0].setVisible(show)
-        # Resize slider
+            device = row[0].device
+            # Hide if a hidden instance of a device type
+            hidden_device_type = type(device) in self.hidden_devices
+            # Hide if removed
+            hidden_removed = (not self.remove_check.isChecked()
+                              and row[0].last_state == DeviceState.Removed)
+            # Hide if upstream
+            beamline = self.selected_beamline()
+            hidden_upstream = (not self.upstream_check.isChecked()
+                               and device.md.beamline != beamline)
+            # Hide device if any of the criteria are met
+            row[0].setHidden(hidden_device_type
+                             or hidden_removed
+                             or hidden_upstream)
+        # Change the slider size to match changing view
         self.resizeSlider()
 
     def clear_subs(self):
