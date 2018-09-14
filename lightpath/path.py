@@ -208,7 +208,14 @@ class BeamPath(OphydObject):
             if prior and device.md.beamline != prior.md.beamline:
                 # Find improperly configured optics
                 for optic in last_branches:
-                    if device.md.beamline not in optic.destination:
+                    # If this optic is responsible for delivering beam
+                    # to this hutch and it is not configured to do so.
+                    # Mark it as blocking
+                    if device.md.beamline in optic.branches:
+                        if device.md.beamline not in optic.destination:
+                            block.append(optic)
+                    # Otherwise ensure it is removed from the beamline
+                    elif optic.md.beamline not in optic.destination:
                         block.append(optic)
                 # Clear optics that have been evaluated
                 last_branches.clear()
