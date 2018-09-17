@@ -312,9 +312,14 @@ class LightApp(Display):
         # Hide the last widget
         self.hide_detailed()
         # Create a Typhon display
-        self.detail_screen = typhon.DeviceDisplay(device)
-        self.detail_screen.sidebar.hide()
-        self.detail_screen.signal_tab.hide()
+        try:
+            self.detail_screen = typhon.DeviceDisplay(device)
+            self.detail_screen.sidebar.hide()
+            self.detail_screen.signal_tab.hide()
+        except Exception as exc:
+            logger.exception("Unable to create display for %r",
+                             device.name)
+            return
         # Establish connections
         app = PyDMApplication.instance()
         app.establish_widget_connections(self.detail_screen)
