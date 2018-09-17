@@ -6,5 +6,6 @@ pcdsdevices
 prettytable
 pydm
 pyqt
+qtawesome
 qtpy
 typhon
