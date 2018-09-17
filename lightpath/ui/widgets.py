@@ -5,7 +5,7 @@ import logging
 import os.path
 
 from pydm import Display
-from qtpy.QtCore import Slot as pyqtSlot, Signal as pyqtSignal
+from qtpy.QtCore import Signal as pyqtSignal
 from qtpy.QtGui import QBrush, QColor
 from qtpy.QtWidgets import QLabel
 import qtawesome as qta
@@ -116,9 +116,6 @@ class LightRow(InactiveRow):
     """
     def __init__(self, device, parent=None):
         super().__init__(device, parent=parent)
-        # Connect up action buttons
-        self.remove_button.clicked.connect(self.remove)
-        self.insert_button.clicked.connect(self.insert)
         # Subscribe device to state changes
         try:
             # Wait for later to update widget
@@ -128,26 +125,6 @@ class LightRow(InactiveRow):
         except Exception:
             logger.error("Widget is unable to subscribe to device %s",
                          device.name)
-
-    @pyqtSlot()
-    def remove(self):
-        """
-        Remove the device from the beamline
-        """
-        logger.info("Removing device %s ...", self.device.name)
-        try:
-            self.device.remove()
-        except Exception as exc:
-            logger.error(exc)
-
-    @pyqtSlot()
-    def insert(self):
-        """Insert the device from the beamline"""
-        logger.info("Inserting device %s ...", self.device.name)
-        try:
-            self.device.insert()
-        except Exception as exc:
-            logger.error(exc)
 
     def update_state(self, *args, **kwargs):
         """
@@ -167,11 +144,6 @@ class LightRow(InactiveRow):
         style_color = to_stylesheet_color(color)
         self.state_label.setStyleSheet("QLabel {color: %s}" % style_color)
         self.device_drawing.setColor(color)
-        # Disable buttons if necessary
-        self.insert_button.setEnabled((self.last_state != DeviceState.Inserted
-                                       and hasattr(self.device, 'insert')))
-        self.remove_button.setEnabled((self.last_state != DeviceState.Removed
-                                       and hasattr(self.device, 'remove')))
 
     def update_light(self, _in, _out):
         """Update the light beams striking and emitting from the device"""
