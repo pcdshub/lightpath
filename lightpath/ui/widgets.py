@@ -5,8 +5,9 @@ import logging
 import os.path
 
 from pydm import Display
-from pydm.PyQt.QtCore import pyqtSlot, pyqtSignal
-from pydm.PyQt.QtGui import QColor, QBrush, QLabel
+from qtpy.QtCore import Slot as pyqtSlot, Signal as pyqtSignal
+from qtpy.QtGui import QBrush, QColor
+from qtpy.QtWidgets import QLabel
 import qtawesome as qta
 
 from lightpath.path import find_device_state, DeviceState

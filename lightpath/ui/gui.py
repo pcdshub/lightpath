@@ -10,8 +10,8 @@ import numpy as np
 import pcdsdevices.device_types as dtypes
 from pcdsdevices.valve import PPSStopper
 from pydm import Display, PyDMApplication
-from pydm.PyQt.QtCore import pyqtSlot, Qt
-from pydm.PyQt.QtGui import QHBoxLayout, QGridLayout, QCheckBox
+from qtpy.QtCore import Slot as pyqtSlot, Qt
+from qtpy.QtGui import QHBoxLayout, QGridLayout, QCheckBox
 import typhon
 
 from lightpath.path import DeviceState
