@@ -313,7 +313,7 @@ class LightApp(Display):
         self.hide_detailed()
         # Create a Typhon display
         try:
-            self.detail_screen = typhon.DeviceDisplay(device)
+            self.detail_screen = typhon.DeviceDisplay(device, children=False)
             self.detail_screen.sidebar.hide()
             self.detail_screen.signal_tab.hide()
         except Exception as exc:
