@@ -57,7 +57,7 @@ class InactiveRow(Display):
         # Initialize prior state variable
         self.last_state = DeviceState.Disconnected
         # Create labels
-        self.name_label.setText(device.name)
+        self.name_label.setText(clean_name(device, strip_parent=False))
         self.prefix_label.setText('({})'.format(device.prefix))
         # By default we mark the device as Disconnected
         self.state_label.setText('Disconnected')
