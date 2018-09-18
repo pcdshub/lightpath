@@ -94,6 +94,7 @@ class InactiveRow(Display):
         self.device_drawing.setFixedHeight(15)
         self.device_drawing.setMaximumWidth(15)
         self.horizontalWidget.layout().setSpacing(1)
+        self.horizontalWidget.setFixedHeight(15)
 
 
 class LightRow(InactiveRow):
