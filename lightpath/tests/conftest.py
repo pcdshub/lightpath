@@ -5,7 +5,8 @@ from types import SimpleNamespace
 import pydm
 import happi
 import pytest
-from ophyd.device import Device
+from ophyd import Device, Kind, Component as Cpt
+from ophyd.signal import AttributeSignal
 from ophyd.status import DeviceStatus
 from ophyd.utils import DisconnectedError
 
@@ -68,12 +69,24 @@ class Valve(Device):
     _default_sub = SUB_STATE
     _icon = 'fa.adjust'
 
+    current_state = Cpt(AttributeSignal,
+                        attr='_current_state',
+                        kind=Kind.hinted)
+    current_transmission = Cpt(AttributeSignal,
+                               attr='transmission',
+                               kind=Kind.normal)
+
     def __init__(self, name, z, beamline):
         super().__init__(name, name=name)
         self.md = SimpleNamespace()
         self.md.z = z
         self.md.beamline = beamline
         self.status = Status.removed
+
+    @property
+    def _current_state(self):
+        """String of state for current_state AttributeSignal"""
+        return self.status
 
     @property
     def transmission(self):
