@@ -38,3 +38,9 @@ def test_widget_icon(lightrow):
     device._icon = 'definetly not an icon'
     lr = lightpath.ui.LightRow(device)
     lr.update_state()
+
+
+def test_widget_hints(lightrow):
+    hint_count = len(lightrow.device.hints['fields'])
+    # Check for label and control for each hint plus spacer
+    assert lightrow.command_layout.count() == 2 * hint_count + 1
