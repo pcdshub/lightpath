@@ -5,10 +5,12 @@ import logging
 import os.path
 
 from pydm import Display
-from qtpy.QtCore import Signal as pyqtSignal
-from qtpy.QtGui import QBrush, QColor
+from qtpy.QtCore import Signal as pyqtSignal, Qt
+from qtpy.QtGui import QBrush, QColor, QFont
 from qtpy.QtWidgets import QLabel
 import qtawesome as qta
+from typhon.signal import signal_widget
+from typhon.utils import clean_name, grab_hints, is_signal_ro
 
 from lightpath.path import find_device_state, DeviceState
 
@@ -114,6 +116,8 @@ class LightRow(InactiveRow):
 
     parent : QObject, optional
     """
+    MAX_HINTS = 2
+
     def __init__(self, device, parent=None):
         super().__init__(device, parent=parent)
         # Subscribe device to state changes
@@ -125,6 +129,37 @@ class LightRow(InactiveRow):
         except Exception:
             logger.error("Widget is unable to subscribe to device %s",
                          device.name)
+        # Add hints for ophyd Device
+        hints = grab_hints(device)
+        # Only allow certain number of hints for space constraints
+        if len(hints) > self.MAX_HINTS:
+            logger.debug("Device %r has a number of hints exceeding %r, "
+                         "not all will be shown", device.name, self.MAX_HINTS)
+            hints = hints[:self.MAX_HINTS]
+        # Add each hint
+        for hint in hints:
+            try:
+                self.add_signal(hint)
+            except Exception as exc:
+                logger.exception("Unable to add widget for %r", hint.name)
+
+    def add_signal(self, signal):
+        """Add a signal to the widget display"""
+        # Create control widget
+        widget = signal_widget(signal, read_only=is_signal_ro(signal))
+        # Create label widget
+        label = QLabel(self)
+        bold_font = QFont()
+        bold_font.setBold(True)
+        label.setFont(bold_font)
+        # Add the label
+        label.setText(clean_name(signal, strip_parent=self.device.root))
+        # Add to the layout
+        # Annoying count block because insertWidget does not support negative
+        # indexing
+        count = self.command_layout.count()
+        self.command_layout.insertWidget(count - 1, label, 0, Qt.AlignHCenter)
+        self.command_layout.insertWidget(count, widget, 0, Qt.AlignHCenter)
 
     def update_state(self, *args, **kwargs):
         """

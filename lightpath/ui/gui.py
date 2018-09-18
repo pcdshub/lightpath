@@ -11,7 +11,7 @@ import pcdsdevices.device_types as dtypes
 from pcdsdevices.valve import PPSStopper
 from pydm import Display, PyDMApplication
 from qtpy.QtCore import Slot as pyqtSlot, Qt
-from qtpy.QtGui import QHBoxLayout, QGridLayout, QCheckBox
+from qtpy.QtWidgets import QHBoxLayout, QGridLayout, QCheckBox
 import typhon
 
 from lightpath.path import DeviceState
@@ -217,6 +217,9 @@ class LightApp(Display):
         for row in self.rows:
             for widget in row:
                 widget.update_state()
+        # Connect all widgets to PyDMApplication
+        app = PyDMApplication.instance()
+        app.establish_widget_connections(self)
         # Update the state of the path
         self.update_path()
 
