@@ -177,33 +177,6 @@ class Crystal(Valve):
             return self.branches
 
 
-class MPS(Device):
-    """
-    Simulated MPS device
-    """
-    SUB_MPS_CH = 'mps_state_changed'
-    _default_sub = SUB_MPS_CH
-
-    def __init__(self, device):
-        super().__init__('MPS', name='mps')
-        self.device = device
-        self.bypassed = False
-
-    @property
-    def faulted(self):
-        """
-        MPS is faulted if device is inserted and not bypassed
-        """
-        return self.device.inserted and not self.veto_capable
-
-    @property
-    def veto_capable(self):
-        """
-        Veto device
-        """
-        return self.device._veto
-
-
 ############
 # Fixtures #
 ############
