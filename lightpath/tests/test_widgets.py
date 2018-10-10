@@ -22,22 +22,11 @@ def test_widget_updates(lightrow):
     lightrow.device.remove()
     assert (to_stylesheet_color(state_colors[0])
             in lightrow.state_label.styleSheet())
-    assert lightrow.insert_button.isEnabled()
-    assert not lightrow.remove_button.isEnabled()
     lightrow.device.insert()
-    assert not lightrow.insert_button.isEnabled()
-    assert lightrow.remove_button.isEnabled()
     assert (to_stylesheet_color(state_colors[1])
             in lightrow.state_label.styleSheet())
     # Check that callbacks have been called
     assert lightrow.state_label.setText.called
-
-
-def test_widget_controls(lightrow):
-    lightrow.remove()
-    assert lightrow.device.removed
-    lightrow.insert()
-    assert lightrow.device.inserted
 
 
 def test_widget_icon(lightrow):
@@ -49,3 +38,9 @@ def test_widget_icon(lightrow):
     device._icon = 'definetly not an icon'
     lr = lightpath.ui.LightRow(device)
     lr.update_state()
+
+
+def test_widget_hints(lightrow):
+    hint_count = len(lightrow.device.hints['fields'])
+    # Check for label and control for each hint plus spacer
+    assert lightrow.command_layout.count() == 2 * hint_count + 1

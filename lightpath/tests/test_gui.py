@@ -32,7 +32,7 @@ def test_focus_on_device(lcls_client, monkeypatch):
     lightapp.scroll.ensureWidgetVisible.assert_called_with(row)
     # Go to impediment if no device is provided
     first_row = lightapp.rows[0][0]
-    first_row.insert()
+    first_row.device.insert()
     lightapp.focus_on_device()
     lightapp.scroll.ensureWidgetVisible.assert_called_with(first_row)
     # Smoke test a bad device string

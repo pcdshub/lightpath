@@ -8,7 +8,12 @@ env:
 matrix:
   include:
       - python: 3.6
-        env: BUILD_DOCS=1
+        env:
+           - BUILD_DOCS=1
+           - PCDS_CHANNEL=pcds-tag
+      - python: 3.6
+        env:
+           - PCDS_CHANNEL=pcds-dev
 
 install:
   - sudo apt-get update
@@ -19,6 +24,7 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda install conda-build anaconda-client
   - conda update -q conda conda-build
+  - conda config --add channels $PCDS_CHANNEL 
   - conda config --append channels pcds-tag
   - conda config --append channels conda-forge
   # Useful for debugging any issues with conda
