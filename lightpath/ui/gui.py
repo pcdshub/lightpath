@@ -9,7 +9,7 @@ import os.path
 import numpy as np
 import pcdsdevices.device_types as dtypes
 from pcdsdevices.valve import PPSStopper
-from pydm import Display, PyDMApplication
+from pydm import Display
 from qtpy.QtCore import Slot as pyqtSlot, Qt
 from qtpy.QtWidgets import QHBoxLayout, QGridLayout, QCheckBox
 import typhon
@@ -218,9 +218,6 @@ class LightApp(Display):
         for row in self.rows:
             for widget in row:
                 widget.update_state()
-        # Connect all widgets to PyDMApplication
-        app = PyDMApplication.instance()
-        app.establish_widget_connections(self)
         # Update the state of the path
         self.update_path()
 
@@ -322,9 +319,6 @@ class LightApp(Display):
             logger.exception("Unable to create display for %r",
                              device.name)
             return
-        # Establish connections
-        app = PyDMApplication.instance()
-        app.establish_widget_connections(self.detail_screen)
         # Add to widget
         self.detail_layout.insertWidget(1, self.detail_screen,
                                         0, Qt.AlignHCenter)
