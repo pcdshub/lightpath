@@ -2,7 +2,6 @@ import os.path
 import logging
 from types import SimpleNamespace
 
-import pydm
 import happi
 import pytest
 from ophyd import Device, Kind, Component as Cpt
@@ -38,11 +37,6 @@ def set_level(pytestconfig):
     # Create basic configuration
     logging.basicConfig(level=log_level,
                         filename=pytestconfig.getoption('--logfile'))
-
-
-@pytest.fixture(scope='session', autouse=True)
-def app():
-    return pydm.PyDMApplication()
 
 
 #####################

@@ -9,9 +9,10 @@ from lightpath.ui.widgets import (state_colors, to_stylesheet_color,
 
 
 @pytest.fixture(scope='function')
-def lightrow(path):
+def lightrow(path, qapp, qtbot):
     # Generate lightpath
     w = lightpath.ui.LightRow(path.path[3])
+    qtbot.addWidget(w)
     # Replace Update functions with mocks
     setattr(w.state_label, 'setText', Mock())
     return w

@@ -5,8 +5,9 @@ from lightpath.ui import LightApp
 from lightpath.controller import LightController
 
 
-def test_app_buttons(lcls_client):
+def test_app_buttons(lcls_client, qtbot):
     lightapp = LightApp(LightController(lcls_client))
+    qtbot.addWidget(lightapp)
     # Create widgets
     assert len(lightapp.select_devices('MEC')) == 10
     # Setup new display
@@ -21,8 +22,9 @@ def test_lightpath_launch_script():
     assert find_executable('lightpath')
 
 
-def test_focus_on_device(lcls_client, monkeypatch):
+def test_focus_on_device(lcls_client, monkeypatch, qtbot):
     lightapp = LightApp(LightController(lcls_client))
+    qtbot.addWidget(lightapp)
     row = lightapp.rows[8][0]
     monkeypatch.setattr(lightapp.scroll,
                         'ensureWidgetVisible',
@@ -39,8 +41,9 @@ def test_focus_on_device(lcls_client, monkeypatch):
     lightapp.focus_on_device('blah')
 
 
-def test_filtering(lcls_client, monkeypatch):
+def test_filtering(lcls_client, monkeypatch, qtbot):
     lightapp = LightApp(LightController(lcls_client))
+    qtbot.addWidget(lightapp)
     # Create mock functions
     for row in lightapp.rows:
         monkeypatch.setattr(row[0], 'setHidden', Mock())
@@ -82,8 +85,9 @@ def test_filtering(lcls_client, monkeypatch):
             row[0].setHidden.assert_called_with(False)
 
 
-def test_typhon_display(lcls_client):
+def test_typhon_display(lcls_client, qtbot):
     lightapp = LightApp(LightController(lcls_client))
+    qtbot.addWidget(lightapp)
     # Smoke test the hide button without a detailed display
     lightapp.hide_detailed()
     assert lightapp.detail_layout.count() == 2
