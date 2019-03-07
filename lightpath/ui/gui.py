@@ -13,6 +13,7 @@ from pydm import Display, PyDMApplication
 from qtpy.QtCore import Slot as pyqtSlot, Qt
 from qtpy.QtWidgets import QHBoxLayout, QGridLayout, QCheckBox
 import typhon
+from typhon import TyphonDeviceDisplay
 
 from lightpath.path import DeviceState
 from .widgets import LightRow
@@ -316,9 +317,7 @@ class LightApp(Display):
         self.hide_detailed()
         # Create a Typhon display
         try:
-            self.detail_screen = typhon.DeviceDisplay(device, children=False)
-            self.detail_screen.sidebar.hide()
-            self.detail_screen.signal_tab.hide()
+            self.detail_screen = TyphonDeviceDisplay.from_device(device)
         except Exception as exc:
             logger.exception("Unable to create display for %r",
                              device.name)
