@@ -315,7 +315,7 @@ class LightApp(Display):
         # Create a Typhon display
         try:
             self.detail_screen = TyphonDeviceDisplay.from_device(device)
-        except Exception as exc:
+        except Exception:
             logger.exception("Unable to create display for %r",
                              device.name)
             return

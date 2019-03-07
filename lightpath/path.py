@@ -92,7 +92,7 @@ def find_device_state(device):
         logger.warning("Unable to connect to %r", device)
         logger.debug(exc, exc_info=True)
         return DeviceState.Disconnected
-    except Exception as exc:
+    except Exception:
         logger.exception("Unable to determine device state for %r", device)
         return DeviceState.Error
     # Check state consistency and return proper Enum
