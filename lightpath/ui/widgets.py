@@ -10,7 +10,7 @@ from qtpy.QtGui import QBrush, QColor, QFont
 from qtpy.QtWidgets import QLabel
 import qtawesome as qta
 from typhon.signal import signal_widget
-from typhon.utils import clean_name, grab_hints, is_signal_ro
+from typhon.utils import clean_name, grab_kind, is_signal_ro
 
 from lightpath.path import find_device_state, DeviceState
 
@@ -41,7 +41,7 @@ def symbol_for_device(device):
     ``"fa.square"` is used instead."""
     try:
         symbol = getattr(device, '_icon')
-    except AttributeError as exc:
+    except AttributeError:
         logger.debug("No symbol found %s", device.name)
         symbol = 'fa.square'
     return symbol
@@ -131,18 +131,18 @@ class LightRow(InactiveRow):
             logger.error("Widget is unable to subscribe to device %s",
                          device.name)
         # Add hints for ophyd Device
-        hints = grab_hints(device)
+        hints = grab_kind(device, 'hinted')
         # Only allow certain number of hints for space constraints
         if len(hints) > self.MAX_HINTS:
             logger.debug("Device %r has a number of hints exceeding %r, "
                          "not all will be shown", device.name, self.MAX_HINTS)
             hints = hints[:self.MAX_HINTS]
         # Add each hint
-        for hint in hints:
+        for (name, hint) in hints:
             try:
                 self.add_signal(hint)
-            except Exception as exc:
-                logger.exception("Unable to add widget for %r", hint.name)
+            except Exception:
+                logger.exception("Unable to add widget for %r", name)
 
     def add_signal(self, signal):
         """Add a signal to the widget display"""
@@ -231,7 +231,7 @@ class DeviceWidget(QLabel):
         try:
             icon = qta.icon(self.symbol, color=color)
         # Capture any errors loading icons
-        except Exception as exc:
+        except Exception:
             logger.exception("Unable to load icon %r", self.symbol)
             return
         # Set the proper pixmap

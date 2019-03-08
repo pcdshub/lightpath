@@ -6,9 +6,6 @@ LCLS Lightpath
 .. image:: https://codecov.io/github/pcdshub/lightpath/coverage.svg?branch=master
     :target: https://codecov.io/gh/pcdshub/lightpath?branch=master
 
-.. image:: https://landscape.io/github/pcdshub/lightpath/master/landscape.svg?style=flat
-    :target: https://landscape.io/github/pcdshub/lightpath/master
-
 Python module for control of LCLS beamlines
 
 By abstracting individual devices into larger collections of paths, operators

@@ -65,7 +65,7 @@ class LightController:
         try:
             path = beamlines[endstation]
             path[endstation] = dict()
-        except KeyError as exc:
+        except KeyError:
             logger.warning("Unable to find %s as a configured endstation, "
                            "assuming this is an independent path", endstation)
             path = {endstation: {}}
@@ -91,7 +91,7 @@ class LightController:
                 try:
                     dev = from_container(c)
                     devices.append(dev)
-                except Exception as exc:
+                except Exception:
                     logger.exception("Failure loading %s ...", c.name)
                     self.containers.append(c)
         # Create the beamline from the loaded devices
