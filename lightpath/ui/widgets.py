@@ -131,18 +131,19 @@ class LightRow(InactiveRow):
             logger.error("Widget is unable to subscribe to device %s",
                          device.name)
         # Add hints for ophyd Device
-        hints = grab_kind(device, 'hinted')
+        hints = list(grab_kind(device, 'hinted').values())
         # Only allow certain number of hints for space constraints
         if len(hints) > self.MAX_HINTS:
             logger.debug("Device %r has a number of hints exceeding %r, "
                          "not all will be shown", device.name, self.MAX_HINTS)
             hints = hints[:self.MAX_HINTS]
         # Add each hint
-        for (name, hint) in hints:
+        for kind_item in hints:
             try:
-                self.add_signal(hint)
+                self.add_signal(kind_item.signal)
             except Exception:
-                logger.exception("Unable to add widget for %r", name)
+                logger.exception("Unable to add widget for %r",
+                                 kind_item.signal.name)
 
     def add_signal(self, signal):
         """Add a signal to the widget display"""
