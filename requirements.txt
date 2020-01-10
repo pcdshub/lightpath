@@ -8,4 +8,4 @@ pydm
 pyqt
 qtawesome
 qtpy
-typhon
+typhos
