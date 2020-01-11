@@ -12,8 +12,8 @@ from pcdsdevices.valve import PPSStopper
 from pydm import Display
 from qtpy.QtCore import Slot as pyqtSlot, Qt
 from qtpy.QtWidgets import QHBoxLayout, QGridLayout, QCheckBox
-import typhon
-from typhon import TyphonDeviceDisplay
+import typhos
+from typhos import TyphosDeviceDisplay
 
 from lightpath.path import DeviceState
 from .widgets import LightRow
@@ -111,7 +111,7 @@ class LightApp(Display):
         self.resizeSlider()
         # Change the stylesheet
         if dark:
-            typhon.use_stylesheet(dark=True)
+            typhos.use_stylesheet(dark=True)
 
     def destinations(self):
         """
@@ -209,7 +209,7 @@ class LightApp(Display):
                 row[1].device_drawing.clicked.connect(
                         partial(self.focus_on_device,
                                 name=row[1].device.name))
-                # Connect large widget to show Typhon screen
+                # Connect large widget to show Typhos screen
                 row[0].device_drawing.clicked.connect(
                         partial(self.show_detailed, row[0].device))
                 # Add device to combo
@@ -309,12 +309,12 @@ class LightApp(Display):
 
     @pyqtSlot()
     def show_detailed(self, device):
-        """Show the Typhon display for a device"""
+        """Show the Typhos display for a device"""
         # Hide the last widget
         self.hide_detailed()
-        # Create a Typhon display
+        # Create a Typhos display
         try:
-            self.detail_screen = TyphonDeviceDisplay.from_device(device)
+            self.detail_screen = TyphosDeviceDisplay.from_device(device)
         except Exception:
             logger.exception("Unable to create display for %r",
                              device.name)
@@ -326,7 +326,7 @@ class LightApp(Display):
 
     @pyqtSlot()
     def hide_detailed(self):
-        """Hide Typhon display for a device"""
+        """Hide Typhos display for a device"""
         # Catch the issue when there is no detail_screen already
         self.device_detail.hide()
         if self.detail_screen:

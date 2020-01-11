@@ -9,8 +9,8 @@ from qtpy.QtCore import Signal as pyqtSignal, Qt
 from qtpy.QtGui import QBrush, QColor, QFont
 from qtpy.QtWidgets import QLabel
 import qtawesome as qta
-from typhon.signal import signal_widget
-from typhon.utils import clean_name, grab_kind, is_signal_ro
+from typhos.signal import signal_widget
+from typhos.utils import clean_name, grab_kind, is_signal_ro
 
 from lightpath.path import find_device_state, DeviceState
 
