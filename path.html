@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>BeamPath &mdash; LCLS Lightpath 0.5.2 documentation</title>
+  <title>BeamPath &mdash; LCLS Lightpath 0.5.2+5.g54d4a21 documentation</title>
   
 
   
@@ -59,7 +59,7 @@
             
             
               <div class="version">
-                0.5.2
+                0.5.2+5.g54d4a21
               </div>
             
           
@@ -179,10 +179,14 @@ multiple beamlines with appropriate reflecting devices in between.</p>
 <li><p><strong>= str</strong><strong>, </strong><strong>optional</strong> (<em>name</em>) – Name of the BeamPath</p></li>
 </ul>
 </dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError:</strong> – If a non-LightDevice object is supplied</p></li>
+<li><p><strong>CoordinateError:</strong> – If a coordinate is not properly specified</p></li>
+<li><p><strong>PathError:</strong> – If multiple beamlines are present, with no reflecting device</p></li>
+</ul>
+</dd>
 </dl>
-<p>:raises TypeError:: If a non-LightDevice object is supplied
-:raises CoordinateError:: If a coordinate is not properly specified
-:raises PathError:: If multiple beamlines are present, with no reflecting device</p>
 <dl class="attribute">
 <dt id="lightpath.path.BeamPath.minimum_transmission">
 <code class="sig-name descname">minimum_transmission</code><a class="headerlink" href="#lightpath.path.BeamPath.minimum_transmission" title="Permalink to this definition">¶</a></dt>
@@ -257,8 +261,10 @@ irrelavant</p></li>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BeamPath</span></code></a></p>
 </dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>TypeError:</strong> – Raised if a non-BeamPath object is supplied</p>
+</dd>
 </dl>
-<p>:raises TypeError:: Raised if a non-BeamPath object is supplied</p>
 </dd></dl>
 
 <dl class="method">
@@ -290,8 +296,10 @@ irrelavant</p>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BeamPath</span></code></a></p>
 </dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>TypeError:</strong> – Raised if a non-BeamPath object is supplied</p>
+</dd>
 </dl>
-<p>:raises TypeError:: Raised if a non-BeamPath object is supplied</p>
 </dd></dl>
 
 <dl class="method">
