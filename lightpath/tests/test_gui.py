@@ -85,7 +85,7 @@ def test_filtering(lcls_client, monkeypatch, qtbot):
             row[0].setHidden.assert_called_with(False)
 
 
-def test_typhon_display(lcls_client, qtbot):
+def test_typhos_display(lcls_client, qtbot):
     lightapp = LightApp(LightController(lcls_client))
     qtbot.addWidget(lightapp)
     # Smoke test the hide button without a detailed display
