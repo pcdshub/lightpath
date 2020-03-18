@@ -13,14 +13,14 @@ def test_controller_paths(lcls_client):
     assert len(controller.cxi.devices) == 10
     assert len(controller.mec.devices) == 10
     # Range of each path is correct
-    assert controller.xcs.path[0].name == 'FEE Valve 1'
-    assert controller.hxr.path[0].name == 'FEE Valve 1'
-    assert controller.mec.path[0].name == 'FEE Valve 1'
-    assert controller.cxi.path[0].name == 'FEE Valve 1'
-    assert controller.xcs.path[-1].name == 'S4 Stopper'
-    assert controller.hxr.path[-1].name == 'XRT M2H'
-    assert controller.mec.path[-1].name == 'S6 Stopper'
-    assert controller.cxi.path[-1].name == 'S5 Stopper'
+    assert controller.xcs.path[0].name == 'fee_valve1'
+    assert controller.hxr.path[0].name == 'fee_valve1'
+    assert controller.mec.path[0].name == 'fee_valve1'
+    assert controller.cxi.path[0].name == 'fee_valve1'
+    assert controller.xcs.path[-1].name == 's4_stopper'
+    assert controller.hxr.path[-1].name == 'xrt_m2h'
+    assert controller.mec.path[-1].name == 's6_stopper'
+    assert controller.cxi.path[-1].name == 's5_stopper'
 
 
 def test_controller_device_summaries(lcls_client):
@@ -31,14 +31,14 @@ def test_controller_device_summaries(lcls_client):
     assert controller.destinations == []
     # Common impediment
     controller.hxr.path[0].insert()
-    assert controller.destinations[0].name == 'FEE Valve 1'
+    assert controller.destinations[0].name == 'fee_valve1'
     controller.hxr.path[0].remove()
     # Use mirrors to change destination
     controller.xcs.path[-1].insert()
     controller.cxi.path[-1].insert()
-    assert controller.destinations[0].name == 'S5 Stopper'
+    assert controller.destinations[0].name == 's5_stopper'
     controller.hxr.path[4].insert()
-    assert controller.destinations[0].name == 'S4 Stopper'
+    assert controller.destinations[0].name == 's4_stopper'
     controller.cxi.path[-1].remove()
     controller.xcs.path[-1].remove()
     controller.hxr.path[4].remove()
@@ -47,7 +47,7 @@ def test_controller_device_summaries(lcls_client):
     assert controller.incident_devices == []
     # Common incident devices
     controller.hxr.path[3].insert()
-    assert controller.incident_devices[0].name == 'XRT IPM'
+    assert controller.incident_devices[0].name == 'xrt_ipm'
     # Multiple incident devices
     controller.hxr.path[6].insert()
     assert len(controller.incident_devices) == 2
