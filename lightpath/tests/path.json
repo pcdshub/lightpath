@@ -1,6 +1,6 @@
 {
-    "FEE Valve 1": {
-        "_id": "FEE Valve 1",
+    "fee_valve1": {
+        "_id": "fee_valve1",
         "active": true,
         "args": [
             "{{name}}"
@@ -14,17 +14,17 @@
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "name": "FEE Valve 1",
+        "name": "fee_valve1",
         "parent": null,
-        "prefix": "FEE Valve 1",
+        "prefix": "fee_valve1",
         "screen": null,
         "stand": null,
         "system": null,
         "type": "Device",
         "z": 0.0
     },
-    "FEE Valve 2": {
-        "_id": "FEE Valve 2",
+    "fee_valve2": {
+        "_id": "fee_valve2",
         "active": true,
         "args": [
             "{{name}}"
@@ -38,17 +38,17 @@
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "name": "FEE Valve 2",
+        "name": "fee_valve2",
         "parent": null,
-        "prefix": "FEE Valve 2",
+        "prefix": "fee_valve2",
         "screen": null,
         "stand": null,
         "system": null,
         "type": "Device",
         "z": 2.0
     },
-    "HXR IPM": {
-        "_id": "HXR IPM",
+    "hxr_ipm": {
+        "_id": "hxr_ipm",
         "active": true,
         "args": [
             "{{name}}"
@@ -62,17 +62,17 @@
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "name": "HXR IPM",
+        "name": "hxr_ipm",
         "parent": null,
-        "prefix": "HXR IPM",
+        "prefix": "hxr_ipm",
         "screen": null,
         "stand": null,
         "system": null,
         "type": "Device",
         "z": 24.0
     },
-    "HXR Valve": {
-        "_id": "HXR Valve",
+    "hxr_valve": {
+        "_id": "hxr_valve",
         "active": true,
         "args": [
             "{{name}}"
@@ -86,17 +86,17 @@
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "name": "HXR Valve",
+        "name": "hxr_valve",
         "parent": null,
-        "prefix": "HXR Valve",
+        "prefix": "hxr_valve",
         "screen": null,
         "stand": null,
         "system": null,
         "type": "Device",
         "z": 25.0
     },
-    "MEC IPM": {
-        "_id": "MEC IPM",
+    "mec_ipm": {
+        "_id": "mec_ipm",
         "active": true,
         "args": [
             "{{name}}"
@@ -110,17 +110,17 @@
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "name": "MEC IPM",
+        "name": "mec_ipm",
         "parent": null,
-        "prefix": "MEC IPM",
+        "prefix": "mec_ipm",
         "screen": null,
         "stand": null,
         "system": null,
         "type": "Device",
         "z": 24.0
     },
-    "MEC Valve": {
-        "_id": "MEC Valve",
+    "mec_valve": {
+        "_id": "mec_valve",
         "active": true,
         "args": [
             "{{name}}"
@@ -134,17 +134,17 @@
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "name": "MEC Valve",
+        "name": "mec_valve",
         "parent": null,
-        "prefix": "MEC Valve",
+        "prefix": "mec_valve",
         "screen": null,
         "stand": null,
         "system": null,
         "type": "Device",
         "z": 25.0
     },
-    "S2 Stopper": {
-        "_id": "S2 Stopper",
+    "s2_stopper": {
+        "_id": "s2_stopper",
         "active": true,
         "args": [
             "{{name}}"
@@ -158,17 +158,17 @@
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "name": "S2 Stopper",
+        "name": "s2_stopper",
         "parent": null,
-        "prefix": "S2 Stopper",
+        "prefix": "s2_stopper",
         "screen": null,
         "stand": null,
         "system": null,
         "type": "Device",
         "z": 9.0
     },
-    "S4 Stopper": {
-        "_id": "S4 Stopper",
+    "s4_stopper": {
+        "_id": "s4_stopper",
         "active": true,
         "args": [
             "{{name}}"
@@ -182,17 +182,17 @@
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "name": "S4 Stopper",
+        "name": "s4_stopper",
         "parent": null,
-        "prefix": "S4 Stopper",
+        "prefix": "s4_stopper",
         "screen": null,
         "stand": null,
         "system": null,
         "type": "Device",
         "z": 32.0
     },
-    "S5 Stopper": {
-        "_id": "S5 Stopper",
+    "s5_stopper": {
+        "_id": "s5_stopper",
         "active": true,
         "args": [
             "{{name}}"
@@ -206,17 +206,17 @@
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "name": "S5 Stopper",
+        "name": "s5_stopper",
         "parent": null,
-        "prefix": "S5 Stopper",
+        "prefix": "s5_stopper",
         "screen": null,
         "stand": null,
         "system": null,
         "type": "Device",
         "z": 31.0
     },
-    "S6 Stopper": {
-        "_id": "S6 Stopper",
+    "s6_stopper": {
+        "_id": "s6_stopper",
         "active": true,
         "args": [
             "{{name}}"
@@ -230,17 +230,17 @@
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "name": "S6 Stopper",
+        "name": "s6_stopper",
         "parent": null,
-        "prefix": "S6 Stopper",
+        "prefix": "s6_stopper",
         "screen": null,
         "stand": null,
         "system": null,
         "type": "Device",
         "z": 30.0
     },
-    "Tst:Broke": {
-        "_id": "Tst:Broke",
+    "tst_broke": {
+        "_id": "tst_broke",
         "active": true,
         "args": [
             "{{name}}"
@@ -256,15 +256,15 @@
         "macros": null,
         "name": "Broken",
         "parent": null,
-        "prefix": "Tst:Broke",
+        "prefix": "tst_broke",
         "screen": null,
         "stand": null,
         "system": null,
         "type": "Device",
         "z": 3.0
     },
-    "XCS IPM": {
-        "_id": "XCS IPM",
+    "xcs_ipm": {
+        "_id": "xcs_ipm",
         "active": true,
         "args": [
             "{{name}}"
@@ -278,17 +278,17 @@
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "name": "XCS IPM",
+        "name": "xcs_ipm",
         "parent": null,
-        "prefix": "XCS IPM",
+        "prefix": "xcs_ipm",
         "screen": null,
         "stand": null,
         "system": null,
         "type": "Device",
         "z": 21.0
     },
-    "XCS Valve": {
-        "_id": "XCS Valve",
+    "xcs_valve": {
+        "_id": "xcs_valve",
         "active": true,
         "args": [
             "{{name}}"
@@ -302,17 +302,17 @@
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "name": "XCS Valve",
+        "name": "xcs_valve",
         "parent": null,
-        "prefix": "XCS Valve",
+        "prefix": "xcs_valve",
         "screen": null,
         "stand": null,
         "system": null,
         "type": "Device",
         "z": 22.0
     },
-    "XRT IPM": {
-        "_id": "XRT IPM",
+    "xrt_ipm": {
+        "_id": "xrt_ipm",
         "active": true,
         "args": [
             "{{name}}"
@@ -326,17 +326,17 @@
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "name": "XRT IPM",
+        "name": "xrt_ipm",
         "parent": null,
-        "prefix": "XRT IPM",
+        "prefix": "xrt_ipm",
         "screen": null,
         "stand": null,
         "system": null,
         "type": "Device",
         "z": 15.0
     },
-    "XRT M1H": {
-        "_id": "XRT M1H",
+    "xrt_m1h": {
+        "_id": "xrt_m1h",
         "active": true,
         "args": [
             "{{name}}"
@@ -359,17 +359,17 @@
         },
         "last_edit": "Tue Feb 13 09:37:21 2018",
         "macros": null,
-        "name": "XRT M1H",
+        "name": "xrt_m1h",
         "parent": null,
-        "prefix": "XRT M1H",
+        "prefix": "xrt_m1h",
         "screen": null,
         "stand": null,
         "system": null,
         "type": "Device",
         "z": 16.0
     },
-    "XRT M2H": {
-        "_id": "XRT M2H",
+    "xrt_m2h": {
+        "_id": "xrt_m2h",
         "active": true,
         "args": [
             "{{name}}"
@@ -392,17 +392,17 @@
         },
         "last_edit": "Tue Feb 13 09:37:46 2018",
         "macros": null,
-        "name": "XRT M2H",
+        "name": "xrt_m2h",
         "parent": null,
-        "prefix": "XRT M2H",
+        "prefix": "xrt_m2h",
         "screen": null,
         "stand": null,
         "system": null,
         "type": "Device",
         "z": 20.0
     },
-    "XRT Valve": {
-        "_id": "XRT Valve",
+    "xrt_valve": {
+        "_id": "xrt_valve",
         "active": true,
         "args": [
             "{{name}}"
@@ -416,9 +416,9 @@
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
         "macros": null,
-        "name": "XRT Valve",
+        "name": "xrt_valve",
         "parent": null,
-        "prefix": "XRT Valve",
+        "prefix": "xrt_valve",
         "screen": null,
         "stand": null,
         "system": null,
