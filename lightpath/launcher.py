@@ -4,8 +4,9 @@ import logging
 import coloredlogs
 
 import happi
-import lightpath
 import pydm
+
+import lightpath
 from lightpath.ui import LightApp
 
 DEVICE_CONFIG = '/reg/g/pcds/pyps/apps/hutch-python/device_config/db.json'
