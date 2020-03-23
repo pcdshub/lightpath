@@ -13,7 +13,8 @@ DEVICE_CONFIG = '/reg/g/pcds/pyps/apps/hutch-python/device_config/db.json'
 
 logger = logging.getLogger('lightpath')
 
-def main(db, hutches):
+
+def lightpath(db, hutches):
     """
     Open the lightpath user interface for a configuration file
 
@@ -34,7 +35,7 @@ def main(db, hutches):
     app.exec_()
 
 
-if __name__ == '__main__':
+def main():
     # Create ArgumentParser
     parser = argparse.ArgumentParser(description='Launch the Lightpath UI')
     parser.add_argument('--db', dest='db', type=str,
@@ -61,7 +62,11 @@ if __name__ == '__main__':
         if args.debug:
             level = 'DEBUG'
         else:
-            level='INFO'
+            level = 'INFO'
         coloredlogs.install(level=level, logger=logger,
                             fmt='[%(asctime)s] - %(levelname)s -  %(message)s')
         main(args.db or DEVICE_CONFIG, hutches)
+
+
+if __name__ == '__main__':
+    main()
