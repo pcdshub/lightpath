@@ -15,13 +15,13 @@ requirements:
     run:
       - python {{PY_VER}}*,>=3
       - coloredlogs
-      - happi
+      - happi >=1.5.0
       - numpy
       - ophyd
       - pcdsdevices
       - prettytable
       - pydm
-      - pyqt >=5 
+      - pyqt >=5
       - qtawesome
       - qtpy
       - typhos
