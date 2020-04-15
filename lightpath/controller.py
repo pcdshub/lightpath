@@ -11,8 +11,6 @@ where the beam is and what the state of the MPS system is currently.
 import math
 import logging
 
-from happi.loader import from_container
-
 from .path import BeamPath
 from .config import beamlines
 
