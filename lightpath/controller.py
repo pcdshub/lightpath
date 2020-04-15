@@ -11,8 +11,6 @@ where the beam is and what the state of the MPS system is currently.
 import math
 import logging
 
-from happi.loader import from_container
-
 from .path import BeamPath
 from .config import beamlines
 
@@ -79,21 +77,21 @@ class LightController:
             end = info.get('end', math.inf)
             logger.debug("Searching for devices on line %s between %s and %s",
                          line, start, end)
-            containers = self.client.search(beamline=line, active=True,
-                                            start=start, end=end)
+            results = self.client.search_range(key='z', start=start, end=end,
+                                               beamline=line, active=True)
             # Ensure we actually found valid devices
-            if not containers:
+            if not results:
                 logger.error("No valid beamline devices found for %s", line)
                 continue
             # Load all the devices we found
-            logger.debug("Found %s devices along %s", len(containers), line)
-            for c in containers:
+            logger.debug("Found %s devices along %s", len(results), line)
+            for result in results:
                 try:
-                    dev = from_container(c)
+                    dev = result.get()
                     devices.append(dev)
                 except Exception:
-                    logger.exception("Failure loading %s ...", c.name)
-                    self.containers.append(c)
+                    logger.exception("Failure loading %s ...", result["name"])
+                    self.containers.append(result.device)
         # Create the beamline from the loaded devices
         bp = BeamPath(*devices, name=line)
         self.beamlines[line] = bp
