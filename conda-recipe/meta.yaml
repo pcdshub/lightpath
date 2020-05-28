@@ -15,16 +15,16 @@ requirements:
     run:
       - python {{PY_VER}}*,>=3
       - coloredlogs
-      - happi >=1.5.0
+      - happi >=1.6.0
       - numpy
       - ophyd
-      - pcdsdevices
+      - pcdsdevices >=2.6.0
       - prettytable
       - pydm
       - pyqt >=5
       - qtawesome
       - qtpy
-      - typhos
+      - typhos >=1.0.0
 
 test:
     imports:

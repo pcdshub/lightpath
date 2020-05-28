@@ -5,12 +5,14 @@ import logging
 import os.path
 
 from pydm import Display
+from ophyd import Kind
 from qtpy.QtCore import Signal as pyqtSignal, Qt
 from qtpy.QtGui import QBrush, QColor, QFont
 from qtpy.QtWidgets import QLabel
 import qtawesome as qta
-from typhos.signal import signal_widget
-from typhos.utils import clean_name, grab_kind, is_signal_ro
+from typhos.utils import (clean_name, get_all_signals_from_device,
+                          is_signal_ro)
+from typhos.widgets import create_signal_widget
 
 from lightpath.path import find_device_state, DeviceState
 
@@ -130,25 +132,31 @@ class LightRow(InactiveRow):
         except Exception:
             logger.error("Widget is unable to subscribe to device %s",
                          device.name)
+
         # Add hints for ophyd Device
-        hints = list(grab_kind(device, 'hinted').values())
-        # Only allow certain number of hints for space constraints
-        if len(hints) > self.MAX_HINTS:
-            logger.debug("Device %r has a number of hints exceeding %r, "
-                         "not all will be shown", device.name, self.MAX_HINTS)
-            hints = hints[:self.MAX_HINTS]
+        def hinted_filter(walk):
+            return walk.item.kind == Kind.hinted
+
+        hinted_signals = get_all_signals_from_device(device,
+                                                     filter_by=hinted_filter)
+        if len(hinted_signals) >= self.MAX_HINTS:
+            logger.debug("Device %r has a number of hints exceeding "
+                         "%r, not all will be shown",
+                         device.name, self.MAX_HINTS)
+            hinted_signals = hinted_signals[:self.MAX_HINTS]
+
         # Add each hint
-        for kind_item in hints:
+        for signal in hinted_signals:
             try:
-                self.add_signal(kind_item.signal)
+                self.add_signal(signal)
             except Exception:
                 logger.exception("Unable to add widget for %r",
-                                 kind_item.signal.name)
+                                 signal.name)
 
     def add_signal(self, signal):
         """Add a signal to the widget display"""
         # Create control widget
-        widget = signal_widget(signal, read_only=is_signal_ro(signal))
+        widget = create_signal_widget(signal, read_only=is_signal_ro(signal))
         # Create label widget
         label = QLabel(self)
         bold_font = QFont()

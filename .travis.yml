@@ -51,7 +51,7 @@ install:
   - conda update -q conda conda-build
   - conda config --add channels $PCDS_CHANNEL 
   - conda config --append channels pcds-tag
-  - conda config --append channels conda-forge
+  - conda config --add channels conda-forge
   # Useful for debugging any issues with conda
   - conda info -a
   - conda build -q conda-recipe --python=$TRAVIS_PYTHON_VERSION --output-folder bld-dir
