@@ -143,7 +143,7 @@ class LightRow(InactiveRow):
             logger.debug("Device %r has a number of hints exceeding "
                          "%r, not all will be shown",
                          device.name, self.MAX_HINTS)
-            hinted_signals = hinted_signals[:MAX_HINTS]
+            hinted_signals = hinted_signals[:self.MAX_HINTS]
 
         # Add each hint
         for signal in hinted_signals:
