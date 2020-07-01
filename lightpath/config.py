@@ -4,10 +4,16 @@ Configuration for LCLS beamlines
 post_xrtm2h = 817.2
 xpp_lodcm = 781.2
 
-beamlines = {'XPP': {'HXD': {'end': xpp_lodcm}},
-             'XCS': {'HXD': {}},
-             'PBT': {'HXD': {'end': post_xrtm2h},
+beamlines = {'XPP': {'LFE': {},
+                     'HXD': {'end': xpp_lodcm}},
+             'XCS': {'LFE': {},
+                     'HXD': {}},
+             'PBT': {'LFE': {},
+                     'HXD': {'end': post_xrtm2h},
                      'XCS': {}},
-             'MFX': {'HXD': {'end': post_xrtm2h}},
-             'CXI': {'HXD': {}},
-             'MEC': {'HXD': {'end': post_xrtm2h}}}
+             'MFX': {'LFE': {},
+                     'HXD': {'end': post_xrtm2h}},
+             'CXI': {'LFE': {},
+                     'HXD': {}},
+             'MEC': {'LFE': {},
+                     'HXD': {'end': post_xrtm2h}}}
