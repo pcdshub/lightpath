@@ -78,7 +78,8 @@ class LightController:
             logger.debug("Searching for devices on line %s between %s and %s",
                          line, start, end)
             results = self.client.search_range(key='z', start=start, end=end,
-                                               beamline=line, active=True)
+                                               beamline=line, active=True,
+                                               lightpath=True)
             # Ensure we actually found valid devices
             if not results:
                 logger.error("No valid beamline devices found for %s", line)
