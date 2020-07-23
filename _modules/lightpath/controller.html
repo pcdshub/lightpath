@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>lightpath.controller &mdash; LCLS Lightpath 0.6.3+2.g415410d documentation</title>
+  <title>lightpath.controller &mdash; LCLS Lightpath 0.6.4+8.g9bc521e documentation</title>
   
 
   
@@ -59,7 +59,7 @@
             
             
               <div class="version">
-                0.6.3+2.g415410d
+                0.6.4+8.g9bc521e
               </div>
             
           
@@ -233,7 +233,8 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Searching for devices on line </span><span class="si">%s</span><span class="s2"> between </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
                          <span class="n">line</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
             <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">search_range</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
-                                               <span class="n">beamline</span><span class="o">=</span><span class="n">line</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                                               <span class="n">beamline</span><span class="o">=</span><span class="n">line</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                               <span class="n">lightpath</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="c1"># Ensure we actually found valid devices</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">results</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No valid beamline devices found for </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
