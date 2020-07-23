@@ -24,7 +24,7 @@ def main(db, hutches):
     """
     logger.info("Launching LCLS Lightpath ...")
     # Create PyDM Application
-    app = pydm.PyDMApplication()
+    app = pydm.PyDMApplication(use_main_window=False)
     # Create Lightpath UI from provided database
     lc = lightpath.LightController(happi.Client(path=db),
                                    endstations=hutches)

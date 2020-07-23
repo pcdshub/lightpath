@@ -6,7 +6,7 @@ import os.path
 
 from pydm import Display
 from ophyd import Kind
-from qtpy.QtCore import Signal as pyqtSignal, Qt
+from qtpy.QtCore import Signal, Qt
 from qtpy.QtGui import QBrush, QColor, QFont
 from qtpy.QtWidgets import QLabel
 import qtawesome as qta
@@ -120,13 +120,16 @@ class LightRow(InactiveRow):
     parent : QObject, optional
     """
     MAX_HINTS = 2
+    device_updated = Signal()
 
     def __init__(self, device, parent=None):
         super().__init__(device, parent=parent)
+        self.device_updated.connect(self.update_state)
+
         # Subscribe device to state changes
         try:
             # Wait for later to update widget
-            self.device.subscribe(self.update_state,
+            self.device.subscribe(self._update_from_device,
                                   event_type=self.device.SUB_STATE,
                                   run=False)
         except Exception:
@@ -152,6 +155,9 @@ class LightRow(InactiveRow):
             except Exception:
                 logger.exception("Unable to add widget for %r",
                                  signal.name)
+
+    def _update_from_device(self, *args, **kwargs):
+        self.device_updated.emit()
 
     def add_signal(self, signal):
         """Add a signal to the widget display"""
@@ -187,7 +193,8 @@ class LightRow(InactiveRow):
         self.state_label.setText(self.last_state.name)
         color = state_colors[self.last_state.value]
         style_color = to_stylesheet_color(color)
-        self.state_label.setStyleSheet("QLabel {color: %s}" % style_color)
+        style_sheet = "QLabel {color: %s}" % style_color
+        self.state_label.setStyleSheet(style_sheet)
         self.device_drawing.setColor(color)
 
     def update_light(self, _in, _out):
@@ -219,7 +226,7 @@ class DeviceWidget(QLabel):
     device: ophyd.Device
         Object that will have a drawing created for it.
     """
-    clicked = pyqtSignal()
+    clicked = Signal()
 
     def __init__(self, device, parent=None):
         super().__init__(parent=parent)
@@ -247,7 +254,7 @@ class DeviceWidget(QLabel):
         self.setPixmap(icon.pixmap(self.width(), self.height()))
 
     def mousePressEvent(self, evt):
-        """Catch mousePressEvent to emit "`clicked`" pyqtSignal"""
+        """Catch mousePressEvent to emit "`clicked`" Signal"""
         # Push MouseEvent through
         super().mousePressEvent(evt)
         # Emit click
