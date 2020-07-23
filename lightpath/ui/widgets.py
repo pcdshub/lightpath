@@ -120,13 +120,16 @@ class LightRow(InactiveRow):
     parent : QObject, optional
     """
     MAX_HINTS = 2
+    device_updated = pyqtSignal()
 
     def __init__(self, device, parent=None):
         super().__init__(device, parent=parent)
+        self.device_updated.connect(self.update_state)
+
         # Subscribe device to state changes
         try:
             # Wait for later to update widget
-            self.device.subscribe(self.update_state,
+            self.device.subscribe(self._update_from_device,
                                   event_type=self.device.SUB_STATE,
                                   run=False)
         except Exception:
@@ -152,6 +155,9 @@ class LightRow(InactiveRow):
             except Exception:
                 logger.exception("Unable to add widget for %r",
                                  signal.name)
+
+    def _update_from_device(self, *args, **kwargs):
+        self.device_updated.emit()
 
     def add_signal(self, signal):
         """Add a signal to the widget display"""
