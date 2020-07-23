@@ -6,7 +6,7 @@ import os.path
 
 from pydm import Display
 from ophyd import Kind
-from qtpy.QtCore import Signal as pyqtSignal, Qt
+from qtpy.QtCore import Signal, Qt
 from qtpy.QtGui import QBrush, QColor, QFont
 from qtpy.QtWidgets import QLabel
 import qtawesome as qta
@@ -120,7 +120,7 @@ class LightRow(InactiveRow):
     parent : QObject, optional
     """
     MAX_HINTS = 2
-    device_updated = pyqtSignal()
+    device_updated = Signal()
 
     def __init__(self, device, parent=None):
         super().__init__(device, parent=parent)
@@ -226,7 +226,7 @@ class DeviceWidget(QLabel):
     device: ophyd.Device
         Object that will have a drawing created for it.
     """
-    clicked = pyqtSignal()
+    clicked = Signal()
 
     def __init__(self, device, parent=None):
         super().__init__(parent=parent)
@@ -254,7 +254,7 @@ class DeviceWidget(QLabel):
         self.setPixmap(icon.pixmap(self.width(), self.height()))
 
     def mousePressEvent(self, evt):
-        """Catch mousePressEvent to emit "`clicked`" pyqtSignal"""
+        """Catch mousePressEvent to emit "`clicked`" Signal"""
         # Push MouseEvent through
         super().mousePressEvent(evt)
         # Emit click
