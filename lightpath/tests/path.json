@@ -13,6 +13,7 @@
             "z": "{{z}}"
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
+        "lightpath": true,
         "macros": null,
         "name": "fee_valve1",
         "parent": null,
@@ -37,6 +38,7 @@
             "z": "{{z}}"
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
+        "lightpath": true,
         "macros": null,
         "name": "fee_valve2",
         "parent": null,
@@ -61,6 +63,7 @@
             "z": "{{z}}"
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
+        "lightpath": true,
         "macros": null,
         "name": "hxr_ipm",
         "parent": null,
@@ -85,6 +88,7 @@
             "z": "{{z}}"
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
+        "lightpath": true,
         "macros": null,
         "name": "hxr_valve",
         "parent": null,
@@ -109,6 +113,7 @@
             "z": "{{z}}"
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
+        "lightpath": true,
         "macros": null,
         "name": "mec_ipm",
         "parent": null,
@@ -133,6 +138,7 @@
             "z": "{{z}}"
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
+        "lightpath": true,
         "macros": null,
         "name": "mec_valve",
         "parent": null,
@@ -157,6 +163,7 @@
             "z": "{{z}}"
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
+        "lightpath": true,
         "macros": null,
         "name": "s2_stopper",
         "parent": null,
@@ -181,6 +188,7 @@
             "z": "{{z}}"
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
+        "lightpath": true,
         "macros": null,
         "name": "s4_stopper",
         "parent": null,
@@ -205,6 +213,7 @@
             "z": "{{z}}"
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
+        "lightpath": true,
         "macros": null,
         "name": "s5_stopper",
         "parent": null,
@@ -229,6 +238,7 @@
             "z": "{{z}}"
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
+        "lightpath": true,
         "macros": null,
         "name": "s6_stopper",
         "parent": null,
@@ -253,6 +263,7 @@
             "z": "{{z}}"
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
+        "lightpath": true,
         "macros": null,
         "name": "Broken",
         "parent": null,
@@ -277,6 +288,7 @@
             "z": "{{z}}"
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
+        "lightpath": true,
         "macros": null,
         "name": "xcs_ipm",
         "parent": null,
@@ -301,6 +313,7 @@
             "z": "{{z}}"
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
+        "lightpath": true,
         "macros": null,
         "name": "xcs_valve",
         "parent": null,
@@ -325,6 +338,7 @@
             "z": "{{z}}"
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
+        "lightpath": true,
         "macros": null,
         "name": "xrt_ipm",
         "parent": null,
@@ -358,6 +372,7 @@
             "z": "{{z}}"
         },
         "last_edit": "Tue Feb 13 09:37:21 2018",
+        "lightpath": true,
         "macros": null,
         "name": "xrt_m1h",
         "parent": null,
@@ -391,6 +406,7 @@
             "z": "{{z}}"
         },
         "last_edit": "Tue Feb 13 09:37:46 2018",
+        "lightpath": true,
         "macros": null,
         "name": "xrt_m2h",
         "parent": null,
@@ -415,6 +431,7 @@
             "z": "{{z}}"
         },
         "last_edit": "Tue Feb 13 09:35:09 2018",
+        "lightpath": true,
         "macros": null,
         "name": "xrt_valve",
         "parent": null,
