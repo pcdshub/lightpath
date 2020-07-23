@@ -193,7 +193,8 @@ class LightRow(InactiveRow):
         self.state_label.setText(self.last_state.name)
         color = state_colors[self.last_state.value]
         style_color = to_stylesheet_color(color)
-        self.state_label.setStyleSheet("QLabel {color: %s}" % style_color)
+        style_sheet = "QLabel {color: %s}" % style_color
+        self.state_label.setStyleSheet(style_sheet)
         self.device_drawing.setColor(color)
 
     def update_light(self, _in, _out):
