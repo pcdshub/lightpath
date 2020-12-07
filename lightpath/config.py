@@ -18,4 +18,5 @@ beamlines = {'XPP': {'LFE': {},
              'MEC': {'LFE': {},
                      'HXD': {'end': post_xrtm2h}},
              'TMO': {'KFE': {}},
-            }
+             'RIX': {'KFE': {}},
+             }
