@@ -1,34 +1,37 @@
 {% set data = load_setup_py_data() %}
 
 package:
-    name    : lightpath
-    version : {{ data.get('version') }}
+  name: lightpath
+  version: {{ data.get('version') }}
 
 source:
-    path: ..
+  path: ..
+
+build:
+  number: 0
+  noarch: python
 
 requirements:
-    build:
-       - python {{PY_VER}}*,>=3
-       - setuptools
-
-    run:
-      - python {{PY_VER}}*,>=3
-      - coloredlogs
-      - happi >=1.6.0
-      - numpy
-      - ophyd
-      - pcdsdevices >=3.4.0
-      - prettytable
-      - pydm
-      - pyqt >=5
-      - qtawesome
-      - qtpy
-      - typhos >=1.0.0
+  build:
+    - python >=3.6
+    - setuptools
+  run:
+    - python >=3.6
+    - coloredlogs
+    - happi >=1.6.0
+    - numpy
+    - ophyd
+    - pcdsdevices >=3.4.0
+    - prettytable
+    - pydm
+    - pyqt >=5
+    - qtawesome
+    - qtpy
+    - typhos >=1.0.0
 
 test:
-    imports:
-      - lightpath
+  imports:
+    - lightpath
 
 about:
   home: https://github.com/pcdshub/lightpath

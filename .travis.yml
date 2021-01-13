@@ -1,95 +1,25 @@
-language: python
-dist: xenial
-sudo: false
-services:
-    - xvfb
+version: ~> 1.0
 
 env:
   global:
     - OFFICIAL_REPO="pcdshub/lightpath"
     - secure: "TsbDiFJe8vTjJCZJowjVkWFpBd2w+gCr+56F4TUlhLFN9aZvaUwyEEiWx3KWzFqYndUTLZsbZNSmekE63w4ZUGKhNa/DALxKo2Pt5esKfIWKoiiTM8YI39x3luiS8eiJ3t/XrC5R28MnH5dd8rCl+RaUkT/nJQcjz3YLl4bjbSnbr18HhsodmydW1zvFX8Jyxv42j8wyc2P0dZkX+SuaEZ0lsVH4QCK0seIf8f4uE6t/C1VuFWBPS+q5t3y2FwGQpH3CpAI5MEyHsnyCyQaP4khVQJRnjnSQ7M4oqy0t3WQYwPXSvwxZdswGmFLFru31GDpYVYcOFYtwOvF5NBr9Pg2yViLZOEY9niUgz0MEe6W+H2SDyGyZcRcSLciiK43jU0tqNEXOo/AN9FSup9FabmaBihxMbKYuKASsRW5/MelRJ+u6q2hun2+XUXd6VxRdTuIsqStR7q237ZTyTyiixH3zaeIpNRffPAg2u1SyLmLMVUkF+dsPtaQgWudBIjvSdSJFD3ZAWMnhC1xz9S4lLZqvHwWWp8BpCDkm8SsQkADvA6Y9j62shOtozv89qnSwaJB2MKNASireoOROCMxRSLB1N9BTDjTcQE0qC8U7JI/gRep+hVLannF8LpLksyrUn25jFE2diNvzvxbjYN6RLSuUiDhHieDFT7iKM1DUyL0=" 
 
-services:
-  - xvfb
+    - DOCTR_VERSIONS_MENU="1"
+    - DOCS_REQUIREMENTS="dev-requirements.txt"
+    - PYTHON_LINT_OPTIONS="lightpath"
 
-addons:
-  apt:
-    packages:
-      - herbstluftwm
-      - libxkbcommon-x11-0
+    - CONDA_PACKAGE="lightpath"
+    - CONDA_RECIPE_FOLDER="conda-recipe"
+    - CONDA_EXTRAS="pip"
+    - CONDA_REQUIREMENTS="dev-requirements.txt"
 
-matrix:
-  include:
-      - python: 3.6
-        env:
-           - BUILD_DOCS=1
-           - PCDS_CHANNEL=pcds-tag
-      - python: 3.6
-        env:
-           - PCDS_CHANNEL=pcds-dev
-      - python: 3.7
-        env:
-           - PCDS_CHANNEL=pcds-tag
-      - python: 3.7
-        env:
-           - PCDS_CHANNEL=pcds-dev
+    - PIP_EXTRAS="PyQt5"
+
+jobs:
   allow_failures:
-      - python: 3.7
-        env:
-           - PCDS_CHANNEL=pcds-tag
-      - python: 3.7
-        env:
-           - PCDS_CHANNEL=pcds-dev
+    - name: "Python 3.6 - PIP"
 
-install:
-  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda install conda-build anaconda-client
-  - conda update -q conda conda-build
-  - conda config --add channels $PCDS_CHANNEL 
-  - conda config --append channels pcds-tag
-  - conda config --add channels conda-forge
-  # Useful for debugging any issues with conda
-  - conda info -a
-  - conda build -q conda-recipe --python=$TRAVIS_PYTHON_VERSION --output-folder bld-dir
-  - conda config --add channels "file://`pwd`/bld-dir"
-  # Create test environment
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION lightpath --file dev-requirements.txt
-  - source activate test-environment
-
-before_script:
-  # Run windows manager
-  - "herbstluftwm &"
-  - sleep 1
-
-script:
-  - coverage run run_tests.py
-  - coverage report -m
-  - flake8 lightpath
-  - set -e
-  # Build docs.
-  - |
-    if [[ -n "$DOCTR_DEPLOY_ENCRYPTION_KEY_PCDSHUB_LIGHTPATH" && $BUILD_DOCS ]]; then
-      pushd docs
-      make html
-      popd
-      # Publish docs.
-      doctr deploy . --built-docs docs/build/html --deploy-branch-name gh-pages
-    fi
-
-after_success:
-  - codecov
-  - |
-    if [[ $TRAVIS_PULL_REQUEST == false && $TRAVIS_REPO_SLUG == $OFFICIAL_REPO ]]; then
-      if [[ $TRAVIS_BRANCH == $TRAVIS_TAG  && $TRAVIS_TAG != '' && $PCDS_CHANNEL == 'pcds-tag' ]]; then
-        export ANACONDA_API_TOKEN=$CONDA_UPLOAD_TOKEN_TAG
-        anaconda upload bld-dir/linux-64/*.tar.bz2
-      fi
-      if [[ $TRAVIS_BRANCH == 'master' && $TRAVIS_TAG == ''  && $PCDS_CHANNEL == 'pcds-dev' ]]; then
-        export ANACONDA_API_TOKEN=$CONDA_UPLOAD_TOKEN_DEV
-        anaconda upload bld-dir/linux-64/*.tar.bz2
-      fi
-    fi
+import:
+  - pcdshub/pcds-ci-helpers:travis/shared_configs/setup-env-ui.yml
+  - pcdshub/pcds-ci-helpers:travis/shared_configs/standard-python-conda.yml
