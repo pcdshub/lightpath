@@ -1,9 +1,7 @@
 import argparse
 import logging
-import sys
 
 import coloredlogs
-
 import happi
 import pydm
 
