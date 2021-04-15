@@ -4,6 +4,7 @@ import logging
 import coloredlogs
 import happi
 import pydm
+from qtpy.QtCore import Qt, QCoreApplication
 
 import lightpath
 from lightpath.ui import LightApp
@@ -24,6 +25,8 @@ def create_arg_parser():
                         help='Experimental Endstation to show the Lightpath')
     parser.add_argument('--debug', dest='debug', action='store_true',
                         help='Show the DEBUG logging stream')
+    parser.add_argument('--high-dpi', dest='high_dpi', action='store_true',
+                        help='Enable high dpi scaling')
     return parser
 
 
@@ -64,4 +67,9 @@ def entrypoint():
     level = 'DEBUG' if args.debug else 'INFO'
     coloredlogs.install(level=level, logger=logger,
                         fmt='[%(asctime)s] - %(levelname)s -  %(message)s')
+
+    if args.high_dpi:
+        logger.info('Activating high dpi mode')
+        QCoreApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+
     return main(args.db or DEVICE_CONFIG, hutches)
