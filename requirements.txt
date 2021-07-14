@@ -5,7 +5,7 @@ ophyd
 pcdsdevices>=3.4.0
 prettytable
 pydm
-pyqt>=5
+PyQt5
 qtawesome
 qtpy
 typhos>=1.0.0
