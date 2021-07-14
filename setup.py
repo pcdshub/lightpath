@@ -1,8 +1,12 @@
 import versioneer
 from setuptools import setup, find_packages
 
-with open("requirements.txt") as f:
-    requirements = f.read().splitlines()
+with open("requirements.txt", "rt") as fp:
+    install_requires = [
+        line for line in fp.read().splitlines()
+        if line and not line.startswith("#")
+    ]
+
 
 setup(
     name="lightpath",
@@ -20,4 +24,6 @@ setup(
             'lightpath = lightpath.__main__:entrypoint',
         ]
     },
+    install_requires=install_requires,
+    python_requires=">=3.6",
 )
