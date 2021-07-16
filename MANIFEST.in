@@ -1,3 +1,6 @@
-include versioneer.py
-include lightpath/ui/*.ui
 include LICENSE.md
+include lightpath/ui/*.ui
+include versioneer.py
+
+include dev-requirements.txt
+include requirements.txt

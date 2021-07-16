@@ -1,11 +1,11 @@
 coloredlogs
-happi
+happi>=1.6.0
 numpy
 ophyd
-pcdsdevices
+pcdsdevices>=3.4.0
 prettytable
 pydm
-pyqt
+PyQt5
 qtawesome
 qtpy
-typhos
+typhos>=1.0.0
