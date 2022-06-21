@@ -24,7 +24,7 @@ requirements:
     - pcdsdevices >=3.4.0
     - prettytable
     - pydm
-    - pyqt >=5
+    - pyqt >=5,<5.15
     - qtawesome
     - qtpy
     - typhos >=1.0.0
