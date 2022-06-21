@@ -16,7 +16,7 @@ affecting the beam.
 import enum
 import logging
 import math
-from collections import Iterable
+from collections.abc import Iterable
 
 from ophyd.ophydobj import OphydObject
 from ophyd.status import wait as status_wait
