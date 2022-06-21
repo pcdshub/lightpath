@@ -1,8 +1,9 @@
 import io
-
 from unittest.mock import Mock
+
 from lightpath import BeamPath
-from lightpath.path import find_device_state, DeviceState
+from lightpath.path import DeviceState, find_device_state
+
 from .conftest import Crystal, Status
 
 

@@ -8,11 +8,11 @@ beampath will include devices in both the FEE and the XRT. The
 :class:`.LightController` handles this logic as well as a basic overview of
 where the beam is and what the state of the MPS system is currently.
 """
-import math
 import logging
+import math
 
-from .path import BeamPath
 from .config import beamlines
+from .path import BeamPath
 
 logger = logging.getLogger(__name__)
 

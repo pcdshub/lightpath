@@ -1,10 +1,11 @@
-import os.path
 import logging
+import os.path
 from types import SimpleNamespace
 
 import happi
 import pytest
-from ophyd import Device, Kind, Component as Cpt
+from ophyd import Component as Cpt
+from ophyd import Device, Kind
 from ophyd.signal import AttributeSignal
 from ophyd.status import DeviceStatus
 from ophyd.utils import DisconnectedError
