@@ -22,7 +22,7 @@ themselves or using the :meth:`.BeamPath.show_devices`
 .. ipython:: python
 
    path.show_devices()
-   
+
    path.devices
 
 
@@ -40,13 +40,13 @@ difference between the two is determined by comparing the devices
    path.cleared
 
    path.five.insert()
-   
+
    path.six.insert()
 
    path.cleared
 
    path.incident_devices
-   
+
    path.blocking_devices
 
 
@@ -74,7 +74,7 @@ you actually want to remove.
    path.incident_devices
 
    path.clear(passive=True)
-   
+
    path.incident_devices
 
 
@@ -96,9 +96,7 @@ their list of destinations. After this split, these optics are ignored so that
 each branching device only has to list the possible destinations that come
 immediattely after it. For example, the **XPP** LODCM should not have to report
 that it is ready to deliver beam to every possible **FEH** destination, only
-whether it is inserted for XPP operations or out of the **HXR** beampath. 
+whether it is inserted for XPP operations or out of the **HXR** beampath.
 
 MPS Information
 ^^^^^^^^^^^^^^^
-
-

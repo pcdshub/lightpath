@@ -1,11 +1,11 @@
 from unittest.mock import Mock
 
-from ophyd import Device
 import pytest
+from ophyd import Device
 
 import lightpath.ui
-from lightpath.ui.widgets import (state_colors, to_stylesheet_color,
-                                  symbol_for_device)
+from lightpath.ui.widgets import (state_colors, symbol_for_device,
+                                  to_stylesheet_color)
 
 
 @pytest.fixture(scope='function')

@@ -13,18 +13,17 @@ the path only knows the state of the devices it contains, so certain methods
 might not return an accurate representation of reality if an upstream device is
 affecting the beam.
 """
-import math
 import enum
 import logging
-from collections import Iterable
+import math
+from collections.abc import Iterable
 
-from prettytable import PrettyTable
 from ophyd.ophydobj import OphydObject
 from ophyd.status import wait as status_wait
 from ophyd.utils import DisconnectedError
+from prettytable import PrettyTable
 
 from .errors import CoordinateError
-
 
 logger = logging.getLogger(__name__)
 

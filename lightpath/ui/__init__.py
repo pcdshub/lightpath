@@ -1,2 +1,2 @@
-from .widgets import LightRow  # noqa
 from .gui import LightApp  # noqa
+from .widgets import LightRow  # noqa

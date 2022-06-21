@@ -4,17 +4,16 @@ Definitions for Lightpath Widgets
 import logging
 import os.path
 
-from pydm import Display
+import qtawesome as qta
 from ophyd import Kind
-from qtpy.QtCore import Signal, Qt
+from pydm import Display
+from qtpy.QtCore import Qt, Signal
 from qtpy.QtGui import QBrush, QColor, QFont
 from qtpy.QtWidgets import QLabel
-import qtawesome as qta
-from typhos.utils import (clean_name, get_all_signals_from_device,
-                          is_signal_ro)
+from typhos.utils import clean_name, get_all_signals_from_device, is_signal_ro
 from typhos.widgets import create_signal_widget
 
-from lightpath.path import find_device_state, DeviceState
+from lightpath.path import DeviceState, find_device_state
 
 logger = logging.getLogger(__name__)
 

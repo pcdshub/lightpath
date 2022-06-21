@@ -1,21 +1,23 @@
 """
 Full Application for Lightpath
 """
-from functools import partial
 import logging
-import threading
 import os.path
+import threading
+from functools import partial
 
 import numpy as np
 import pcdsdevices.device_types as dtypes
+import typhos
 from pcdsdevices.valve import PPSStopper
 from pydm import Display
-from qtpy.QtCore import Slot as pyqtSlot, Qt
-from qtpy.QtWidgets import QHBoxLayout, QGridLayout, QCheckBox
-import typhos
+from qtpy.QtCore import Qt
+from qtpy.QtCore import Slot as pyqtSlot
+from qtpy.QtWidgets import QCheckBox, QGridLayout, QHBoxLayout
 from typhos import TyphosDeviceDisplay
 
 from lightpath.path import DeviceState
+
 from .widgets import LightRow
 
 logger = logging.getLogger(__name__)

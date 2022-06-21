@@ -1,8 +1,8 @@
-from unittest.mock import Mock
 from distutils.spawn import find_executable
+from unittest.mock import Mock
 
-from lightpath.ui import LightApp
 from lightpath.controller import LightController
+from lightpath.ui import LightApp
 
 
 def test_app_buttons(lcls_client, qtbot):

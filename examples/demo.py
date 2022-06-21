@@ -15,23 +15,23 @@ import pydm
 # Module #
 ##########
 import lightpath.tests
-from lightpath.ui import LightApp
 from lightpath.controller import LightController
+from lightpath.ui import LightApp
 
 logger = logging.getLogger('lightpath')
 
 
 def main():
-    #Gather devices
+    # Gather devices
     cntrl = LightController(lightpath.tests.lcls_client())
-    #Create Application
+    # Create Application
     app = pydm.PyDMApplication()
-    #Create Lightpath
+    # Create Lightpath
     light = LightApp(cntrl)
     light.show()
-    #Execute 
+    # Execute
     app.exec_()
+
 
 if __name__ == '__main__':
     main()
-
