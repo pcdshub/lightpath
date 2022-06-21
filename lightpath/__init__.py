@@ -1,7 +1,7 @@
-__all__ = ['device']
+__all__ = ['LightController', 'BeamPath']
 
 from . import _version
-from .controller import LightController  # noqa
-from .path import BeamPath  # noqa
+from .controller import LightController
+from .path import BeamPath
 
 __version__ = _version.get_versions()['version']
