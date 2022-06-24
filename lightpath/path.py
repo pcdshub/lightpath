@@ -17,7 +17,11 @@ import enum
 import logging
 import math
 from collections.abc import Iterable
+from typing import List, Optional
 
+import networkx as nx
+from happi import SearchResult
+from networkx import DiGraph
 from ophyd.ophydobj import OphydObject
 from ophyd.status import wait as status_wait
 from ophyd.utils import DisconnectedError
@@ -83,7 +87,8 @@ def find_device_state(device):
     """
     # Gather device information
     try:
-        _in, _out = device.inserted, device.removed
+        status = device.get_lightpath_status()
+        _in, _out = status.inserted, status.removed
         logger.debug("Device %s reporting; IN=%s, OUT=%s",
                      device.name, _in, _out)
     # Check if this was an error with an EPICS connection
@@ -146,7 +151,7 @@ class BeamPath(OphydObject):
     # Transmission setting
     minimum_transmission = 0.1
 
-    def __init__(self, *devices, name=None):
+    def __init__(self, *devices: Optional[OphydObject], name: str = None):
         super().__init__(name=name)
         self.devices = devices
         self._has_subscribed = False
@@ -175,7 +180,8 @@ class BeamPath(OphydObject):
         """
         Branching devices along the path
         """
-        return [d for d in self.devices if getattr(d, 'branches', False)]
+        return [d for d in self.devices
+                if len(getattr(d, 'output_branches', ['1'])) > 1]
 
     @property
     def range(self):
@@ -441,6 +447,44 @@ class BeamPath(OphydObject):
         devices = [device for path in beampaths for device in path.devices]
         # Create a new instance
         return BeamPath(*set(devices), name=name)
+
+    @staticmethod
+    def make_graph(
+        branch_devs: List[SearchResult],
+        branch_name: str,
+        sources: List[str] = []
+    ) -> DiGraph:
+        graph = nx.DiGraph()
+        result_list = list(branch_devs)
+        result_list.sort(key=lambda x: x.metadata['z'])
+        # label nodes with device name, store device
+        nodes = []
+        for res in result_list:
+            try:
+                dev = res.get()
+            except Exception:
+                # TODO: be better about specific exceptions
+                logger.debug(
+                    f'Failed to initialize device: {res["name"]}'
+                )
+                continue
+            nodes.append((res.metadata['name'], {'dev': dev}))
+        # add end point node
+        nodes.append((branch_name, {'dev': None}))
+        # add sources
+        if branch_name in sources:
+            nodes.insert(0, (f'source_{branch_name}', {'dev': None}))
+
+        graph.add_nodes_from(nodes)
+
+        # construct edges
+        edges = [(nodes[i][0], nodes[i+1][0],
+                 {'weight': 0.0, 'branch': branch_name})
+                 for i in range(len(nodes)-1)]
+        graph.add_edges_from(edges)
+
+        graph.name = str(branch_name)
+        return graph
 
     def _ignore(self, ignore_devices, passive=False):
         """
