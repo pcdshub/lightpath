@@ -9,8 +9,9 @@ from ophyd import Device, Kind
 from ophyd.signal import AttributeSignal
 from ophyd.status import DeviceStatus
 from ophyd.utils import DisconnectedError
+from pcdsdevices.interface import LightpathState
+from pcdsdevices.signal import SummarySignal
 
-import lightpath
 from lightpath import BeamPath
 
 
@@ -68,43 +69,48 @@ class Valve(Device):
                         attr='_current_state',
                         kind=Kind.hinted)
     current_transmission = Cpt(AttributeSignal,
-                               attr='transmission',
+                               attr='_transmission',
                                kind=Kind.normal)
+    current_destination = Cpt(AttributeSignal,
+                              attr='_current_destination',
+                              kind=Kind.hinted)
 
-    def __init__(self, name, z, beamline):
+    lp_signal = Cpt(SummarySignal, name='lp_summary')
+
+    lightpath_cpts = ['current_state', 'current_transmission',
+                      'current_destination']
+
+    def __init__(self, name, z, input_branches, output_branches):
         super().__init__(name, name=name)
         self.md = SimpleNamespace()
         self.md.z = z
-        self.md.beamline = beamline
+        self.input_branches = input_branches
+        self.output_branches = output_branches
         self.status = Status.removed
+        for sig in self.lightpath_cpts:
+            self.lp_signal.add_signal_by_attr_name(sig)
+
+    @property
+    def _current_destination(self):
+        """String returning current destination"""
+        return self.output_branches[0]
 
     @property
     def _current_state(self):
         """String of state for current_state AttributeSignal"""
         return self.status
 
-    @property
-    def transmission(self):
-        """
-        Transmission of device
-        """
-        return self._transmission
-
-    @property
-    def inserted(self):
-        """
-        Report if the device is inserted into the beam
-        """
+    def get_lightpath_status(self):
+        """Return LightpathState object"""
         if self.status == Status.disconnected:
             raise DisconnectedError("Simulated Disconnection")
-        return self.status in (Status.inserted, Status.inconsistent)
-
-    @property
-    def removed(self):
-        """
-        Report if the device is inserted into the beam
-        """
-        return self.status in (Status.removed, Status.inconsistent)
+        inserted = self.status in (Status.inserted, Status.inconsistent)
+        removed = self.status in (Status.removed, Status.inconsistent)
+        return LightpathState(
+            inserted=inserted, removed=removed,
+            transmission=self.current_transmission.get(),
+            output_branch=self.current_destination.get()
+        )
 
     def insert(self, timeout=None, finished_cb=None):
         """
@@ -151,25 +157,24 @@ class Crystal(Valve):
     """
     _icon = 'fa.star'
 
-    def __init__(self, name, z, beamline, states):
-        super().__init__(name, z, beamline)
-        self.states = states
-        self.branches = [dest for state in self.states
-                         for dest in state]
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     @property
-    def destination(self):
+    def _current_destination(self):
         """
         Return current beam destination
         """
-        if self.inserted:
-            return self.states[1]
+        inserted = self.status in (Status.inserted, Status.inconsistent)
+        removed = self.status in (Status.removed, Status.inconsistent)
+        if inserted:
+            return self.output_branches[1]
 
-        elif self.removed:
-            return self.states[0]
+        elif removed:
+            return self.output_branches[0]
 
         else:
-            return self.branches
+            return self.output_branches
 
 
 ############
@@ -178,20 +183,28 @@ class Crystal(Valve):
 # Basic Device
 @pytest.fixture(scope='module')
 def device():
-    return Valve('valve', z=40.0, beamline='TST')
+    return Valve('valve', z=40.0, input_branches=['TST'],
+                 output_branches=['TST'])
 
 
 # Basic Beamline
 def simulated_path():
     # Assemble device lists
-    devices = [Valve('zero', z=0., beamline='TST'),
-               Valve('one', z=2., beamline='TST'),
-               Stopper('two', z=9., beamline='TST'),
-               Valve('three', z=15., beamline='TST'),
-               Crystal('four', z=16.,
-                       beamline='TST', states=[['TST'], ['SIM']]),
-               IPIMB('five', z=24., beamline='TST'),
-               Valve('six', z=30., beamline='TST')]
+    devices = [Valve('zero', z=0., input_branches=['TST'],
+                     output_branches=['TST']),
+               Valve('one', z=2., input_branches=['TST'],
+                     output_branches=['TST']),
+               Stopper('two', z=9., input_branches=['TST'],
+                       output_branches=['TST']),
+               Valve('three', z=15., input_branches=['TST'],
+                     output_branches=['TST']),
+               Crystal('four', z=16., input_branches=['TST'],
+                       output_branches=['TST']),
+               IPIMB('five', z=24., input_branches=['TST'],
+                     output_branches=['TST']),
+               Valve('six', z=30., input_branches=['TST'],
+                     output_branches=['TST'])
+               ]
     # Create semi-random order
     devices = sorted(devices, key=lambda d: d.prefix)
     # Create beampath
@@ -246,10 +259,6 @@ def lcls():
 
 @pytest.fixture(scope='function')
 def lcls_client():
-    # Reset the configuration database
-    lightpath.controller.beamlines = {'MEC': {'HXR': {}},
-                                      'CXI': {'HXR': {}},
-                                      'XCS': {'HXR': {}}}
     db = os.path.join(os.path.dirname(__file__), 'path.json')
-
+    print(db)
     return happi.Client(path=db)

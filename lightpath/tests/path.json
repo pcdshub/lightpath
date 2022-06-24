@@ -1,445 +1,659 @@
 {
-    "fee_valve1": {
-        "_id": "fee_valve1",
+    "al1k2": {
+        "_id": "al1k2",
         "active": true,
         "args": [
-            "{{name}}"
+            "{{prefix}}"
         ],
-        "beamline": "HXR",
-        "creation": "Sun Feb 11 11:46:18 2018",
+        "creation": "Wed Jun 22 09:53:23 2022",
         "device_class": "lightpath.tests.conftest.Valve",
+        "documentation": null,
+        "input_branches": [
+            "K2"
+        ],
         "kwargs": {
-            "beamline": "{{beamline}}",
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
             "z": "{{z}}"
         },
-        "last_edit": "Tue Feb 13 09:35:09 2018",
+        "last_edit": "Wed Jun 22 09:53:23 2022",
         "lightpath": true,
-        "macros": null,
-        "name": "fee_valve1",
-        "parent": null,
-        "prefix": "fee_valve1",
-        "screen": null,
-        "stand": null,
-        "system": null,
-        "type": "Device",
-        "z": 0.0
+        "name": "al1k2",
+        "output_branches": [
+            "K2"
+        ],
+        "prefix": "AL1K2:L2SI",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 778.833
     },
-    "fee_valve2": {
-        "_id": "fee_valve2",
+    "at1k4": {
+        "_id": "at1k4",
         "active": true,
         "args": [
-            "{{name}}"
+            "{{prefix}}"
         ],
-        "beamline": "HXR",
-        "creation": "Sun Feb 11 11:46:18 2018",
+        "creation": "Wed Jun 22 09:53:23 2022",
         "device_class": "lightpath.tests.conftest.Valve",
+        "documentation": null,
+        "input_branches": [
+            "K4"
+        ],
         "kwargs": {
-            "beamline": "{{beamline}}",
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
             "z": "{{z}}"
         },
-        "last_edit": "Tue Feb 13 09:35:09 2018",
+        "last_edit": "Wed Jun 22 09:53:23 2022",
         "lightpath": true,
-        "macros": null,
-        "name": "fee_valve2",
-        "parent": null,
-        "prefix": "fee_valve2",
-        "screen": null,
-        "stand": null,
-        "system": null,
-        "type": "Device",
-        "z": 2.0
+        "name": "at1k4",
+        "output_branches": [
+            "K4"
+        ],
+        "prefix": "AT1K4:L2SI",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 748.0
     },
-    "hxr_ipm": {
-        "_id": "hxr_ipm",
+    "im1k0": {
+        "_id": "im1k0",
         "active": true,
         "args": [
-            "{{name}}"
+            "{{prefix}}"
         ],
-        "beamline": "CXI",
-        "creation": "Sun Feb 11 11:46:18 2018",
+        "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
+        "documentation": null,
+        "input_branches": [
+            "K0"
+        ],
         "kwargs": {
-            "beamline": "{{beamline}}",
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
             "z": "{{z}}"
         },
-        "last_edit": "Tue Feb 13 09:35:09 2018",
+        "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
-        "macros": null,
-        "name": "hxr_ipm",
-        "parent": null,
-        "prefix": "hxr_ipm",
-        "screen": null,
-        "stand": null,
-        "system": null,
-        "type": "Device",
-        "z": 24.0
+        "name": "im1k0",
+        "output_branches": [
+            "K0"
+        ],
+        "prefix": "IM1K0:XTES",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 699.5
     },
-    "hxr_valve": {
-        "_id": "hxr_valve",
+    "im1k1": {
+        "_id": "im1k1",
         "active": true,
         "args": [
-            "{{name}}"
+            "{{prefix}}"
         ],
-        "beamline": "CXI",
-        "creation": "Sun Feb 11 11:46:18 2018",
-        "device_class": "lightpath.tests.conftest.Valve",
-        "kwargs": {
-            "beamline": "{{beamline}}",
-            "z": "{{z}}"
-        },
-        "last_edit": "Tue Feb 13 09:35:09 2018",
-        "lightpath": true,
-        "macros": null,
-        "name": "hxr_valve",
-        "parent": null,
-        "prefix": "hxr_valve",
-        "screen": null,
-        "stand": null,
-        "system": null,
-        "type": "Device",
-        "z": 25.0
-    },
-    "mec_ipm": {
-        "_id": "mec_ipm",
-        "active": true,
-        "args": [
-            "{{name}}"
-        ],
-        "beamline": "MEC",
-        "creation": "Sun Feb 11 11:46:19 2018",
+        "creation": "Wed Jun 22 09:53:23 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
+        "documentation": null,
+        "input_branches": [
+            "K1"
+        ],
         "kwargs": {
-            "beamline": "{{beamline}}",
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
             "z": "{{z}}"
         },
-        "last_edit": "Tue Feb 13 09:35:09 2018",
+        "last_edit": "Wed Jun 22 09:53:23 2022",
         "lightpath": true,
-        "macros": null,
-        "name": "mec_ipm",
-        "parent": null,
-        "prefix": "mec_ipm",
-        "screen": null,
-        "stand": null,
-        "system": null,
-        "type": "Device",
-        "z": 24.0
+        "name": "im1k1",
+        "output_branches": [
+            "K1"
+        ],
+        "prefix": "IM1K1:PPM",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 738.0
     },
-    "mec_valve": {
-        "_id": "mec_valve",
+    "im1k2": {
+        "_id": "im1k2",
         "active": true,
         "args": [
-            "{{name}}"
+            "{{prefix}}"
         ],
-        "beamline": "MEC",
-        "creation": "Sun Feb 11 11:46:19 2018",
-        "device_class": "lightpath.tests.conftest.Valve",
-        "kwargs": {
-            "beamline": "{{beamline}}",
-            "z": "{{z}}"
-        },
-        "last_edit": "Tue Feb 13 09:35:09 2018",
-        "lightpath": true,
-        "macros": null,
-        "name": "mec_valve",
-        "parent": null,
-        "prefix": "mec_valve",
-        "screen": null,
-        "stand": null,
-        "system": null,
-        "type": "Device",
-        "z": 25.0
-    },
-    "s2_stopper": {
-        "_id": "s2_stopper",
-        "active": true,
-        "args": [
-            "{{name}}"
-        ],
-        "beamline": "HXR",
-        "creation": "Sun Feb 11 11:46:18 2018",
-        "device_class": "lightpath.tests.conftest.Stopper",
-        "kwargs": {
-            "beamline": "{{beamline}}",
-            "z": "{{z}}"
-        },
-        "last_edit": "Tue Feb 13 09:35:09 2018",
-        "lightpath": true,
-        "macros": null,
-        "name": "s2_stopper",
-        "parent": null,
-        "prefix": "s2_stopper",
-        "screen": null,
-        "stand": null,
-        "system": null,
-        "type": "Device",
-        "z": 9.0
-    },
-    "s4_stopper": {
-        "_id": "s4_stopper",
-        "active": true,
-        "args": [
-            "{{name}}"
-        ],
-        "beamline": "XCS",
-        "creation": "Sun Feb 11 11:46:18 2018",
-        "device_class": "lightpath.tests.conftest.Stopper",
-        "kwargs": {
-            "beamline": "{{beamline}}",
-            "z": "{{z}}"
-        },
-        "last_edit": "Tue Feb 13 09:35:09 2018",
-        "lightpath": true,
-        "macros": null,
-        "name": "s4_stopper",
-        "parent": null,
-        "prefix": "s4_stopper",
-        "screen": null,
-        "stand": null,
-        "system": null,
-        "type": "Device",
-        "z": 32.0
-    },
-    "s5_stopper": {
-        "_id": "s5_stopper",
-        "active": true,
-        "args": [
-            "{{name}}"
-        ],
-        "beamline": "CXI",
-        "creation": "Sun Feb 11 11:46:18 2018",
-        "device_class": "lightpath.tests.conftest.Stopper",
-        "kwargs": {
-            "beamline": "{{beamline}}",
-            "z": "{{z}}"
-        },
-        "last_edit": "Tue Feb 13 09:35:09 2018",
-        "lightpath": true,
-        "macros": null,
-        "name": "s5_stopper",
-        "parent": null,
-        "prefix": "s5_stopper",
-        "screen": null,
-        "stand": null,
-        "system": null,
-        "type": "Device",
-        "z": 31.0
-    },
-    "s6_stopper": {
-        "_id": "s6_stopper",
-        "active": true,
-        "args": [
-            "{{name}}"
-        ],
-        "beamline": "MEC",
-        "creation": "Sun Feb 11 11:46:18 2018",
-        "device_class": "lightpath.tests.conftest.Stopper",
-        "kwargs": {
-            "beamline": "{{beamline}}",
-            "z": "{{z}}"
-        },
-        "last_edit": "Tue Feb 13 09:35:09 2018",
-        "lightpath": true,
-        "macros": null,
-        "name": "s6_stopper",
-        "parent": null,
-        "prefix": "s6_stopper",
-        "screen": null,
-        "stand": null,
-        "system": null,
-        "type": "Device",
-        "z": 30.0
-    },
-    "tst_broke": {
-        "_id": "tst_broke",
-        "active": true,
-        "args": [
-            "{{name}}"
-        ],
-        "beamline": "FEE",
-        "creation": "Mon Feb 12 14:26:54 2018",
-        "device_class": null,
-        "kwargs": {
-            "beamline": "{{beamline}}",
-            "z": "{{z}}"
-        },
-        "last_edit": "Tue Feb 13 09:35:09 2018",
-        "lightpath": true,
-        "macros": null,
-        "name": "Broken",
-        "parent": null,
-        "prefix": "tst_broke",
-        "screen": null,
-        "stand": null,
-        "system": null,
-        "type": "Device",
-        "z": 3.0
-    },
-    "xcs_ipm": {
-        "_id": "xcs_ipm",
-        "active": true,
-        "args": [
-            "{{name}}"
-        ],
-        "beamline": "XCS",
-        "creation": "Sun Feb 11 11:46:19 2018",
+        "creation": "Wed Jun 22 09:53:23 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
+        "documentation": null,
+        "input_branches": [
+            "K2"
+        ],
         "kwargs": {
-            "beamline": "{{beamline}}",
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
             "z": "{{z}}"
         },
-        "last_edit": "Tue Feb 13 09:35:09 2018",
+        "last_edit": "Wed Jun 22 09:53:23 2022",
         "lightpath": true,
-        "macros": null,
-        "name": "xcs_ipm",
-        "parent": null,
-        "prefix": "xcs_ipm",
-        "screen": null,
-        "stand": null,
-        "system": null,
-        "type": "Device",
-        "z": 21.0
+        "name": "im1k2",
+        "output_branches": [
+            "K2"
+        ],
+        "prefix": "IM1K2:PPM",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 777.9
     },
-    "xcs_valve": {
-        "_id": "xcs_valve",
+    "im1k3": {
+        "_id": "im1k3",
         "active": true,
         "args": [
-            "{{name}}"
+            "{{prefix}}"
         ],
-        "beamline": "XCS",
-        "creation": "Sun Feb 11 11:46:19 2018",
-        "device_class": "lightpath.tests.conftest.Valve",
-        "kwargs": {
-            "beamline": "{{beamline}}",
-            "z": "{{z}}"
-        },
-        "last_edit": "Tue Feb 13 09:35:09 2018",
-        "lightpath": true,
-        "macros": null,
-        "name": "xcs_valve",
-        "parent": null,
-        "prefix": "xcs_valve",
-        "screen": null,
-        "stand": null,
-        "system": null,
-        "type": "Device",
-        "z": 22.0
-    },
-    "xrt_ipm": {
-        "_id": "xrt_ipm",
-        "active": true,
-        "args": [
-            "{{name}}"
-        ],
-        "beamline": "HXR",
-        "creation": "Sun Feb 11 11:46:18 2018",
+        "creation": "Wed Jun 22 09:53:23 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
+        "documentation": null,
+        "input_branches": [
+            "K3"
+        ],
         "kwargs": {
-            "beamline": "{{beamline}}",
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
             "z": "{{z}}"
         },
-        "last_edit": "Tue Feb 13 09:35:09 2018",
+        "last_edit": "Wed Jun 22 09:53:23 2022",
         "lightpath": true,
-        "macros": null,
-        "name": "xrt_ipm",
-        "parent": null,
-        "prefix": "xrt_ipm",
-        "screen": null,
-        "stand": null,
-        "system": null,
-        "type": "Device",
-        "z": 15.0
+        "name": "im1k3",
+        "output_branches": [
+            "K3"
+        ],
+        "prefix": "IM1K3:PPM",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 740.8
     },
-    "xrt_m1h": {
-        "_id": "xrt_m1h",
+    "im1k4": {
+        "_id": "im1k4",
         "active": true,
         "args": [
-            "{{name}}"
+            "{{prefix}}"
         ],
-        "beamline": "HXR",
-        "creation": "Sun Feb 11 11:46:18 2018",
+        "creation": "Wed Jun 22 09:53:24 2022",
+        "device_class": "pcdsdevices.pim.XPIM",
+        "documentation": null,
+        "input_branches": [
+            "K4"
+        ],
+        "kwargs": {
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Wed Jun 22 09:53:24 2022",
+        "lightpath": true,
+        "name": "im1k4",
+        "output_branches": [
+            "K4"
+        ],
+        "prefix": "IM1K4:XTES",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 750.3
+    },
+    "im2k1": {
+        "_id": "im2k1",
+        "active": true,
+        "args": [
+            "{{prefix}}"
+        ],
+        "creation": "Wed Jun 22 09:53:23 2022",
+        "device_class": "lightpath.tests.conftest.IPIMB",
+        "documentation": null,
+        "input_branches": [
+            "K1"
+        ],
+        "kwargs": {
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Wed Jun 22 09:53:23 2022",
+        "lightpath": true,
+        "name": "im2k1",
+        "output_branches": [
+            "K1"
+        ],
+        "prefix": "IM2K1:PPM",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 742.15
+    },
+    "im2k2": {
+        "_id": "im2k2",
+        "active": true,
+        "args": [
+            "{{prefix}}"
+        ],
+        "creation": "Wed Jun 22 09:53:23 2022",
+        "device_class": "lightpath.tests.conftest.IPIMB",
+        "documentation": null,
+        "input_branches": [
+            "K2"
+        ],
+        "kwargs": {
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Wed Jun 22 09:53:23 2022",
+        "lightpath": true,
+        "name": "im2k2",
+        "output_branches": [
+            "K2"
+        ],
+        "prefix": "IM2K2:PPM",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 780.45
+    },
+    "im4k4": {
+        "_id": "im4k4",
+        "active": true,
+        "args": [
+            "{{prefix}}"
+        ],
+        "creation": "Wed Jun 22 09:53:24 2022",
+        "device_class": "lightpath.tests.conftest.IPIMB",
+        "documentation": null,
+        "input_branches": [
+            "K4"
+        ],
+        "kwargs": {
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Wed Jun 22 09:53:24 2022",
+        "lightpath": true,
+        "name": "im4k4",
+        "output_branches": [
+            "K4"
+        ],
+        "prefix": "IM4K4:PPM",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 761.101
+    },
+    "mr1k1_bend": {
+        "_id": "mr1k1_bend",
+        "active": true,
+        "args": [
+            "{{prefix}}"
+        ],
+        "creation": "Wed Jun 22 09:53:21 2022",
         "device_class": "lightpath.tests.conftest.Crystal",
+        "documentation": null,
+        "input_branches": [
+            "K0"
+        ],
         "kwargs": {
-            "beamline": "{{beamline}}",
-            "states": [
-                [
-                    "MEC",
-                    "CXI"
-                ],
-                [
-                    "XCS"
-                ]
-            ],
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
             "z": "{{z}}"
         },
-        "last_edit": "Tue Feb 13 09:37:21 2018",
+        "last_edit": "Wed Jun 22 09:53:21 2022",
         "lightpath": true,
-        "macros": null,
-        "name": "xrt_m1h",
-        "parent": null,
-        "prefix": "xrt_m1h",
-        "screen": null,
-        "stand": null,
-        "system": null,
-        "type": "Device",
-        "z": 16.0
+        "name": "mr1k1_bend",
+        "output_branches": [
+            "K0",
+            "K1"
+        ],
+        "prefix": "MR1K1:BEND",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 733.772
     },
-    "xrt_m2h": {
-        "_id": "xrt_m2h",
+    "mr1k2_switch": {
+        "_id": "mr1k2_switch",
         "active": true,
         "args": [
-            "{{name}}"
+            "{{prefix}}"
         ],
-        "beamline": "HXR",
-        "creation": "Sun Feb 11 11:46:18 2018",
+        "creation": "Wed Jun 22 09:53:21 2022",
         "device_class": "lightpath.tests.conftest.Crystal",
+        "documentation": null,
+        "input_branches": [
+            "K1"
+        ],
         "kwargs": {
-            "beamline": "{{beamline}}",
-            "states": [
-                [
-                    "CXI",
-                    "XCS"
-                ],
-                [
-                    "MEC"
-                ]
-            ],
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
             "z": "{{z}}"
         },
-        "last_edit": "Tue Feb 13 09:37:46 2018",
+        "last_edit": "Wed Jun 22 09:53:21 2022",
         "lightpath": true,
-        "macros": null,
-        "name": "xrt_m2h",
-        "parent": null,
-        "prefix": "xrt_m2h",
-        "screen": null,
-        "stand": null,
-        "system": null,
-        "type": "Device",
-        "z": 20.0
+        "name": "mr1k2_switch",
+        "output_branches": [
+            "K1",
+            "K2"
+        ],
+        "prefix": "MR1K2:SWITCH",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 742.922
     },
-    "xrt_valve": {
-        "_id": "xrt_valve",
+    "mr1k3_vgc_1": {
+        "_id": "mr1k3_vgc_1",
         "active": true,
         "args": [
-            "{{name}}"
+            "{{prefix}}"
         ],
-        "beamline": "HXR",
-        "creation": "Sun Feb 11 11:46:18 2018",
-        "device_class": "lightpath.tests.conftest.Valve",
+        "creation": "Wed Jun 22 09:53:21 2022",
+        "device_class": "lightpath.tests.conftest.Crystal",
+        "documentation": null,
+        "input_branches": [
+            "K0"
+        ],
         "kwargs": {
-            "beamline": "{{beamline}}",
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
             "z": "{{z}}"
         },
-        "last_edit": "Tue Feb 13 09:35:09 2018",
+        "last_edit": "Wed Jun 22 09:53:21 2022",
         "lightpath": true,
-        "macros": null,
-        "name": "xrt_valve",
-        "parent": null,
-        "prefix": "xrt_valve",
-        "screen": null,
-        "stand": null,
-        "system": null,
-        "type": "Device",
-        "z": 18.0
+        "name": "mr1k3_vgc_1",
+        "output_branches": [
+            "K0",
+            "K3"
+        ],
+        "prefix": "MR1K3:VGC:1",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 734.4617237
+    },
+    "mr1k4_soms": {
+        "_id": "mr1k4_soms",
+        "active": true,
+        "args": [
+            "{{prefix}}"
+        ],
+        "creation": "Wed Jun 22 09:53:21 2022",
+        "device_class": "lightpath.tests.conftest.Crystal",
+        "documentation": null,
+        "input_branches": [
+            "K0"
+        ],
+        "kwargs": {
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Wed Jun 22 09:53:21 2022",
+        "lightpath": true,
+        "name": "mr1k4_soms",
+        "output_branches": [
+            "K4"
+        ],
+        "prefix": "MR1K4:SOMS",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 745.72
+    },
+    "mr1l0_homs": {
+        "_id": "mr1l0_homs",
+        "active": true,
+        "args": [
+            "{{prefix}}"
+        ],
+        "creation": "Wed Jun 22 09:53:22 2022",
+        "device_class": "lightpath.tests.conftest.Crystal",
+        "documentation": null,
+        "input_branches": [
+            "L0"
+        ],
+        "kwargs": {
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Wed Jun 22 09:53:22 2022",
+        "lightpath": true,
+        "name": "mr1l0_homs",
+        "output_branches": [
+            "L0",
+            "L1"
+        ],
+        "prefix": "MR1L0:HOMS",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 740.0
+    },
+    "mr1l3_homs": {
+        "_id": "mr1l3_homs",
+        "active": true,
+        "args": [
+            "{{prefix}}"
+        ],
+        "creation": "Wed Jun 22 09:53:22 2022",
+        "device_class": "lightpath.tests.conftest.Crystal",
+        "documentation": null,
+        "input_branches": [
+            "L0"
+        ],
+        "kwargs": {
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Wed Jun 22 09:53:22 2022",
+        "lightpath": true,
+        "name": "mr1l3_homs",
+        "output_branches": [
+            "L0",
+            "L3"
+        ],
+        "prefix": "MR1L3:HOMS",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 814.716
+    },
+    "mr1l4_homs": {
+        "_id": "mr1l4_homs",
+        "active": true,
+        "args": [
+            "{{prefix}}"
+        ],
+        "creation": "Wed Jun 22 09:53:22 2022",
+        "device_class": "lightpath.tests.conftest.Crystal",
+        "documentation": null,
+        "input_branches": [
+            "L0"
+        ],
+        "kwargs": {
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Wed Jun 22 09:53:22 2022",
+        "lightpath": true,
+        "name": "mr1l4_homs",
+        "output_branches": [
+            "L0",
+            "L4",
+            "L5"
+        ],
+        "prefix": "MR1L4:HOMS",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 817.116
+    },
+    "sl1k0": {
+        "_id": "sl1k0",
+        "active": true,
+        "args": [
+            "{{prefix}}"
+        ],
+        "creation": "Wed Jun 22 09:53:22 2022",
+        "device_class": "lightpath.tests.conftest.Stopper",
+        "documentation": null,
+        "input_branches": [
+            "K0"
+        ],
+        "kwargs": {
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Wed Jun 22 09:53:22 2022",
+        "lightpath": true,
+        "name": "sl1k0",
+        "output_branches": [
+            "K0"
+        ],
+        "prefix": "SL1K0:POWER",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 705.86
+    },
+    "sl1k2": {
+        "_id": "sl1k2",
+        "active": true,
+        "args": [
+            "{{prefix}}"
+        ],
+        "creation": "Wed Jun 22 09:53:22 2022",
+        "device_class": "lightpath.tests.conftest.Stopper",
+        "documentation": null,
+        "input_branches": [
+            "K2"
+        ],
+        "kwargs": {
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Wed Jun 22 09:53:22 2022",
+        "lightpath": true,
+        "name": "sl1k2",
+        "output_branches": [
+            "K2"
+        ],
+        "prefix": "SL1K2:EXIT",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 759.122
+    },
+    "sl2k2": {
+        "_id": "sl2k2",
+        "active": true,
+        "args": [
+            "{{prefix}}"
+        ],
+        "creation": "Wed Jun 22 09:53:23 2022",
+        "device_class": "lightpath.tests.conftest.Stopper",
+        "documentation": null,
+        "input_branches": [
+            "K2"
+        ],
+        "kwargs": {
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Wed Jun 22 09:53:23 2022",
+        "lightpath": true,
+        "name": "sl2k2",
+        "output_branches": [
+            "K2"
+        ],
+        "prefix": "SL2K2:SCATTER",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 765.1
+    },
+    "sl2k4": {
+        "_id": "sl2k4",
+        "active": true,
+        "args": [
+            "{{prefix}}"
+        ],
+        "creation": "Wed Jun 22 09:53:24 2022",
+        "device_class": "lightpath.tests.conftest.Stopper",
+        "documentation": null,
+        "input_branches": [
+            "K4"
+        ],
+        "kwargs": {
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Wed Jun 22 09:53:24 2022",
+        "lightpath": true,
+        "name": "sl2k4",
+        "output_branches": [
+            "K4"
+        ],
+        "prefix": "SL2K4:SCATTER",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 767.204
+    },
+    "sp1k1_mono": {
+        "_id": "sp1k1_mono",
+        "active": true,
+        "args": [
+            "{{prefix}}"
+        ],
+        "creation": "Wed Jun 22 09:53:23 2022",
+        "device_class": "lightpath.tests.conftest.Stopper",
+        "documentation": null,
+        "input_branches": [
+            "K1"
+        ],
+        "kwargs": {
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Wed Jun 22 09:53:23 2022",
+        "lightpath": true,
+        "name": "sp1k1_mono",
+        "output_branches": [
+            "K1"
+        ],
+        "prefix": "SP1K1:MONO",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 739.622
+    },
+    "xcs_lodcm": {
+        "_id": "xcs_lodcm",
+        "active": true,
+        "args": [
+            "{{prefix}}"
+        ],
+        "creation": "Wed Jun 22 09:53:22 2022",
+        "device_class": "lightpath.tests.conftest.Crystal",
+        "documentation": null,
+        "input_branches": [
+            "L0"
+        ],
+        "kwargs": {
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Wed Jun 22 09:53:22 2022",
+        "lightpath": true,
+        "name": "xcs_lodcm",
+        "output_branches": [
+            "L0",
+            "L3"
+        ],
+        "prefix": "XCS:LODCM",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 964.76
+    },
+    "xpp_lodcm": {
+        "_id": "xpp_lodcm",
+        "active": true,
+        "args": [
+            "{{prefix}}"
+        ],
+        "creation": "Wed Jun 22 09:53:22 2022",
+        "device_class": "lightpath.tests.conftest.Crystal",
+        "documentation": null,
+        "input_branches": [
+            "L0"
+        ],
+        "kwargs": {
+            "input_branches": "{{input_branches}}",
+            "output_branches": "{{output_branches}}",
+            "z": "{{z}}"
+        },
+        "last_edit": "Wed Jun 22 09:53:22 2022",
+        "lightpath": true,
+        "name": "xpp_lodcm",
+        "output_branches": [
+            "L0",
+            "L2"
+        ],
+        "prefix": "XPP:LODCM",
+        "type": "lightpath.happi.containers.LightpathItem",
+        "z": 781.1
     }
 }
