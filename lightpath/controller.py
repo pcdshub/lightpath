@@ -11,6 +11,8 @@ where the beam is and what the state of the MPS system is currently.
 import logging
 import math
 
+import networkx as nx
+
 from .config import beamlines
 from .path import BeamPath
 
@@ -42,14 +44,51 @@ class LightController:
         self.client = client
         self.containers = list()
         self.beamlines = dict()
+        self.graph = nx.DiGraph()
+        self.sources = set()
+
+        # initialize graph -> self.graph
+        self.load_facility()
+
         endstations = endstations or beamlines.keys()
-        # Find the requisite beamlines to reach our endstation
+        # # Find the requisite beamlines to reach our endstation
         for beamline in endstations:
             self.load_beamline(beamline)
 
+    def load_facility(self):
+        """
+        Load the facility from the provided happi client.
+
+        The facility is represented by a directed graph, with
+        SearchResults as nodes.
+        """
+        results = self.client.search_range(key='z', start=0.0, end=math.inf,
+                                           active=True, lightpath=True)
+        # gather devices by branch
+        branch_dict = {}
+        for res in results:
+            for branch_set in (res.metadata.get('input_branches', []),
+                               res.metadata.get('output_branches', [])):
+                for branch in branch_set:
+                    if branch not in branch_dict:
+                        branch_dict[branch] = set()
+                    branch_dict[branch].add(res)
+
+        # Construct subgraphs and merge
+        subgraphs = []
+        for branch_name, branch_devs in branch_dict.items():
+            subgraph = BeamPath.make_graph(branch_devs,
+                                           sources=beamlines['sources'],
+                                           branch_name=branch_name)
+            self.sources.update((n for n in subgraph if 'source' in n))
+            subgraphs.append(subgraph)
+
+        self.graph = nx.compose_all(subgraphs)
+
     def load_beamline(self, endstation):
         """
-        Load a beamline from the provided happi client
+        Load a beamline given the facility graph.  Find path from source
+        to endstation with reasonable transmission
 
         Parameters
         ----------
@@ -61,43 +100,35 @@ class LightController:
         path: BeamPath
         """
         try:
-            path = beamlines[endstation]
-            path[endstation] = dict()
+            end_branches = beamlines[endstation]
         except KeyError:
             logger.warning("Unable to find %s as a configured endstation, "
                            "assuming this is an independent path", endstation)
-            path = {endstation: {}}
+            # TODO: Look at all branches?  What to do here
+            return
 
-        # Load the devices specified in the configuration
-        devices = list()
+        paths = list()
+        for branch in end_branches:
+            # Find the paths from each source to the desired line
+            for src in self.sources:
+                if nx.has_path(self.graph, src, branch):
+                    found_paths = nx.all_simple_paths(self.graph, source=src,
+                                                      target=branch)
+                    paths.extend(found_paths)
+                else:
+                    logger.debug(f'No path between {src} and {branch}')
 
-        for line, info in path.items():
-            # Find the happi containers for this section of beamlines
-            start = info.get('start', 0.0)
-            end = info.get('end', math.inf)
-            logger.debug("Searching for devices on line %s between %s and %s",
-                         line, start, end)
-            results = self.client.search_range(key='z', start=start, end=end,
-                                               beamline=line, active=True,
-                                               lightpath=True)
-            # Ensure we actually found valid devices
-            if not results:
-                logger.error("No valid beamline devices found for %s", line)
-                continue
-            # Load all the devices we found
-            logger.debug("Found %s devices along %s", len(results), line)
-            for result in results:
-                try:
-                    dev = result.get()
-                    devices.append(dev)
-                except Exception:
-                    logger.exception("Failure loading %s ...", result["name"])
-                    self.containers.append(result.device)
-        # Create the beamline from the loaded devices
-        bp = BeamPath(*devices, name=line)
-        self.beamlines[line] = bp
-        # Set as attribute for easy access
-        setattr(self, bp.name.replace(' ', '_').lower(), bp)
+        self.beamlines[endstation] = []
+        for path in paths:
+            subgraph = self.graph.subgraph(path)
+            devices = [node[1]['dev'] for node in subgraph.nodes.data()
+                       if node[1]['dev'] is not None]
+            bp = BeamPath(*devices, name=endstation)
+            self.beamlines[endstation].append(bp)
+
+        for bp in self.beamlines[endstation]:
+            # may be a list of beampaths, for destinations with many paths
+            setattr(self, bp.name.replace(' ', '_').lower(), bp)
         return bp
 
     @property

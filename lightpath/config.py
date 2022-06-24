@@ -1,22 +1,15 @@
 """
 Configuration for LCLS beamlines
 """
-post_xrtm2h = 817.2
-xpp_lodcm = 781.2
 
-beamlines = {'XPP': {'LFE': {},
-                     'HXD': {'end': xpp_lodcm}},
-             'XCS': {'LFE': {},
-                     'HXD': {}},
-             'PBT': {'LFE': {},
-                     'HXD': {'end': post_xrtm2h},
-                     'XCS': {}},
-             'MFX': {'LFE': {},
-                     'HXD': {'end': post_xrtm2h}},
-             'CXI': {'LFE': {},
-                     'HXD': {}},
-             'MEC': {'LFE': {},
-                     'HXD': {'end': post_xrtm2h}},
-             'TMO': {'KFE': {}},
-             'RIX': {'KFE': {}},
-             }
+# mapping of endstation to branch name
+beamlines = {'XPP': ['L2', 'L0'],
+             'XCS': ['L3'],
+             'MFX': ['L5'],
+             'CXI': ['L0'],
+             'MEC': ['L4'],
+             'TMO': ['K4'],
+             'CRIX': ['K1'],
+             'qRIX': ['K2'],
+             'TXI': ['K3, L1'],
+             'sources': ['K0', 'L0']}
