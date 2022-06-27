@@ -17,10 +17,9 @@ import enum
 import logging
 import math
 from collections.abc import Iterable
-from typing import List, Optional
+from typing import Any, List, Optional
 
 import networkx as nx
-from happi import SearchResult
 from networkx import DiGraph
 from ophyd.ophydobj import OphydObject
 from ophyd.status import wait as status_wait
@@ -205,49 +204,39 @@ class BeamPath(OphydObject):
         :attr:`.impediment`
         """
         # Cache important prior devices
-        prior = None
-        last_branches = list()
+        prev_device = None
+        prev_status = None
         block = list()
         for device in self.path:
-            # If we have switched beamlines
-            if prior and device.md.beamline != prior.md.beamline:
-                # Find improperly configured optics
-                for optic in last_branches:
-                    # If this optic is responsible for delivering beam
-                    # to this hutch and it is not configured to do so.
-                    # Mark it as blocking
-                    if device.md.beamline in optic.branches:
-                        if device.md.beamline not in optic.destination:
-                            block.append(optic)
-                    # Otherwise ensure it is removed from the beamline
-                    elif optic.md.beamline not in optic.destination:
-                        block.append(optic)
-                # Clear optics that have been evaluated
-                last_branches.clear()
+            curr_state = find_device_state(device)
+            try:
+                curr_status = device.get_lightpath_status()
+            except Exception as e:
+                logger.debug(f'lightpath status unknown: {e}')
+                curr_status = None
 
-            # If our last device was an optic, make sure it wasn't required
-            # to continue along this beampath
-            elif (prior in last_branches
-                    and device.md.beamline in prior.branches
-                    and device.md.beamline not in prior.destination):
-                block.append(last_branches.pop(-1))
+            # short circuit if statuses are in error
+            if ((curr_state is DeviceState.Error) or
+               (curr_state is DeviceState.Unknown)):
+                block.append(device)
 
-            # Find branching devices and store
-            # They will be marked as blocking by downstream devices
-            dev_state = find_device_state(device)
-            if device in self.branches:
-                last_branches.append(device)
-            # Find inserted devices
-            elif dev_state == DeviceState.Inserted:
+            # check to make sure input and output branches match
+            # e.g. mirror not pointing to current device
+            elif (prev_device and prev_status and
+                  prev_status.output_branch not in device.input_branches):
+                block.append(prev_device)
+            # check inserted
+            elif curr_state is DeviceState.Inserted:
                 # Ignore devices with low enough transmssion
-                trans = getattr(device, 'transmission', 1)
-                if trans < self.minimum_transmission:
+                if curr_status.transmission < self.minimum_transmission:
                     block.append(device)
             # Find unknown and faulted devices
-            elif dev_state != DeviceState.Removed:
+            elif curr_state is not DeviceState.Removed:
                 block.append(device)
-            # Stache our prior device
-            prior = device
+
+            # stash previous device
+            prev_device = device
+            prev_status = curr_status
 
         return block
 
@@ -278,7 +267,8 @@ class BeamPath(OphydObject):
             File to writable
         """
         # Initialize Table
-        pt = PrettyTable(['Name', 'Prefix', 'Position', 'Beamline', 'State'])
+        pt = PrettyTable(['Name', 'Prefix', 'Position', 'Input Branches',
+                          'Output Branches', 'State'])
         # Adjust Table settings
         pt.align = 'r'
         pt.align['Name'] = 'l'
@@ -286,8 +276,8 @@ class BeamPath(OphydObject):
         pt.float_format = '8.5'
         # Add info
         for d in self.path:
-            pt.add_row([d.name, d.prefix, d.md.z,
-                        d.md.beamline, find_device_state(d).name])
+            pt.add_row([d.name, d.prefix, d.md.z, d.input_branches,
+                        d.output_branches, find_device_state(d).name])
         # Show table
         print(pt, file=file)
 
@@ -450,7 +440,8 @@ class BeamPath(OphydObject):
 
     @staticmethod
     def make_graph(
-        branch_devs: List[SearchResult],
+        # happi.client.SearchResult, but entrypoints cause circular imports
+        branch_devs: List[Any],
         branch_name: str,
         sources: List[str] = []
     ) -> DiGraph:
@@ -509,7 +500,8 @@ class BeamPath(OphydObject):
         if not passive:
             logger.debug("Passive devices will be ignored ...")
             ignore.extend([d for d in self.devices
-                           if d.transmission > self.minimum_transmission])
+                           if d.get_lightpath_status().transmission >
+                           self.minimum_transmission])
         # Add ignored devices
         if isinstance(ignore_devices, Iterable):
             ignore.extend(ignore_devices)
