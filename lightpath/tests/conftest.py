@@ -102,10 +102,11 @@ class Valve(Device):
 
     def get_lightpath_status(self):
         """Return LightpathState object"""
-        if self.status == Status.disconnected:
+        status = self.status
+        if status == Status.disconnected:
             raise DisconnectedError("Simulated Disconnection")
-        inserted = self.status in (Status.inserted, Status.inconsistent)
-        removed = self.status in (Status.removed, Status.inconsistent)
+        inserted = status in (Status.inserted, Status.inconsistent)
+        removed = status in (Status.removed, Status.inconsistent)
         return LightpathState(
             inserted=inserted, removed=removed,
             transmission=self.current_transmission.get(),
@@ -156,6 +157,7 @@ class Crystal(Valve):
     Generic branching device
     """
     _icon = 'fa.star'
+    _transmission = 0.8
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -174,7 +176,7 @@ class Crystal(Valve):
             return self.output_branches[0]
 
         else:
-            return self.output_branches
+            raise ValueError
 
 
 ############
@@ -199,7 +201,7 @@ def simulated_path():
                Valve('three', z=15., input_branches=['TST'],
                      output_branches=['TST']),
                Crystal('four', z=16., input_branches=['TST'],
-                       output_branches=['TST']),
+                       output_branches=['TST', 'SIM']),
                IPIMB('five', z=24., input_branches=['TST'],
                      output_branches=['TST']),
                Valve('six', z=30., input_branches=['TST'],
@@ -220,14 +222,20 @@ def path():
 @pytest.fixture(scope='function')
 def branch():
     # Assemble device lists
-    devices = [Valve('zero', z=0., beamline='TST'),
-               Valve('one', z=2., beamline='TST'),
-               Stopper('two', z=9., beamline='TST'),
-               Valve('three', z=15., beamline='TST'),
-               Crystal('four', z=16., beamline='TST',
-                       states=[['TST'], ['SIM']]),
-               IPIMB('five', z=24., beamline='SIM'),
-               Valve('six', z=30., beamline='SIM')]
+    devices = [Valve('zero', z=0., input_branches=['TST'],
+                     output_branches=['TST']),
+               Valve('one', z=2., input_branches=['TST'],
+                     output_branches=['TST']),
+               Stopper('two', z=9., input_branches=['TST'],
+                       output_branches=['TST']),
+               Valve('three', z=15., input_branches=['TST'],
+                     output_branches=['TST']),
+               Crystal('four', z=16., input_branches=['TST'],
+                       output_branches=['TST', 'SIM']),
+               IPIMB('five', z=24., input_branches=['SIM'],
+                     output_branches=['SIM']),
+               Valve('six', z=30., input_branches=['SIM'],
+                     output_branches=['SIM'])]
     # Create semi-random order
     devices = sorted(devices, key=lambda d: d.prefix)
     # Create beampath
@@ -237,24 +245,38 @@ def branch():
 # Simplified LCLS layout
 @pytest.fixture(scope='function')
 def lcls():
-    return [Valve('FEE Valve 1', z=0., beamline='HXR'),
-            Valve('FEE Valve 2', z=2., beamline='HXR'),
-            Stopper('S2 Stopper', z=9., beamline='HXR'),
-            IPIMB('XRT IPM', z=15., beamline='HXR'),
-            Crystal('XRT M1H', z=16., beamline='HXR',
-                    states=[['MEC', 'CXI'], ['XCS']]),
-            Valve('XRT Valve', z=18., beamline='HXR'),
-            Crystal('XRT M2H', z=20., beamline='HXR',
-                    states=[['CXI', 'XCS'], ['MEC']]),
-            IPIMB('HXR IPM', z=24., beamline='CXI'),
-            Valve('HXR Valve', z=25., beamline='CXI'),
-            Stopper('S5 Stopper', z=31., beamline='CXI'),
-            Stopper('S4 Stopper', z=32., beamline='XCS'),
-            Stopper('S6 Stopper',  z=30., beamline='MEC'),
-            IPIMB('MEC IPM', z=24., beamline='MEC'),
-            Valve('MEC Valve', z=25., beamline='MEC'),
-            IPIMB('XCS IPM', z=21., beamline='XCS'),
-            Valve('XCS Valve', z=22., beamline='XCS')]
+    return [Valve('FEE Valve 1', z=0., input_branches=['L0'],
+                  output_branches=['L0']),
+            Valve('FEE Valve 2', z=2., input_branches=['L0'],
+                  output_branches=['L0']),
+            Stopper('S2 Stopper', z=9., input_branches=['L0'],
+                    output_branches=['L0']),
+            IPIMB('XRT IPM', z=15., input_branches=['L0'],
+                  output_branches=['L0']),
+            Crystal('XRT M1H', z=16., input_branches=['L0'],
+                    output_branches=['L0', 'L3']),
+            Valve('XRT Valve', z=18., input_branches=['L0'],
+                  output_branches=['L0']),
+            Crystal('XRT M2H', z=20., input_branches=['L0'],
+                    output_branches=['L0', 'L4']),
+            IPIMB('HXR IPM', z=24., input_branches=['L0'],
+                  output_branches=['L0']),
+            Valve('HXR Valve', z=25., input_branches=['L0'],
+                  output_branches=['L0']),
+            Stopper('S5 Stopper', z=31., input_branches=['L0'],
+                    output_branches=['L0']),
+            Stopper('S4 Stopper', z=32., input_branches=['L3'],
+                    output_branches=['L3']),
+            Stopper('S6 Stopper',  z=30., input_branches=['L4'],
+                    output_branches=['L4']),
+            IPIMB('MEC IPM', z=24., input_branches=['L4'],
+                  output_branches=['L4']),
+            Valve('MEC Valve', z=25., input_branches=['L4'],
+                  output_branches=['L4']),
+            IPIMB('XCS IPM', z=21., input_branches=['L3'],
+                  output_branches=['L3']),
+            Valve('XCS Valve', z=22., input_branches=['L3'],
+                  output_branches=['L3'])]
 
 
 @pytest.fixture(scope='function')
