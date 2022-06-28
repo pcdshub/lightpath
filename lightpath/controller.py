@@ -126,42 +126,64 @@ class LightController:
             bp = BeamPath(*devices, name=endstation)
             self.beamlines[endstation].append(bp)
 
-        for bp in self.beamlines[endstation]:
-            # may be a list of beampaths, for destinations with many paths
-            setattr(self, bp.name.replace(' ', '_').lower(), bp)
-        return bp
+        setattr(self, bp.name.replace(' ', '_').lower(),
+                self.beamlines[endstation])
+
+    def active_path(self, endstation):
+        """
+        Return the most active path to the requested endstation
+
+        Looks for the path with the latest impediment (highest z)
+        """
+        paths = self.beamlines[endstation]
+        if len(paths) == 1:
+            return paths[0]
+
+        # sort paths by latest impediment z-position
+        def imped_z(path):
+            return getattr(path.impediment, 'md.z', math.inf)
+
+        paths_by_length = sorted(paths, key=imped_z)
+
+        return paths_by_length[-1]
 
     @property
     def destinations(self):
         """
         Current device destinations for the LCLS photon beam
         """
-        return list(set([p.impediment for p in self.beamlines.values()
-                         if p.impediment and p.impediment not in p.branches]))
+        dests = set()
+        for paths in self.beamlines.values():
+            dests.update([p.impediment for p in paths
+                          if p.impediment and p.impediment not in p.branches])
+
+        return dests
 
     @property
     def devices(self):
         """
         All of the devices loaded into beampaths
         """
-        devices = list()
+        devices = set()
 
-        for line in self.beamlines.values():
-            devices.extend(line.devices)
+        for paths in self.beamlines.values():
+            for path in paths:
+                devices.update(path.devices)
 
-        return list(set(devices))
+        return list(devices)
 
     @property
     def incident_devices(self):
         """
         List of all devices in contact with photons along the beamline
         """
-        devices = list()
+        devices = set()
 
-        for line in self.beamlines.values():
-            devices.extend(line.incident_devices)
+        for paths in self.beamlines.values():
+            for path in paths:
+                devices.update(path.incident_devices)
 
-        return list(set(devices))
+        return list(devices)
 
     def path_to(self, device):
         """
@@ -177,11 +199,21 @@ class LightController:
         path : :class:`BeamPath`
             Path to and including given device
         """
-        try:
-            bl = self.beamlines[device.md.beamline]
-            prior, after = bl.split(device=device)
+        paths = list()
+        for src in self.sources:
+            if nx.has_path(self.graph, src, device.name):
+                found_paths = nx.all_simple_paths(self.graph, source=src,
+                                                  target=device.name)
+                paths.extend(found_paths)
+            else:
+                logger.debug(f'No path between {src} and {device.name}')
+                return None
 
-        except KeyError:
-            raise ValueError("Beamline {} not found".format(bl.name))
+        if len(paths) > 1:
+            logger.debug('found two paths to requested device')
 
-        return prior
+        # TODO: Deal with picking the right path
+        subgraph = self.graph.subgraph(paths[0])
+        devices = [node[1]['dev'] for node in subgraph.nodes.data()
+                   if node[1]['dev'] is not None]
+        return BeamPath(*devices, name=f'{device.name}_path')
