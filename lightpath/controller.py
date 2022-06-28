@@ -10,6 +10,7 @@ where the beam is and what the state of the MPS system is currently.
 """
 import logging
 import math
+from typing import Any, List
 
 import networkx as nx
 
@@ -77,9 +78,9 @@ class LightController:
         # Construct subgraphs and merge
         subgraphs = []
         for branch_name, branch_devs in branch_dict.items():
-            subgraph = BeamPath.make_graph(branch_devs,
-                                           sources=sources,
-                                           branch_name=branch_name)
+            subgraph = LightController.make_graph(branch_devs,
+                                                  sources=sources,
+                                                  branch_name=branch_name)
             self.sources.update((n for n in subgraph if 'source' in n))
             subgraphs.append(subgraph)
 
@@ -217,3 +218,42 @@ class LightController:
         devices = [node[1]['dev'] for node in subgraph.nodes.data()
                    if node[1]['dev'] is not None]
         return BeamPath(*devices, name=f'{device.name}_path')
+
+    @staticmethod
+    def make_graph(
+        # happi.client.SearchResult, but entrypoints cause circular imports
+        branch_devs: List[Any],
+        branch_name: str,
+        sources: List[str] = []
+    ) -> nx.DiGraph:
+        graph = nx.DiGraph()
+        result_list = list(branch_devs)
+        result_list.sort(key=lambda x: x.metadata['z'])
+        # label nodes with device name, store device
+        nodes = []
+        for res in result_list:
+            try:
+                dev = res.get()
+            except Exception:
+                # TODO: be better about specific exceptions
+                logger.debug(
+                    f'Failed to initialize device: {res["name"]}'
+                )
+                continue
+            nodes.append((res.metadata['name'], {'dev': dev}))
+        # add end point node
+        nodes.append((branch_name, {'dev': None}))
+        # add sources
+        if branch_name in sources:
+            nodes.insert(0, (f'source_{branch_name}', {'dev': None}))
+
+        graph.add_nodes_from(nodes)
+
+        # construct edges
+        edges = [(nodes[i][0], nodes[i+1][0],
+                 {'weight': 0.0, 'branch': branch_name})
+                 for i in range(len(nodes)-1)]
+        graph.add_edges_from(edges)
+
+        graph.name = str(branch_name)
+        return graph

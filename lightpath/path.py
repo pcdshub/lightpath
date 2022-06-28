@@ -17,10 +17,8 @@ import enum
 import logging
 import math
 from collections.abc import Iterable
-from typing import Any, List, Optional
+from typing import Optional
 
-import networkx as nx
-from networkx import DiGraph
 from ophyd.ophydobj import OphydObject
 from ophyd.status import wait as status_wait
 from ophyd.utils import DisconnectedError
@@ -437,45 +435,6 @@ class BeamPath(OphydObject):
         devices = [device for path in beampaths for device in path.devices]
         # Create a new instance
         return BeamPath(*set(devices), name=name)
-
-    @staticmethod
-    def make_graph(
-        # happi.client.SearchResult, but entrypoints cause circular imports
-        branch_devs: List[Any],
-        branch_name: str,
-        sources: List[str] = []
-    ) -> DiGraph:
-        graph = nx.DiGraph()
-        result_list = list(branch_devs)
-        result_list.sort(key=lambda x: x.metadata['z'])
-        # label nodes with device name, store device
-        nodes = []
-        for res in result_list:
-            try:
-                dev = res.get()
-            except Exception:
-                # TODO: be better about specific exceptions
-                logger.debug(
-                    f'Failed to initialize device: {res["name"]}'
-                )
-                continue
-            nodes.append((res.metadata['name'], {'dev': dev}))
-        # add end point node
-        nodes.append((branch_name, {'dev': None}))
-        # add sources
-        if branch_name in sources:
-            nodes.insert(0, (f'source_{branch_name}', {'dev': None}))
-
-        graph.add_nodes_from(nodes)
-
-        # construct edges
-        edges = [(nodes[i][0], nodes[i+1][0],
-                 {'weight': 0.0, 'branch': branch_name})
-                 for i in range(len(nodes)-1)]
-        graph.add_edges_from(edges)
-
-        graph.name = str(branch_name)
-        return graph
 
     def _ignore(self, ignore_devices, passive=False):
         """
