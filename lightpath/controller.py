@@ -13,7 +13,7 @@ import math
 
 import networkx as nx
 
-from .config import beamlines
+from .config import beamlines, sources
 from .path import BeamPath
 
 logger = logging.getLogger(__name__)
@@ -78,7 +78,7 @@ class LightController:
         subgraphs = []
         for branch_name, branch_devs in branch_dict.items():
             subgraph = BeamPath.make_graph(branch_devs,
-                                           sources=beamlines['sources'],
+                                           sources=sources,
                                            branch_name=branch_name)
             self.sources.update((n for n in subgraph if 'source' in n))
             subgraphs.append(subgraph)

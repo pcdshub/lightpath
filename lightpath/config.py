@@ -11,5 +11,5 @@ beamlines = {'XPP': ['L2', 'L0'],
              'TMO': ['K4'],
              'CRIX': ['K1'],
              'qRIX': ['K2'],
-             'TXI': ['K3, L1'],
-             'sources': ['K0', 'L0']}
+             'TXI': ['K3', 'L1']}
+sources = ['K0', 'L0']
