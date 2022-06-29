@@ -66,7 +66,7 @@ class Valve(Device):
     _icon = 'fa.adjust'
 
     current_state = Cpt(AttributeSignal,
-                        attr='_current_state',
+                        attr='status',
                         kind=Kind.hinted)
     current_transmission = Cpt(AttributeSignal,
                                attr='_transmission',
@@ -75,7 +75,7 @@ class Valve(Device):
                               attr='_current_destination',
                               kind=Kind.hinted)
 
-    lp_signal = Cpt(SummarySignal, name='lp_summary')
+    lp_summary = Cpt(SummarySignal, name='lp_summary')
 
     lightpath_cpts = ['current_state', 'current_transmission',
                       'current_destination']
@@ -88,7 +88,7 @@ class Valve(Device):
         self.output_branches = output_branches
         self.status = Status.removed
         for sig in self.lightpath_cpts:
-            self.lp_signal.add_signal_by_attr_name(sig)
+            self.lp_summary.add_signal_by_attr_name(sig)
 
     @property
     def _current_destination(self):
@@ -117,8 +117,8 @@ class Valve(Device):
         """
         Insert the device into the beampath
         """
-        # Complete request
-        self.status = Status.inserted
+        # Complete request s.t. callbacks run
+        self.current_state.put(Status.inserted)
         # Run subscriptions to device state
         self._run_subs(obj=self, sub_type=self._default_sub)
         # Return complete status object
@@ -129,7 +129,7 @@ class Valve(Device):
         Remove the device from the beampath
         """
         # Complete request
-        self.status = Status.removed
+        self.current_state.put(Status.removed)
         # Run subscriptions to device state
         self._run_subs(obj=self, sub_type=self._default_sub)
         # Return complete status object
