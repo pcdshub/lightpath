@@ -484,7 +484,7 @@ class BeamPath(OphydObject):
         else:
             block = math.inf
         # If device is upstream of impediment
-        if obj and obj.md.z <= block:
+        if obj and obj.parent.md.z <= block:
             self._run_subs(sub_type=self.SUB_PTH_CHNG, device=obj)
 
     def subscribe(self, cb, event_type=None, run=True):
@@ -507,9 +507,10 @@ class BeamPath(OphydObject):
             for dev in self.devices:
                 # Add callback here!
                 try:
-                    dev.subscribe(self._device_moved,
-                                  event_type=dev.SUB_STATE,
-                                  run=False)
+                    dev.lp_summary.subscribe(self._device_moved,
+                                             run=False)
+                    # get once to initialize SummarySignal
+                    dev.lp_summary.get()
                 except Exception:
                     logger.error("BeamPath is unable to subscribe "
                                  "to device %s", dev.name)
