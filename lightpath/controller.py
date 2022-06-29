@@ -241,18 +241,62 @@ class LightController:
                 )
                 continue
             nodes.append((res.metadata['name'], {'dev': dev}))
-        # add end point node
-        nodes.append((branch_name, {'dev': None}))
+
+        # construct edges
+        edges = []
+        skipped_right = []
+        skipped_left = []
+        last_on_branch = 0
+        edata = {'weight': 0.0, 'branch': branch_name}
+        # Need to properly handle devices that either:
+        # only have the current branch in their input (skipped_right)
+        # only have the current branch in their output (skipped_left)
+        for i in range(len(nodes)):
+            curr_dev = nodes[i][1]['dev']
+            if (branch_name in curr_dev.input_branches and
+                    branch_name in curr_dev.output_branches):
+                if last_on_branch != i:
+                    # attach skipped devices
+                    for ri in skipped_right:
+                        edges.append((nodes[last_on_branch][0],
+                                     nodes[ri][0], edata))
+                    skipped_right = []
+
+                    for li in skipped_left:
+                        edges.append((nodes[li][0], nodes[i][0], edata))
+                    skipped_left = []
+
+                    # make edge between last on branch and this on dev
+                    # luckily duplicate edges are ignored
+                    edges.append((nodes[last_on_branch][0],
+                                 nodes[i][0], edata))
+                # update last_on_branch
+                last_on_branch = i
+
+            try:
+                next_dev = nodes[i+1][1]['dev']
+            except IndexError:
+                # we are at the end, skip steps that look ahead
+                continue
+
+            if set(curr_dev.output_branches) & set(next_dev.input_branches):
+                # base case, make edge as normal
+                edges.append((nodes[i][0], nodes[i+1][0], edata))
+            elif (branch_name not in curr_dev.input_branches):
+                # skip this, attach it to next
+                skipped_left.append(i)
+            elif (branch_name not in curr_dev.output_branches):
+                skipped_right.append(i)
+
         # add sources
         if branch_name in sources:
             nodes.insert(0, (f'source_{branch_name}', {'dev': None}))
+            edges.append((nodes[0][0], nodes[1][0], edata))
+        # add end point
+        nodes.append((branch_name, {'dev': None}))
+        edges.append((nodes[-2][0], nodes[-1][0], edata))
 
         graph.add_nodes_from(nodes)
-
-        # construct edges
-        edges = [(nodes[i][0], nodes[i+1][0],
-                 {'weight': 0.0, 'branch': branch_name})
-                 for i in range(len(nodes)-1)]
         graph.add_edges_from(edges)
 
         graph.name = str(branch_name)
