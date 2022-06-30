@@ -15,6 +15,7 @@ from typing import Any, List
 import networkx as nx
 
 from .config import beamlines, sources
+from .errors import PathError
 from .path import BeamPath
 
 logger = logging.getLogger(__name__)
@@ -127,6 +128,7 @@ class LightController:
             bp = BeamPath(*devices, name=endstation)
             self.beamlines[endstation].append(bp)
 
+        # This isn't used currently, but left for now
         setattr(self, bp.name.replace(' ', '_').lower(),
                 self.beamlines[endstation])
 
@@ -147,6 +149,49 @@ class LightController:
         paths_by_length = sorted(paths, key=imped_z)
 
         return paths_by_length[-1]
+
+    def walk_facility(self):
+        """
+        Return the path from source to destination by walking the
+        graph along device destinations
+        """
+
+        sources = [n for n in self.graph.nodes if 'source' in n]
+
+        paths = {k: [] for k in sources}
+
+        for src, path in paths.items():
+            successors = list(self.graph.successors(src))
+            # skip to node after source node
+            curr = successors[0]
+            while successors:
+                curr_dev = self.graph.nodes[curr]['dev']
+                out_branch = curr_dev.get_lightpath_status().output_branch
+                connections = []
+                for succ in successors:
+                    succ_dev = self.graph.nodes[succ]['dev']
+                    if succ_dev is None:
+                        # reached a node without a device, (the end)
+                        break
+                    in_branches = succ_dev.input_branches
+                    if out_branch in in_branches:
+                        connections.append(succ)
+
+                if not connections:
+                    # should be at the end
+                    break
+                elif len(connections) > 1:
+                    raise PathError(
+                        f'indeterminate pathing, {succ} has '
+                        f'multiple valid children: {connections}'
+                    )
+
+                curr = connections[0]
+                path.append(curr)
+                curr_dev = self.graph.nodes[curr]['dev']
+                successors = list(self.graph.successors(curr))
+
+        return paths
 
     @property
     def destinations(self):
