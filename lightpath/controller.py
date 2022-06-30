@@ -203,7 +203,7 @@ class LightController:
             dests.update([p.impediment for p in paths
                           if p.impediment and p.impediment not in p.branches])
 
-        return dests
+        return list(dests)
 
     @property
     def devices(self):
@@ -247,14 +247,16 @@ class LightController:
         """
         paths = list()
         for src in self.sources:
-            if nx.has_path(self.graph, src, device.name):
+            if nx.has_path(self.graph, src, device.md.name):
                 found_paths = nx.all_simple_paths(self.graph, source=src,
-                                                  target=device.name)
+                                                  target=device.md.name)
                 paths.extend(found_paths)
             else:
-                logger.debug(f'No path between {src} and {device.name}')
-                return None
+                logger.debug(f'No path between {src} and {device.md.name}')
 
+        if not paths:
+            logger.debug(f'No paths found from sources to {device.md.name}')
+            return None
         if len(paths) > 1:
             logger.debug('found two paths to requested device')
 
@@ -346,3 +348,7 @@ class LightController:
 
         graph.name = str(branch_name)
         return graph
+
+    def get_device(self, key):
+        """Return device from graph"""
+        return self.graph.nodes[key]['dev']
