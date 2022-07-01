@@ -120,7 +120,7 @@ class LightApp(Display):
         All possible beamline destinations sorted by end point
         """
         return sorted(list(self.light.beamlines.keys()),
-                      key=lambda x: self.light.beamlines[x].range[0])
+                      key=lambda x: self.light.active_path(x).range[0])
 
     def load_device_row(self, device):
         """
@@ -149,7 +149,7 @@ class LightApp(Display):
         if self.path:
             self.clear_subs()
         # Find pool of devices and create subscriptions
-        self.path = self.light.beamlines[beamline]
+        self.path = self.light.active_path(beamline)
         # Defer running updates until UI is created
         self.path.subscribe(self.update_path, run=False)
         logger.debug("Selected %s devices ...", len(self.path.path))
@@ -293,9 +293,13 @@ class LightApp(Display):
             hidden_removed = (not self.remove_check.isChecked()
                               and row[0].last_state == DeviceState.Removed)
             # Hide if upstream
+            # TODO: This now looks at the whole active path, which includes
+            # upstream devices.  Need to figure out how best to define
+            # "upstream" devices now.  Possibly by branch name?
             beamline = self.selected_beamline()
+            selected_path = self.light.active_path(beamline)
             hidden_upstream = (not self.upstream_check.isChecked()
-                               and device.md.beamline != beamline)
+                               and device not in selected_path.path)
             # Hide device if any of the criteria are met
             row[0].setHidden(hidden_device_type
                              or hidden_removed
