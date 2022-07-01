@@ -132,21 +132,21 @@ class LightController:
         setattr(self, bp.name.replace(' ', '_').lower(),
                 self.beamlines[endstation])
 
-    def active_path(self, endstation):
+    def imped_z(self, path):
+        """Get z position of impediment"""
+        return getattr(path.impediment, 'md.z', math.inf)
+
+    def active_path(self, dest):
         """
         Return the most active path to the requested endstation
 
         Looks for the path with the latest impediment (highest z)
         """
-        paths = self.beamlines[endstation]
+        paths = self.beamlines[dest]
         if len(paths) == 1:
             return paths[0]
 
-        # sort paths by latest impediment z-position
-        def imped_z(path):
-            return getattr(path.impediment, 'md.z', math.inf)
-
-        paths_by_length = sorted(paths, key=imped_z)
+        paths_by_length = sorted(paths, key=self.imped_z)
 
         return paths_by_length[-1]
 
@@ -260,11 +260,16 @@ class LightController:
         if len(paths) > 1:
             logger.debug('found two paths to requested device')
 
-        # TODO: Deal with picking the right path
-        subgraph = self.graph.subgraph(paths[0])
-        devices = [node[1]['dev'] for node in subgraph.nodes.data()
-                   if node[1]['dev'] is not None]
-        return BeamPath(*devices, name=f'{device.name}_path')
+        subgraphs = [self.graph.subgraph(p) for p in paths]
+        beampaths = []
+        for subg in subgraphs:
+            devs = [node[1]['dev'] for node in subg.nodes.data()
+                    if node[1]['dev'] is not None]
+            beampaths.append(BeamPath(*devs, name=f'{device.md.name}_path'))
+
+        paths_by_length = sorted(beampaths, key=self.imped_z)
+
+        return paths_by_length[-1]
 
     @staticmethod
     def make_graph(
