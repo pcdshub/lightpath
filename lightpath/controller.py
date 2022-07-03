@@ -258,13 +258,7 @@ class LightController:
         List[Device]
             list of devices loaded in the facility
         """
-        devices = set()
-
-        for paths in self.beamlines.values():
-            for path in paths:
-                devices.update(path.devices)
-
-        return list(devices)
+        return [n[1]['dev'] for n in self.graph.nodes.data()]
 
     @property
     def incident_devices(self) -> List[Device]:
