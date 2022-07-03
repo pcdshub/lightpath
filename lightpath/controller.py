@@ -10,15 +10,18 @@ where the beam is and what the state of the MPS system is currently.
 """
 import logging
 import math
-from typing import Any, List
+from typing import Any, Dict, List, Tuple
 
 import networkx as nx
+from ophyd import Device
 
 from .config import beamlines, sources
 from .errors import PathError
 from .path import BeamPath
 
 logger = logging.getLogger(__name__)
+
+NodeName = str
 
 
 class LightController:
@@ -62,7 +65,11 @@ class LightController:
         Load the facility from the provided happi client.
 
         The facility is represented by a directed graph, with
-        SearchResults as nodes.
+        devices as nodes.  Edge weights are initialized as 0, and
+        labeled with their branch.
+
+        The facility graph is created by combining subgraphs that
+        each contain all the devices on a given branch.
         """
         results = self.client.search_range(key='z', start=0.0, end=math.inf,
                                            active=True, lightpath=True)
@@ -87,26 +94,25 @@ class LightController:
 
         self.graph = nx.compose_all(subgraphs)
 
-    def load_beamline(self, endstation):
+    def load_beamline(self, endstation: str):
         """
-        Load a beamline given the facility graph.  Find path from source
-        to endstation with reasonable transmission
+        Load a beamline given the facility graph.  Finds all possible
+        paths from facility sources to the endstation's branch.
+        Branches are mapped to endstations in the config
+
+        Loads valid beampaths into the LightController.beamlines
+        attribute for latedr access.
 
         Parameters
         ----------
         endstation : str
             Name of endstation to load
-
-        Returns
-        -------
-        path: BeamPath
         """
         try:
             end_branches = beamlines[endstation]
         except KeyError:
             logger.warning("Unable to find %s as a configured endstation, "
-                           "assuming this is an independent path", endstation)
-            # TODO: Look at all branches?  What to do here
+                           "assuming this is an invalid path", endstation)
             return
 
         paths = list()
@@ -114,7 +120,8 @@ class LightController:
             # Find the paths from each source to the desired line
             for src in self.sources:
                 if nx.has_path(self.graph, src, branch):
-                    found_paths = nx.all_simple_paths(self.graph, source=src,
+                    found_paths = nx.all_simple_paths(self.graph,
+                                                      source=src,
                                                       target=branch)
                     paths.extend(found_paths)
                 else:
@@ -132,15 +139,37 @@ class LightController:
         setattr(self, bp.name.replace(' ', '_').lower(),
                 self.beamlines[endstation])
 
-    def imped_z(self, path):
-        """Get z position of impediment"""
+    def imped_z(self, path: BeamPath) -> float:
+        """
+        Get z position of impediment or inf.
+
+        Parameters
+        ----------
+        path : :class:`BeamPath`
+            BeamPath to find impediment position in
+
+        Returns
+        -------
+        float
+            z position of impediment
+        """
         return getattr(path.impediment, 'md.z', math.inf)
 
-    def active_path(self, dest):
+    def active_path(self, dest: str) -> BeamPath:
         """
         Return the most active path to the requested endstation
 
         Looks for the path with the latest impediment (highest z)
+
+        Parameters
+        ----------
+        dest : str
+            endstation to look for paths towards
+
+        Returns
+        -------
+        path : :class:`BeamPath`
+            the active path
         """
         paths = self.beamlines[dest]
         if len(paths) == 1:
@@ -150,15 +179,24 @@ class LightController:
 
         return paths_by_length[-1]
 
-    def walk_facility(self):
+    def walk_facility(self) -> Dict[NodeName, List[NodeName]]:
         """
-        Return the path from source to destination by walking the
+        Return the paths from source to destination by walking the
         graph along device destinations
-        """
 
+        Returns
+        -------
+        Dict[NodeName, List[NodeName]]
+            A mapping from source node names to path of nodes
+
+        Raises
+        ------
+        PathError
+            If a single, valid path cannot be determined
+        """
         sources = [n for n in self.graph.nodes if 'source' in n]
 
-        paths = {k: [] for k in sources}
+        paths: Dict[NodeName, List] = {k: [] for k in sources}
 
         for src, path in paths.items():
             successors = list(self.graph.successors(src))
@@ -194,9 +232,14 @@ class LightController:
         return paths
 
     @property
-    def destinations(self):
+    def destinations(self) -> List[Device]:
         """
         Current device destinations for the LCLS photon beam
+
+        Returns
+        -------
+        List[Device]
+            a list of beam destinations
         """
         dests = set()
         for paths in self.beamlines.values():
@@ -206,9 +249,14 @@ class LightController:
         return list(dests)
 
     @property
-    def devices(self):
+    def devices(self) -> List[Device]:
         """
-        All of the devices loaded into beampaths
+        All of the devices loaded in the facility
+
+        Returns
+        -------
+        List[Device]
+            list of devices loaded in the facility
         """
         devices = set()
 
@@ -219,9 +267,14 @@ class LightController:
         return list(devices)
 
     @property
-    def incident_devices(self):
+    def incident_devices(self) -> List[Device]:
         """
         List of all devices in contact with photons along the beamline
+
+        Returns
+        -------
+        List[Device]
+            list of all incident devices in facility
         """
         devices = set()
 
@@ -231,14 +284,21 @@ class LightController:
 
         return list(devices)
 
-    def path_to(self, device):
+    def path_to(self, device: Device) -> BeamPath:
         """
-        Create a BeamPath from the source to the requested device
+        Create a BeamPath from the facility source to the requested device
+        In the case of multiple valid paths, returns the path with latest
+        blocking device (highest blocking z-position)
 
         Parameters
         ----------
         device : Device
             A device somewhere in LCLS
+
+        Raises
+        ------
+        PathError
+            If a single, valid path cannot be determined
 
         Returns
         -------
@@ -255,10 +315,7 @@ class LightController:
                 logger.debug(f'No path between {src} and {device.md.name}')
 
         if not paths:
-            logger.debug(f'No paths found from sources to {device.md.name}')
-            return None
-        if len(paths) > 1:
-            logger.debug('found two paths to requested device')
+            raise PathError(f'No paths from sources to {device.md.name}')
 
         subgraphs = [self.graph.subgraph(p) for p in paths]
         beampaths = []
@@ -273,11 +330,35 @@ class LightController:
 
     @staticmethod
     def make_graph(
-        # happi.client.SearchResult, but entrypoints cause circular imports
-        branch_devs: List[Any],
+        branch_devs: List[Device],
         branch_name: str,
-        sources: List[str] = []
+        sources: List[NodeName] = []
     ) -> nx.DiGraph:
+        """
+        Create a graph with devices from branch_devs as nodes,
+        arranged in z-order.
+
+        It is assumed that all devices lie on branch: branch_name
+
+        If sources is provided, will prepend a source node at the
+        beginning of the branch when branch_name == sources
+
+        Parameters
+        ----------
+        branch_devs : List[Device]
+            a list of devices to generate graph with
+
+        branch_name : str
+            branch name, used to label edges
+
+        sources : List[NodeName], optional
+            source node Names, by default []
+
+        Returns
+        -------
+        nx.DiGraph
+            The branch comprised of nodes holding devices from branch_devs
+        """
         graph = nx.DiGraph()
         result_list = list(branch_devs)
         result_list.sort(key=lambda x: x.metadata['z'])
@@ -295,10 +376,11 @@ class LightController:
             nodes.append((res.metadata['name'], {'dev': dev}))
 
         # construct edges
-        edges = []
-        skipped_right = []
-        skipped_left = []
+        edges: List[Tuple[NodeName, NodeName, Dict[str, Any]]] = []
+        skipped_right: List[int] = []
+        skipped_left: List[int] = []
         last_on_branch = 0
+        # weight not used currently, but may be for path finding algos
         edata = {'weight': 0.0, 'branch': branch_name}
         # Need to properly handle devices that either:
         # only have the current branch in their input (skipped_right)
@@ -354,6 +436,21 @@ class LightController:
         graph.name = str(branch_name)
         return graph
 
-    def get_device(self, key):
-        """Return device from graph"""
-        return self.graph.nodes[key]['dev']
+    def get_device(self, device: NodeName) -> Device:
+        """
+        Return device from graph
+
+        Parameters
+        ----------
+        device : NodeName
+            name of device
+
+        Returns
+        -------
+        Device
+            requested device
+        """
+        try:
+            return self.graph.nodes[device]['dev']
+        except KeyError:
+            logger.error(f'requested device ({device}) not found')

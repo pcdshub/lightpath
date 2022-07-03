@@ -13,12 +13,15 @@ the path only knows the state of the devices it contains, so certain methods
 might not return an accurate representation of reality if an upstream device is
 affecting the beam.
 """
+from __future__ import annotations
+
 import enum
 import logging
 import math
 from collections.abc import Iterable
-from typing import Optional
+from typing import Callable, List, Optional, TextIO, Tuple, Union
 
+from ophyd import Device, DeviceStatus
 from ophyd.ophydobj import OphydObject
 from ophyd.status import wait as status_wait
 from ophyd.utils import DisconnectedError
@@ -148,7 +151,7 @@ class BeamPath(OphydObject):
     # Transmission setting
     minimum_transmission = 0.1
 
-    def __init__(self, *devices: Optional[OphydObject], name: str = None):
+    def __init__(self, *devices: OphydObject, name: str = None):
         super().__init__(name=name)
         self.devices = devices
         self._has_subscribed = False
@@ -173,33 +176,32 @@ class BeamPath(OphydObject):
                             'attribute {}'.format(e))
 
     @property
-    def branches(self):
-        """
-        Branching devices along the path
-        """
+    def branches(self) -> List[Device]:
+        """ List[Device]: Branching devices along the path """
         return [d for d in self.devices
                 if len(getattr(d, 'output_branches', ['1'])) > 1]
 
     @property
-    def range(self):
-        """
-        Starting z position of beamline
-        """
+    def range(self) -> Tuple[float, float]:
+        """ Tuple[float, float]: Starting z position of beamline """
         return self.path[0].md.z, self.path[-1].md.z
 
     @property
-    def path(self):
-        """
-        List of devices ordered by coordinates
-        """
+    def path(self) -> List[Device]:
+        """ List[Device]: List of devices ordered by coordinates """
         return sorted(self.devices, key=lambda dev: dev.md.z)
 
     @property
-    def blocking_devices(self):
+    def blocking_devices(self) -> List[Device]:
         """
         A list of devices that are currently inserted or are in unknown
         positions. This includes devices downstream of the first
         :attr:`.impediment`
+
+        Returns
+        -------
+        List[Device]
+            list of blockoing devices
         """
         # Cache important prior devices
         prev_device = None
@@ -239,11 +241,16 @@ class BeamPath(OphydObject):
         return block
 
     @property
-    def incident_devices(self):
+    def incident_devices(self) -> List[Device]:
         """
         A list of devices the beam is currently incident on. This includes the
         current :attr:`.impediment` and any upstream devices that may be
         inserted but have more transmission than :attr:`.minimum_transmission`
+
+        Returns
+        -------
+        List[Device]
+            List of incident devices
         """
         # Find device information
         inserted = [d for d in self.path
@@ -255,14 +262,15 @@ class BeamPath(OphydObject):
         # Otherwise only return upstream of the impediment
         return [d for d in inserted if d.md.z <= impediment.md.z]
 
-    def show_devices(self, file=None):
+    def show_devices(self, file: TextIO = None):
         """
         Print a table of the devices along the beamline
 
         Parameters
         ----------
-        file : file-like object
-            File to writable
+        file : TextIO
+            File-like object to write output to.  Default behavior is
+            printing to sys.stdout
         """
         # Initialize Table
         pt = PrettyTable(['Name', 'Prefix', 'Position', 'Input Branches',
@@ -280,10 +288,8 @@ class BeamPath(OphydObject):
         print(pt, file=file)
 
     @property
-    def impediment(self):
-        """
-        First blocking device along the path
-        """
+    def impediment(self) -> Device:
+        """ Device: First blocking device along the path """
         # Find device information
         blocks = self.blocking_devices
         if not blocks:
@@ -293,21 +299,31 @@ class BeamPath(OphydObject):
             return blocks[0]
 
     @property
-    def cleared(self):
+    def cleared(self) -> bool:
         """
         Whether beamline is clear of any devices that are below the
         :attr:`.minimum_transmission`
+
+        Returns
+        -------
+        bool
+            whether beamline is clear of impediments
         """
         return not any(self.blocking_devices)
 
-    def clear(self, wait=False, timeout=None,
-              passive=False, ignore=None):
+    def clear(
+        self,
+        wait: bool = False,
+        timeout: Optional[float] = None,
+        ignore: Optional[List[Device]] = None,
+        passive: bool = False,
+    ) -> List[DeviceStatus]:
         """
         Clear the beampath of all obstructions
 
         Parameters
         ----------
-        wait : bool
+        wait : bool, optional
             Wait for all devices to complete their motion
 
         timeout : float, optional
@@ -322,7 +338,7 @@ class BeamPath(OphydObject):
 
         Returns
         -------
-        statuses :
+        statuses : List[ophyd.DeviceStatus]
             Returns list of status objects returned by
             :meth:`.LightInterface.remove`
         """
@@ -349,7 +365,7 @@ class BeamPath(OphydObject):
 
         return status
 
-    def join(self, *beampaths):
+    def join(self, *beampaths: BeamPath) -> BeamPath:
         """
         Join multiple beampaths with the current one
 
@@ -371,7 +387,11 @@ class BeamPath(OphydObject):
         """
         return BeamPath.from_join(self, *beampaths, name=self.name)
 
-    def split(self, z=None, device=None):
+    def split(
+        self,
+        z: Optional[float] = None,
+        device: Optional[Device] = None
+    ) -> Tuple[BeamPath, BeamPath]:
         """
         Split the beampath producing two new BeamPath objects either by a
         specific position or a devices location
@@ -381,7 +401,7 @@ class BeamPath(OphydObject):
         z : float
             Z position to split the paths
 
-        device  : LightDevice, name, or base PV
+        device : LightDevice, name, or base PV
             The specified device will be the last device in the first
             :class:`.BeamPath` object
 
@@ -392,7 +412,9 @@ class BeamPath(OphydObject):
         """
         # Not enough information
         if not z and not device:
-            raise ValueError("Must supply information where to split the path")
+            raise ValueError(
+                "Must supply where to split the path (either z or device)"
+            )
         # Grab the z if given a device
         if device:
             z = device.md.z
@@ -405,7 +427,7 @@ class BeamPath(OphydObject):
                 BeamPath(*[d for d in self.devices if d.md.z > z]))
 
     @classmethod
-    def from_join(cls, *beampaths, name=None):
+    def from_join(cls, *beampaths: BeamPath, name: str = None) -> BeamPath:
         """
         Join other beampaths with the current one
 
@@ -436,14 +458,18 @@ class BeamPath(OphydObject):
         # Create a new instance
         return BeamPath(*set(devices), name=name)
 
-    def _ignore(self, ignore_devices, passive=False):
+    def _ignore(
+        self,
+        ignore_devices: Optional[Union[Device, List[Device]]] = None,
+        passive: bool = False
+    ) -> Tuple[List[Device], List[Device]]:
         """
         Assemble list of available devices with some exclusions
 
         Parameters
         ----------
         ignore_devices : list
-            Devices to ignore
+            Device(s) to ignore
 
         passive : bool
             If False, ignore passive devices
@@ -487,7 +513,12 @@ class BeamPath(OphydObject):
         if obj and obj.parent.md.z <= block:
             self._run_subs(sub_type=self.SUB_PTH_CHNG, device=obj)
 
-    def subscribe(self, cb, event_type=None, run=True):
+    def subscribe(
+        self,
+        cb: Callable,
+        event_type: Optional[str] = None,
+        run: bool = True
+    ):
         """
         Subscribe to changes of the valve
 
