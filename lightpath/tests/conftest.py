@@ -13,6 +13,7 @@ from pcdsdevices.interface import LightpathState
 from pcdsdevices.signal import SummarySignal
 
 from lightpath import BeamPath
+from lightpath.controller import LightController
 
 
 #################
@@ -122,7 +123,9 @@ class Valve(Device):
         # Run subscriptions to device state
         self._run_subs(obj=self, sub_type=self._default_sub)
         # Return complete status object
-        return DeviceStatus(self, done=True, success=True)
+        status = DeviceStatus(self)
+        status.set_finished()
+        return status
 
     def remove(self, wait=False, timeout=None, finished_cb=None):
         """
@@ -133,7 +136,9 @@ class Valve(Device):
         # Run subscriptions to device state
         self._run_subs(obj=self, sub_type=self._default_sub)
         # Return complete status object
-        return DeviceStatus(self, done=True, success=True)
+        status = DeviceStatus(self)
+        status.set_finished()
+        return status
 
 
 class IPIMB(Valve):
@@ -284,3 +289,8 @@ def lcls_client():
     db = os.path.join(os.path.dirname(__file__), 'path.json')
     print(db)
     return happi.Client(path=db)
+
+
+@pytest.fixture(scope='function')
+def lcls_ctrl(lcls_client: happi.Client):
+    return LightController(lcls_client)
