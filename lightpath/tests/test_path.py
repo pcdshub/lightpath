@@ -42,8 +42,8 @@ def test_sort(path: BeamPath):
 
 def test_branching_finding(path: BeamPath):
     # Find the optic along the beampath
-    assert path.branches == [path.path[4]]
-    assert isinstance(path.branches[0], Crystal)
+    assert path.branching_devices == [path.path[4]]
+    assert isinstance(path.branching_devices[0], Crystal)
 
 
 def test_clear_beamline(path: BeamPath, branch: BeamPath):

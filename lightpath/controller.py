@@ -244,7 +244,8 @@ class LightController:
         dests = set()
         for paths in self.beamlines.values():
             dests.update([p.impediment for p in paths
-                          if p.impediment and p.impediment not in p.branches])
+                          if p.impediment and p.impediment
+                          not in p.branching_devices])
 
         return list(dests)
 

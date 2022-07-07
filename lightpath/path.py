@@ -185,7 +185,7 @@ class BeamPath(OphydObject):
                             'attribute {}'.format(e))
 
     @property
-    def branches(self) -> List[Device]:
+    def branching_devices(self) -> List[Device]:
         """ List[Device]: Branching devices along the path """
         return [d for d in self.devices
                 if len(getattr(d, 'output_branches', ['1'])) > 1]
