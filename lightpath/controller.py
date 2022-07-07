@@ -13,6 +13,7 @@ import math
 from typing import Any, Dict, List, Tuple
 
 import networkx as nx
+from happi import SearchResult
 from ophyd import Device
 
 from .config import beamlines, sources
@@ -49,14 +50,14 @@ class LightController:
         self.client = client
         self.containers = list()
         self.beamlines = dict()
-        self.graph = nx.DiGraph()
+        self.graph: nx.DiGraph
         self.sources = set()
 
         # initialize graph -> self.graph
         self.load_facility()
 
         endstations = endstations or beamlines.keys()
-        # # Find the requisite beamlines to reach our endstation
+        # Find the requisite beamlines to reach our endstation
         for beamline in endstations:
             self.load_beamline(beamline)
 
@@ -325,7 +326,7 @@ class LightController:
 
     @staticmethod
     def make_graph(
-        branch_devs: List[Device],
+        branch_devs: List[SearchResult],
         branch_name: str,
         sources: List[NodeName] = []
     ) -> nx.DiGraph:
@@ -340,7 +341,7 @@ class LightController:
 
         Parameters
         ----------
-        branch_devs : List[Device]
+        branch_devs : List[happi.SearchResult]
             a list of devices to generate graph with
 
         branch_name : str
@@ -357,7 +358,7 @@ class LightController:
         graph = nx.DiGraph()
         result_list = list(branch_devs)
         result_list.sort(key=lambda x: x.metadata['z'])
-        # label nodes with device name, store device
+        # label nodes with device name, store ophyd device
         nodes = []
         for res in result_list:
             try:

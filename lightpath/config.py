@@ -3,7 +3,7 @@ Configuration for LCLS beamlines
 """
 
 # mapping of endstation to branch name
-beamlines = {'XPP': ['L2', 'L0'],
+beamlines = {'XPP': ['L0', 'L2'],
              'XCS': ['L3'],
              'MFX': ['L5'],
              'CXI': ['L0'],

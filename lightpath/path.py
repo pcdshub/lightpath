@@ -225,8 +225,7 @@ class BeamPath(OphydObject):
                 curr_status = None
 
             # short circuit if statuses are in error
-            if ((curr_state is DeviceState.Error) or
-               (curr_state is DeviceState.Unknown)):
+            if curr_state in (DeviceState.Error, DeviceState.Unknown):
                 block.append(device)
 
             # check to make sure input and output branches match
