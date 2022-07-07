@@ -19,6 +19,7 @@ import enum
 import logging
 import math
 from collections.abc import Iterable
+from dataclasses import dataclass
 from typing import Callable, List, Optional, TextIO, Tuple, Union
 
 from ophyd import Device, DeviceStatus
@@ -30,6 +31,14 @@ from prettytable import PrettyTable
 from .errors import CoordinateError
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class LightpathState:
+    inserted: bool
+    removed: bool
+    transmission: float
+    output_branch: str
 
 
 class DeviceState(enum.Enum):
