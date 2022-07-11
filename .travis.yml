@@ -14,7 +14,7 @@ env:
     - CONDA_EXTRAS="pip"
     - CONDA_REQUIREMENTS="dev-requirements.txt"
 
-    - PIP_EXTRAS="PyQt5"
+    - PIP_EXTRAS="PyQt5 -e ./"
 
 jobs:
   allow_failures:
