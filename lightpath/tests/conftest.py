@@ -310,4 +310,5 @@ def lcls_client():
 
 @pytest.fixture(scope='function')
 def lcls_ctrl(lcls_client: happi.Client):
+    print(f'first item: {lcls_client.search()[0]}')
     return LightController(lcls_client)
