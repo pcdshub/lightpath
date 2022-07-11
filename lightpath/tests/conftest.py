@@ -9,10 +9,9 @@ from ophyd import Device, Kind
 from ophyd.signal import AttributeSignal
 from ophyd.status import DeviceStatus
 from ophyd.utils import DisconnectedError
-from pcdsdevices.interface import LightpathState
 from pcdsdevices.signal import SummarySignal
 
-from lightpath import BeamPath
+from lightpath import BeamPath, LightpathState
 from lightpath.controller import LightController
 
 
