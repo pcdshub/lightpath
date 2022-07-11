@@ -96,7 +96,7 @@ def find_device_state(device):
     """
     # Gather device information
     try:
-        status = device.get_lightpath_status()
+        status = device.get_lightpath_state()
         _in, _out = status.inserted, status.removed
         logger.debug("Device %s reporting; IN=%s, OUT=%s",
                      device.name, _in, _out)
@@ -219,7 +219,7 @@ class BeamPath(OphydObject):
         for device in self.path:
             curr_state = find_device_state(device)
             try:
-                curr_status = device.get_lightpath_status()
+                curr_status = device.get_lightpath_state()
             except Exception as e:
                 logger.debug(f'lightpath status unknown: {e}')
                 curr_status = None
@@ -493,7 +493,7 @@ class BeamPath(OphydObject):
         if not passive:
             logger.debug("Passive devices will be ignored ...")
             ignore.extend([d for d in self.devices
-                           if d.get_lightpath_status().transmission >
+                           if d.get_lightpath_state().transmission >
                            self.minimum_transmission])
         # Add ignored devices
         if isinstance(ignore_devices, Iterable):
@@ -546,10 +546,10 @@ class BeamPath(OphydObject):
             for dev in self.devices:
                 # Add callback here!
                 try:
-                    dev.lp_summary.subscribe(self._device_moved,
-                                             run=False)
+                    dev.lightpath_summary.subscribe(self._device_moved,
+                                                    run=False)
                     # get once to initialize SummarySignal
-                    dev.lp_summary.get()
+                    dev.lightpath_summary.get()
                 except Exception:
                     logger.error("BeamPath is unable to subscribe "
                                  "to device %s", dev.name)

@@ -62,7 +62,7 @@ def test_filtering(lcls_client, monkeypatch, qtbot):
         row[0].setHidden.reset_mock()
     lightapp.filter()
     for row in lightapp.rows:
-        if row[0].device.get_lightpath_status().removed:
+        if row[0].device.get_lightpath_state().removed:
             row[0].setHidden.assert_called_with(True)
         else:
             row[0].setHidden.assert_called_with(False)
@@ -81,7 +81,7 @@ def test_filtering(lcls_client, monkeypatch, qtbot):
     lightapp.filter()
     for row in lightapp.rows:
         if ((row[0].device not in lightapp.light.active_path('MEC').path)
-                or (row[0].device.get_lightpath_status().removed)):
+                or (row[0].device.get_lightpath_state().removed)):
             row[0].setHidden.assert_called_with(True)
         else:
             row[0].setHidden.assert_called_with(False)

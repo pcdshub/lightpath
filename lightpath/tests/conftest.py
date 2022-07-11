@@ -76,7 +76,7 @@ class Valve(Device):
                               attr='_current_destination',
                               kind=Kind.hinted)
 
-    lp_summary = Cpt(SummarySignal, name='lp_summary')
+    lightpath_summary = Cpt(SummarySignal, name='lp_summary')
 
     lightpath_cpts = ['current_state', 'current_transmission',
                       'current_destination']
@@ -89,7 +89,7 @@ class Valve(Device):
         self.output_branches = output_branches
         self.status = Status.removed
         for sig in self.lightpath_cpts:
-            self.lp_summary.add_signal_by_attr_name(sig)
+            self.lightpath_summary.add_signal_by_attr_name(sig)
 
     @property
     def _current_destination(self):
@@ -101,7 +101,7 @@ class Valve(Device):
         """String of state for current_state AttributeSignal"""
         return self.status
 
-    def get_lightpath_status(self):
+    def get_lightpath_state(self):
         """Return LightpathState object"""
         status = self.status
         if status == Status.disconnected:

@@ -205,7 +205,7 @@ class LightController:
             curr = successors[0]
             while successors:
                 curr_dev = self.graph.nodes[curr]['dev']
-                out_branch = curr_dev.get_lightpath_status().output_branch
+                out_branch = curr_dev.get_lightpath_state().output_branch
                 connections = []
                 for succ in successors:
                     succ_dev = self.graph.nodes[succ]['dev']
