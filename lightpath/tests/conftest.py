@@ -9,7 +9,7 @@ from ophyd import Device, Kind
 from ophyd.signal import AttributeSignal
 from ophyd.status import DeviceStatus
 from ophyd.utils import DisconnectedError
-from pcdsdevices.signal import SummarySignal
+from pcdsdevices.signal import AggregateSignal
 
 from lightpath import BeamPath, LightpathState
 from lightpath.controller import LightController
@@ -44,6 +44,23 @@ def set_level(pytestconfig):
 #####################
 # Simulated Classes #
 #####################
+class SummarySignal(AggregateSignal):
+    """
+    Signal that holds a hash of the values of the constituent signals.
+
+    Meant to allow tracking of constituent signals via callbacks.
+
+    The calculated readback value is useless, and should not be used
+    in any downstream calculations.  Use the signal/PV you actually
+    care about instead.
+    """
+    def _calc_readback(self):
+        values = tuple(sig.get() for sig in self._signals)
+        # We return a hash here, rather than the tuple, to always provide
+        # an ophyd-compatible datatype.
+        return hash(values)
+
+
 class Status:
     """
     Hold pseudo-status
