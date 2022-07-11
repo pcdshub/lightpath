@@ -97,8 +97,9 @@ class Valve(Device):
     lightpath_cpts = ['current_state', 'current_transmission',
                       'current_destination']
 
-    def __init__(self, name, z, input_branches, output_branches):
+    def __init__(self, prefix='', *, name, z, input_branches, output_branches):
         super().__init__(name, name=name)
+        self.prefix = prefix
         self.md = SimpleNamespace()
         self.md.z = z
         self.input_branches = input_branches
@@ -206,26 +207,26 @@ class Crystal(Valve):
 # Basic Device
 @pytest.fixture(scope='module')
 def device():
-    return Valve('valve', z=40.0, input_branches=['TST'],
+    return Valve('valve', name='valve', z=40.0, input_branches=['TST'],
                  output_branches=['TST'])
 
 
 # Basic Beamline
 def simulated_path():
     # Assemble device lists
-    devices = [Valve('zero', z=0., input_branches=['TST'],
+    devices = [Valve('zero', name='zero', z=0., input_branches=['TST'],
                      output_branches=['TST']),
-               Valve('one', z=2., input_branches=['TST'],
+               Valve('one', name='one', z=2., input_branches=['TST'],
                      output_branches=['TST']),
-               Stopper('two', z=9., input_branches=['TST'],
+               Stopper('two', name='two', z=9., input_branches=['TST'],
                        output_branches=['TST']),
-               Valve('three', z=15., input_branches=['TST'],
+               Valve('three', name='three', z=15., input_branches=['TST'],
                      output_branches=['TST']),
-               Crystal('four', z=16., input_branches=['TST'],
+               Crystal('four', name='four', z=16., input_branches=['TST'],
                        output_branches=['TST', 'SIM']),
-               IPIMB('five', z=24., input_branches=['TST'],
+               IPIMB('five', name='five', z=24., input_branches=['TST'],
                      output_branches=['TST']),
-               Valve('six', z=30., input_branches=['TST'],
+               Valve('six', name='six', z=30., input_branches=['TST'],
                      output_branches=['TST'])
                ]
     # Create semi-random order
@@ -243,19 +244,19 @@ def path():
 @pytest.fixture(scope='function')
 def branch():
     # Assemble device lists
-    devices = [Valve('zero', z=0., input_branches=['TST'],
+    devices = [Valve('zero', name='zero', z=0., input_branches=['TST'],
                      output_branches=['TST']),
-               Valve('one', z=2., input_branches=['TST'],
+               Valve('one', name='one', z=2., input_branches=['TST'],
                      output_branches=['TST']),
-               Stopper('two', z=9., input_branches=['TST'],
+               Stopper('two', name='two', z=9., input_branches=['TST'],
                        output_branches=['TST']),
-               Valve('three', z=15., input_branches=['TST'],
+               Valve('three', name='three', z=15., input_branches=['TST'],
                      output_branches=['TST']),
-               Crystal('four', z=16., input_branches=['TST'],
+               Crystal('four', name='four', z=16., input_branches=['TST'],
                        output_branches=['TST', 'SIM']),
-               IPIMB('five', z=24., input_branches=['SIM'],
+               IPIMB('five', name='five', z=24., input_branches=['SIM'],
                      output_branches=['SIM']),
-               Valve('six', z=30., input_branches=['SIM'],
+               Valve('six', name='six', z=30., input_branches=['SIM'],
                      output_branches=['SIM'])]
     # Create semi-random order
     devices = sorted(devices, key=lambda d: d.prefix)
@@ -266,37 +267,37 @@ def branch():
 # Simplified LCLS layout
 @pytest.fixture(scope='function')
 def lcls():
-    return [Valve('FEE Valve 1', z=0., input_branches=['L0'],
+    return [Valve('FEE Valve 1', name='fee_val1', z=0., input_branches=['L0'],
                   output_branches=['L0']),
-            Valve('FEE Valve 2', z=2., input_branches=['L0'],
+            Valve('FEE Valve 2', name='fee_val2', z=2., input_branches=['L0'],
                   output_branches=['L0']),
-            Stopper('S2 Stopper', z=9., input_branches=['L0'],
+            Stopper('S2 Stopper', name='s2_st', z=9., input_branches=['L0'],
                     output_branches=['L0']),
-            IPIMB('XRT IPM', z=15., input_branches=['L0'],
+            IPIMB('XRT IPM', name='xrt_ipm', z=15., input_branches=['L0'],
                   output_branches=['L0']),
-            Crystal('XRT M1H', z=16., input_branches=['L0'],
+            Crystal('XRT M1H', name='xrt_m1h', z=16., input_branches=['L0'],
                     output_branches=['L0', 'L3']),
-            Valve('XRT Valve', z=18., input_branches=['L0'],
+            Valve('XRT Valve', name='xrt_valve', z=18., input_branches=['L0'],
                   output_branches=['L0']),
-            Crystal('XRT M2H', z=20., input_branches=['L0'],
+            Crystal('XRT M2H', name='xrt_m2h', z=20., input_branches=['L0'],
                     output_branches=['L0', 'L4']),
-            IPIMB('HXR IPM', z=24., input_branches=['L0'],
+            IPIMB('HXR IPM', name='hxr_ipm', z=24., input_branches=['L0'],
                   output_branches=['L0']),
-            Valve('HXR Valve', z=25., input_branches=['L0'],
+            Valve('HXR Valve', name='hxr_valve', z=25., input_branches=['L0'],
                   output_branches=['L0']),
-            Stopper('S5 Stopper', z=31., input_branches=['L0'],
+            Stopper('S5 Stopper', name='s5_st', z=31., input_branches=['L0'],
                     output_branches=['L0']),
-            Stopper('S4 Stopper', z=32., input_branches=['L3'],
+            Stopper('S4 Stopper', name='s4_st', z=32., input_branches=['L3'],
                     output_branches=['L3']),
-            Stopper('S6 Stopper',  z=30., input_branches=['L4'],
+            Stopper('S6 Stopper', name='s6_st', z=30., input_branches=['L4'],
                     output_branches=['L4']),
-            IPIMB('MEC IPM', z=24., input_branches=['L4'],
+            IPIMB('MEC IPM', name='mec_ipm', z=24., input_branches=['L4'],
                   output_branches=['L4']),
-            Valve('MEC Valve', z=25., input_branches=['L4'],
+            Valve('MEC Valve', name='mec_valve', z=25., input_branches=['L4'],
                   output_branches=['L4']),
-            IPIMB('XCS IPM', z=21., input_branches=['L3'],
+            IPIMB('XCS IPM', name='xcs_ipm', z=21., input_branches=['L3'],
                   output_branches=['L3']),
-            Valve('XCS Valve', z=22., input_branches=['L3'],
+            Valve('XCS Valve', name='xcs_valve', z=22., input_branches=['L3'],
                   output_branches=['L3'])]
 
 

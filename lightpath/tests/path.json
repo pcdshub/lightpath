@@ -2,9 +2,6 @@
     "sl1k2": {
         "_id": "sl1k2",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:23 2022",
         "device_class": "lightpath.tests.conftest.Stopper",
         "documentation": null,
@@ -14,7 +11,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:23 2022",
         "lightpath": true,
@@ -29,9 +27,6 @@
     "at1k4": {
         "_id": "at1k4",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:23 2022",
         "device_class": "lightpath.tests.conftest.Valve",
         "documentation": null,
@@ -41,7 +36,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:23 2022",
         "lightpath": true,
@@ -56,9 +52,6 @@
     "im1k0": {
         "_id": "im1k0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -68,7 +61,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -83,9 +77,6 @@
     "sl1k0": {
         "_id": "sl1k0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Stopper",
         "documentation": null,
@@ -95,7 +86,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -110,9 +102,6 @@
     "im2k0": {
         "_id": "im2k0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -122,7 +111,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -137,9 +127,6 @@
     "im1k1": {
         "_id": "im1k1",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:23 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -149,7 +136,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:23 2022",
         "lightpath": true,
@@ -164,9 +152,6 @@
     "im1k2": {
         "_id": "im1k2",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:23 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -176,7 +161,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:23 2022",
         "lightpath": true,
@@ -191,9 +177,6 @@
     "im1k4": {
         "_id": "im1k4",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:24 2022",
         "device_class": "pcdsdevices.pim.XPIM",
         "documentation": null,
@@ -203,7 +186,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:24 2022",
         "lightpath": true,
@@ -218,9 +202,6 @@
     "im2k1": {
         "_id": "im2k1",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:23 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -230,7 +211,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:23 2022",
         "lightpath": true,
@@ -245,9 +227,6 @@
     "im2k2": {
         "_id": "im2k2",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:23 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -257,7 +236,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:23 2022",
         "lightpath": true,
@@ -272,9 +252,6 @@
     "im4k4": {
         "_id": "im4k4",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:24 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -284,7 +261,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:24 2022",
         "lightpath": true,
@@ -299,9 +277,6 @@
     "im1l3": {
         "_id": "im1l3",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:24 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -311,7 +286,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:24 2022",
         "lightpath": true,
@@ -326,9 +302,6 @@
     "sl1l3": {
         "_id": "sl1l3",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Stopper",
         "documentation": null,
@@ -338,7 +311,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -353,9 +327,6 @@
     "im2l3": {
         "_id": "im2l3",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:24 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -365,7 +336,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:24 2022",
         "lightpath": true,
@@ -380,9 +352,6 @@
     "im1l0": {
         "_id": "im1l0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -392,7 +361,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -407,9 +377,6 @@
     "sl1l0": {
         "_id": "sl1l0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Stopper",
         "documentation": null,
@@ -419,7 +386,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -434,9 +402,6 @@
     "im2l0": {
         "_id": "im2l0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -446,7 +411,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -461,9 +427,6 @@
     "im9l1": {
         "_id": "im9l1",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:23 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -473,7 +436,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:23 2022",
         "lightpath": true,
@@ -488,9 +452,6 @@
     "im3k1": {
         "_id": "im3k1",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:23 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -500,7 +461,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:23 2022",
         "lightpath": true,
@@ -515,9 +477,6 @@
     "sl2k1": {
         "_id": "sl2k1",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Stopper",
         "documentation": null,
@@ -527,7 +486,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -542,9 +502,6 @@
     "im4k1": {
         "_id": "im4k1",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -554,7 +511,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -569,9 +527,6 @@
     "mr1k1": {
         "_id": "mr1k1",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:21 2022",
         "device_class": "lightpath.tests.conftest.Crystal",
         "documentation": null,
@@ -581,7 +536,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:21 2022",
         "lightpath": true,
@@ -597,9 +553,6 @@
     "sl2k0": {
         "_id": "sl2k0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Stopper",
         "documentation": null,
@@ -609,7 +562,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -624,9 +578,6 @@
     "mr1k2": {
         "_id": "mr1k2",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:21 2022",
         "device_class": "lightpath.tests.conftest.Crystal",
         "documentation": null,
@@ -636,7 +587,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:21 2022",
         "lightpath": true,
@@ -652,9 +604,6 @@
     "mr1k3": {
         "_id": "mr1k3",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:21 2022",
         "device_class": "lightpath.tests.conftest.Crystal",
         "documentation": null,
@@ -664,7 +613,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:21 2022",
         "lightpath": true,
@@ -680,9 +630,6 @@
     "im1k3": {
         "_id": "im1k3",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -692,7 +639,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -707,9 +655,6 @@
     "sl1k3": {
         "_id": "sl1k3",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Stopper",
         "documentation": null,
@@ -719,7 +664,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -734,9 +680,6 @@
     "im2k3": {
         "_id": "im2k3",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -746,7 +689,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -761,9 +705,6 @@
     "sl3k0": {
         "_id": "sl3k0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Stopper",
         "documentation": null,
@@ -773,7 +714,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -788,9 +730,6 @@
     "mr1k4": {
         "_id": "mr1k4",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:21 2022",
         "device_class": "lightpath.tests.conftest.Crystal",
         "documentation": null,
@@ -800,7 +739,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:21 2022",
         "lightpath": true,
@@ -815,9 +755,6 @@
     "im3k0": {
         "_id": "im3k0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -827,7 +764,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -842,9 +780,6 @@
     "sl4k0": {
         "_id": "sl4k0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Stopper",
         "documentation": null,
@@ -854,7 +789,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -869,9 +805,6 @@
     "im4k0": {
         "_id": "im4k0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -881,7 +814,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -896,9 +830,6 @@
     "im5l0": {
         "_id": "im5l0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -908,7 +839,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -923,9 +855,6 @@
     "sl4l0": {
         "_id": "sl4l0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Stopper",
         "documentation": null,
@@ -935,7 +864,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -950,9 +880,6 @@
     "im6l0": {
         "_id": "im6l0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -962,7 +889,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -977,9 +905,6 @@
     "mr1l0": {
         "_id": "mr1l0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Crystal",
         "documentation": null,
@@ -989,7 +914,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -1005,9 +931,6 @@
     "im3l0": {
         "_id": "im3l0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -1017,7 +940,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -1032,9 +956,6 @@
     "sl2l0": {
         "_id": "sl2l0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Stopper",
         "documentation": null,
@@ -1044,7 +965,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -1059,9 +981,6 @@
     "im4l0": {
         "_id": "im4l0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -1071,7 +990,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -1086,9 +1006,6 @@
     "mr1l3": {
         "_id": "mr1l3",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Crystal",
         "documentation": null,
@@ -1098,7 +1015,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -1114,9 +1032,6 @@
     "sl3l0": {
         "_id": "sl3l0",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Stopper",
         "documentation": null,
@@ -1126,7 +1041,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -1141,9 +1057,6 @@
     "mr1l4": {
         "_id": "mr1l4",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Crystal",
         "documentation": null,
@@ -1153,7 +1066,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -1170,9 +1084,6 @@
     "im1l4": {
         "_id": "im1l4",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:24 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -1182,7 +1093,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:24 2022",
         "lightpath": true,
@@ -1197,9 +1109,6 @@
     "sl1l4": {
         "_id": "sl1l4",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Stopper",
         "documentation": null,
@@ -1209,7 +1118,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -1224,9 +1134,6 @@
     "im2l4": {
         "_id": "im2l4",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:24 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -1236,7 +1143,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:24 2022",
         "lightpath": true,
@@ -1251,9 +1159,6 @@
     "im1l5": {
         "_id": "im1l5",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:24 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -1263,7 +1168,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:24 2022",
         "lightpath": true,
@@ -1278,9 +1184,6 @@
     "sl1l5": {
         "_id": "sl1l5",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Stopper",
         "documentation": null,
@@ -1290,7 +1193,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -1305,9 +1209,6 @@
     "im2l5": {
         "_id": "im2l5",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:24 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -1317,7 +1218,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:24 2022",
         "lightpath": true,
@@ -1332,9 +1234,6 @@
     "sl2k4": {
         "_id": "sl2k4",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:24 2022",
         "device_class": "lightpath.tests.conftest.Stopper",
         "documentation": null,
@@ -1344,7 +1243,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:24 2022",
         "lightpath": true,
@@ -1359,9 +1259,6 @@
     "sl1k1": {
         "_id": "sl1k1",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:23 2022",
         "device_class": "lightpath.tests.conftest.Stopper",
         "documentation": null,
@@ -1371,7 +1268,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:23 2022",
         "lightpath": true,
@@ -1386,9 +1284,6 @@
     "xcs_lodcm": {
         "_id": "xcs_lodcm",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Crystal",
         "documentation": null,
@@ -1398,7 +1293,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -1414,9 +1310,6 @@
     "xpp_lodcm": {
         "_id": "xpp_lodcm",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Crystal",
         "documentation": null,
@@ -1426,7 +1319,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -1442,9 +1336,6 @@
     "im1l2": {
         "_id": "im1l2",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -1454,7 +1345,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -1469,9 +1361,6 @@
     "sl1l2": {
         "_id": "sl1l2",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.Stopper",
         "documentation": null,
@@ -1481,7 +1370,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,
@@ -1496,9 +1386,6 @@
     "im2l2": {
         "_id": "im2l2",
         "active": true,
-        "args": [
-            "{{prefix}}"
-        ],
         "creation": "Wed Jun 22 09:53:22 2022",
         "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
@@ -1508,7 +1395,8 @@
         "kwargs": {
             "input_branches": "{{input_branches}}",
             "output_branches": "{{output_branches}}",
-            "z": "{{z}}"
+            "z": "{{z}}",
+            "name": "{{name}}"
         },
         "last_edit": "Wed Jun 22 09:53:22 2022",
         "lightpath": true,

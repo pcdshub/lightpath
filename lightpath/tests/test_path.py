@@ -183,7 +183,7 @@ def test_callback(path: BeamPath):
     # Create mock callback
     cb = Mock()
     # Subscribe to event changes
-    path.subscribe(cb, event_type=path.SUB_PTH_CHNG, run=False)
+    path.subscribe(cb, run=False)
     # Change state of beampath
     path.devices[4].insert()
     # Assert callback has been run

@@ -21,35 +21,35 @@ def test_controller_paths(lcls_client: happi.Client):
     # Range of each path is correct
     # all HXR lines share a beginning
     for line in ['XPP', 'XCS', 'MFX', 'CXI', 'MEC']:
-        assert controller.active_path(line).path[0].name == 'IM1L0:XTES'
+        assert controller.active_path(line).path[0].name == 'im1l0'
     # all SXR lines share a beginning
     for line in ['TMO', 'CRIX', 'qRIX']:
-        assert controller.active_path(line).path[0].name == 'IM1K0:XTES'
+        assert controller.active_path(line).path[0].name == 'im1k0'
     # TXI omitted, doesn't work yet
 
     # XPP Shouldn't end here...
     # assert controller.active_path('XPP').path[-1].name == 'XCS:LODCM'
-    assert controller.active_path('XCS').path[-1].name == 'IM2L3:PPM'
-    assert controller.active_path('MFX').path[-1].name == 'IM2L5:PPM'
-    assert controller.active_path('CXI').path[-1].name == 'IM6L0:XTES'
-    assert controller.active_path('MEC').path[-1].name == 'IM2L4:PPM'
-    assert controller.active_path('TMO').path[-1].name == 'SL2K4:SCATTER'
-    assert controller.active_path('CRIX').path[-1].name == 'IM4K1:XTES'
-    assert controller.active_path('qRIX').path[-1].name == 'IM2K2:PPM'
+    assert controller.active_path('XCS').path[-1].name == 'im2l3'
+    assert controller.active_path('MFX').path[-1].name == 'im2l5'
+    assert controller.active_path('CXI').path[-1].name == 'im6l0'
+    assert controller.active_path('MEC').path[-1].name == 'im2l4'
+    assert controller.active_path('TMO').path[-1].name == 'sl2k4'
+    assert controller.active_path('CRIX').path[-1].name == 'im4k1'
+    assert controller.active_path('qRIX').path[-1].name == 'im2k2'
 
 
 def test_changing_paths(lcls_ctrl: LightController):
     assert len(lcls_ctrl.active_path('XCS').path) == 13
-    assert lcls_ctrl.active_path('XCS').path[-1].name == 'IM2L3:PPM'
-    assert lcls_ctrl.active_path('XCS').path[-2].name == 'XCS:LODCM'
+    assert lcls_ctrl.active_path('XCS').path[-1].name == 'im2l3'
+    assert lcls_ctrl.active_path('XCS').path[-2].name == 'xcs_lodcm'
     assert (['mr1l4', 'xcs_lodcm', 'im5l0', 'sl4l0', 'im6l0'] ==
             lcls_ctrl.walk_facility()['source_L0'][-5:])
 
     # insert mirror to take L3 path
     lcls_ctrl.get_device('mr1l3').insert()
     assert len(lcls_ctrl.active_path('XCS').path) == 12
-    assert lcls_ctrl.active_path('XCS').path[-1].name == 'IM2L3:PPM'
-    assert lcls_ctrl.active_path('XCS').path[-2].name == 'SL1L3:POWER'
+    assert lcls_ctrl.active_path('XCS').path[-1].name == 'im2l3'
+    assert lcls_ctrl.active_path('XCS').path[-2].name == 'sl1l3'
     assert (['xpp_lodcm', 'mr1l3', 'im1l3', 'sl1l3', 'im2l3'] ==
             lcls_ctrl.walk_facility()['source_L0'][-5:])
 
@@ -62,15 +62,15 @@ def test_controller_device_summaries(lcls_ctrl: LightController):
     assert lcls_ctrl.destinations == []
     # Common impediment
     lcls_ctrl.active_path('XCS').path[1].insert()
-    assert lcls_ctrl.destinations[0].name == 'SL1L0:POWER'
+    assert lcls_ctrl.destinations[0].name == 'sl1l0'
     lcls_ctrl.active_path('XCS').path[1].remove()
     # Use mirrors to change destination
     lcls_ctrl.get_device('mr1l4').insert()  # change from L0 -> L4
     lcls_ctrl.get_device('sl1l4').insert()
     lcls_ctrl.get_device('sl1l3').insert()
-    assert lcls_ctrl.destinations[0].name == 'SL1L4:POWER'
+    assert lcls_ctrl.destinations[0].name == 'sl1l4'
     lcls_ctrl.get_device('mr1l3').insert()
-    assert lcls_ctrl.destinations[0].name == 'SL1L3:POWER'
+    assert lcls_ctrl.destinations[0].name == 'sl1l3'
     lcls_ctrl.get_device('mr1l4').remove()
     lcls_ctrl.get_device('sl1l4').remove()
     lcls_ctrl.get_device('sl1l3').remove()
@@ -81,7 +81,7 @@ def test_controller_device_summaries(lcls_ctrl: LightController):
     # Common incident devices
     xcs_path = lcls_ctrl.active_path('XCS')
     xcs_path.path[0].insert()
-    assert lcls_ctrl.incident_devices[0].name == 'IM1L0:XTES'
+    assert lcls_ctrl.incident_devices[0].name == 'im1l0'
     # Multiple incident devices
     xcs_path.path[4].insert()
     assert len(lcls_ctrl.incident_devices) == 2
@@ -118,5 +118,5 @@ def test_walk_facility(lcls_ctrl: LightController):
     # These beam paths do not represent impediments or destinations.
     # simply represents where device configurations point
     incidents = [d.name for d in lcls_ctrl.incident_devices]
-    assert set(incidents) == set(['MR1L0', 'MR1K1'])
+    assert set(incidents) == set(['mr1l0', 'mr1k1'])
     assert len(lcls_ctrl.destinations) == 0
