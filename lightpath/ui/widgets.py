@@ -187,7 +187,7 @@ class LightRow(InactiveRow):
         green or red to quickly
         """
         # Interpret state
-        self.last_state = find_device_state(self.device)
+        self.last_state = find_device_state(self.device)[0]
         # Set label to state description
         self.state_label.setText(self.last_state.name)
         color = state_colors[self.last_state.value]

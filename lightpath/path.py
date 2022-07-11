@@ -41,7 +41,7 @@ class LightpathState:
     output_branch: str
 
 
-class DeviceState(enum.Enum):
+class DeviceState(enum.IntEnum):
     """
     Description of BeamStates
 
@@ -96,31 +96,31 @@ def find_device_state(device):
     """
     # Gather device information
     try:
-        status = device.get_lightpath_state()
-        _in, _out = status.inserted, status.removed
+        state = device.get_lightpath_state()
+        _in, _out = state.inserted, state.removed
         logger.debug("Device %s reporting; IN=%s, OUT=%s",
                      device.name, _in, _out)
     # Check if this was an error with an EPICS connection
     except (TimeoutError, DisconnectedError) as exc:
         logger.warning("Unable to connect to %r", device)
         logger.debug(exc, exc_info=True)
-        return DeviceState.Disconnected
+        return DeviceState.Disconnected, None
     except Exception:
         logger.exception("Unable to determine device state for %r", device)
-        return DeviceState.Error
+        return DeviceState.Error, None
     # Check state consistency and return proper Enum
     # In
     if _in and not _out:
-        return DeviceState.Inserted
+        return DeviceState.Inserted, state
     # Out
     elif _out and not _in:
-        return DeviceState.Removed
+        return DeviceState.Removed, state
     # Both In and Out
     elif _out and _in:
-        return DeviceState.Inconsistent
+        return DeviceState.Inconsistent, state
     # Neither In or Out
     else:
-        return DeviceState.Unknown
+        return DeviceState.Unknown, state
 
 
 class BeamPath(OphydObject):
@@ -217,12 +217,7 @@ class BeamPath(OphydObject):
         prev_status = None
         block = list()
         for device in self.path:
-            curr_state = find_device_state(device)
-            try:
-                curr_status = device.get_lightpath_state()
-            except Exception as e:
-                logger.debug(f'lightpath status unknown: {e}')
-                curr_status = None
+            curr_state, curr_status = find_device_state(device)
 
             # short circuit if statuses are in error
             if curr_state in (DeviceState.Error, DeviceState.Unknown):
@@ -262,7 +257,7 @@ class BeamPath(OphydObject):
         """
         # Find device information
         inserted = [d for d in self.path
-                    if find_device_state(d) == DeviceState.Inserted]
+                    if find_device_state(d)[0] == DeviceState.Inserted]
         impediment = self.impediment
         # No blocking devices, all inserted devices incident
         if not impediment:
@@ -291,7 +286,7 @@ class BeamPath(OphydObject):
         # Add info
         for d in self.path:
             pt.add_row([d.name, d.prefix, d.md.z, d.input_branches,
-                        d.output_branches, find_device_state(d).name])
+                        d.output_branches, find_device_state(d)[0].name])
         # Show table
         print(pt, file=file)
 
@@ -357,8 +352,8 @@ class BeamPath(OphydObject):
         logger.info('Removing devices along the beampath ...')
         status = [device.remove(timeout=timeout)
                   for device in target_devices
-                  if find_device_state(device) in (DeviceState.Inserted,
-                                                   DeviceState.Unknown)
+                  if find_device_state(device)[0] in (DeviceState.Inserted,
+                                                      DeviceState.Unknown)
                   and hasattr(device, 'remove')]
         # Wait parameters
         if wait:

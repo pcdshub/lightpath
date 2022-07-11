@@ -12,18 +12,18 @@ from .conftest import Crystal, Status
 def test_find_device_state(device: Device):
     # In
     device.insert()
-    assert find_device_state(device) == DeviceState.Inserted
+    assert find_device_state(device)[0] == DeviceState.Inserted
     # Out
     device.remove()
-    assert find_device_state(device) == DeviceState.Removed
+    assert find_device_state(device)[0] == DeviceState.Removed
     # Unknown
     device.status = Status.unknown
-    assert find_device_state(device) == DeviceState.Unknown
+    assert find_device_state(device)[0] == DeviceState.Unknown
     # Disconnected
     device.status = Status.disconnected
     # Error
     del device.status
-    assert find_device_state(device) == DeviceState.Error
+    assert find_device_state(device)[0] == DeviceState.Error
 
 
 def test_range(path: BeamPath):
@@ -100,7 +100,7 @@ def test_single_impediment(path: BeamPath, branch: BeamPath):
 
     # Broken device
     del path.path[0].status
-    assert find_device_state(path.path[0]) == DeviceState.Error
+    assert find_device_state(path.path[0])[0] == DeviceState.Error
     assert path.impediment == path.path[0]
 
 
