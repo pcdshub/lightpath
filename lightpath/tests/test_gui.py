@@ -96,6 +96,7 @@ def test_typhos_display(lcls_client, qtbot):
     assert lightapp.device_detail.isHidden()
     lightapp.show_detailed(lightapp.rows[0][0].device)
     assert lightapp.detail_layout.count() == 3
+    qtbot.addWidget(lightapp.detail_screen)
     assert not lightapp.device_detail.isHidden()
     # Smoke test the hide button without a detailed display
     lightapp.hide_detailed()
