@@ -18,6 +18,7 @@ env:
 
 jobs:
   allow_failures:
+    - name: "Python - PIP"
     - name: "Python 3.8 - PIP"
     - name: "Python 3.9"
 
