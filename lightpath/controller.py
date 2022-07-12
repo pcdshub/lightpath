@@ -85,10 +85,11 @@ class LightController:
         # Construct subgraphs and merge
         subgraphs = []
         for branch_name, branch_devs in branch_dict.items():
-            subgraph = LightController.make_graph(branch_devs,
-                                                  sources=sources,
-                                                  branch_name=branch_name)
-            self.sources.update((n for n in subgraph if 'source' in n))
+            subgraph = self.make_graph(branch_devs,
+                                       sources=sources,
+                                       branch_name=branch_name)
+            self.sources.update((n for n in subgraph
+                                 if self.is_source_name(n)))
             subgraphs.append(subgraph)
 
         self.graph = nx.compose_all(subgraphs)
@@ -134,11 +135,8 @@ class LightController:
             bp = BeamPath(*devices, name=endstation)
             self.beamlines[endstation].append(bp)
 
-        # This isn't used currently, but left for now
-        setattr(self, bp.name.replace(' ', '_').lower(),
-                self.beamlines[endstation])
-
-    def imped_z(self, path: BeamPath) -> float:
+    @staticmethod
+    def imped_z(path: BeamPath) -> float:
         """
         Get z position of impediment or inf.
 
@@ -178,6 +176,23 @@ class LightController:
 
         return paths_by_length[-1]
 
+    @staticmethod
+    def is_source_name(name: str) -> bool:
+        """
+        Checks if the node name provided is a valid source name
+
+        Parameters
+        ----------
+        name : str
+            name to check
+
+        Returns
+        -------
+        bool
+            if name is a valid source name
+        """
+        return name.startswith('source_')
+
     def walk_facility(self) -> Dict[NodeName, List[NodeName]]:
         """
         Return the paths from source to destination by walking the
@@ -201,23 +216,27 @@ class LightController:
         PathError
             If a single, valid path cannot be determined
         """
-        sources = [n for n in self.graph.nodes if 'source' in n]
-
-        paths: Dict[NodeName, List] = {k: [] for k in sources}
+        paths: Dict[NodeName, List] = {k: [] for k in self.sources}
 
         for src, path in paths.items():
             successors = list(self.graph.successors(src))
             # skip to node after source node
-            curr = successors[0]
+            try:
+                curr = successors[0]
+            except IndexError:
+                raise PathError(f'Isolated node ({src}) in graph, has '
+                                'no successors.  Database may be '
+                                'misconfigured')
+            curr_dev = self.get_device(curr)
+
             while successors:
-                curr_dev = self.graph.nodes[curr]['dev']
                 out_branch = curr_dev.get_lightpath_state().output_branch
                 connections = []
                 for succ in successors:
-                    succ_dev = self.graph.nodes[succ]['dev']
+                    succ_dev = self.get_device(succ)
                     if succ_dev is None:
                         # reached a node without a device, (the end)
-                        break
+                        continue
                     in_branches = succ_dev.input_branches
                     if out_branch in in_branches:
                         connections.append(succ)
@@ -233,7 +252,7 @@ class LightController:
 
                 curr = connections[0]
                 path.append(curr)
-                curr_dev = self.graph.nodes[curr]['dev']
+                curr_dev = self.get_device(curr)
                 successors = list(self.graph.successors(curr))
 
         return paths
@@ -248,11 +267,18 @@ class LightController:
         List[Device]
             a list of beam destinations
         """
+        def find_dest(path):
+            """ small closure to cache the impediment"""
+            imped = path.impediment
+            if imped is not None and imped not in path.branching_devices:
+                return imped
+
         dests = set()
         for paths in self.beamlines.values():
-            dests.update([p.impediment for p in paths
-                          if p.impediment and p.impediment
-                          not in p.branching_devices])
+            for path in paths:
+                dest = find_dest(path)
+                if dest is not None:
+                    dests.add(dest)
 
         return list(dests)
 
@@ -286,11 +312,9 @@ class LightController:
 
         return list(devices)
 
-    def path_to(self, device: Device) -> BeamPath:
+    def paths_to(self, device: Device) -> List[BeamPath]:
         """
-        Create a BeamPath from the facility source to the requested device
-        In the case of multiple valid paths, returns the path with latest
-        blocking device (highest blocking z-position)
+        Create all BeamPaths from the facility source to the requested device
 
         Parameters
         ----------
@@ -304,8 +328,8 @@ class LightController:
 
         Returns
         -------
-        path : :class:`BeamPath`
-            Path to and including given device
+        paths : List[:class:`BeamPath`]
+            Paths to and including given device
         """
         paths = list()
         for src in self.sources:
@@ -322,13 +346,30 @@ class LightController:
         subgraphs = [self.graph.subgraph(p) for p in paths]
         beampaths = []
         for subg in subgraphs:
-            devs = [node[1]['dev'] for node in subg.nodes.data()
-                    if node[1]['dev'] is not None]
+            devs = [data['dev'] for _, data in subg.nodes.data()
+                    if data['dev'] is not None]
             beampaths.append(BeamPath(*devs, name=f'{device.md.name}_path'))
 
-        paths_by_length = sorted(beampaths, key=self.imped_z)
+        return beampaths
 
-        return paths_by_length[-1]
+    def path_to(self, device: Device) -> BeamPath:
+        """
+        Returns the path with latest blocking device
+        (highest blocking z-position) to the requested device
+
+        To get all possible paths, see ``LightController.paths_to``
+
+        Parameters
+        ----------
+        device : Device
+            A device somewhere in the facility
+
+        Returns
+        -------
+        BeamPath
+            path to the specified device
+        """
+        return sorted(self.paths_to(device), key=self.imped_z)[-1]
 
     @staticmethod
     def make_graph(
