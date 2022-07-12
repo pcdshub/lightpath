@@ -10,10 +10,10 @@ where the beam is and what the state of the MPS system is currently.
 """
 import logging
 import math
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 import networkx as nx
-from happi import SearchResult
+from happi import Client, SearchResult
 from ophyd import Device
 
 from .config import beamlines, sources
@@ -46,12 +46,12 @@ class LightController:
         List of experimental endstations to load BeamPath objects for. If left
         as None, all endstations will be loaded
     """
+    graph: nx.DiGraph
+
     def __init__(self, client, endstations=None):
-        self.client = client
-        self.containers = list()
-        self.beamlines = dict()
-        self.graph: nx.DiGraph
-        self.sources = set()
+        self.client: Client = client
+        self.beamlines: Dict[str, List[BeamPath]] = dict()
+        self.sources: Set[str] = set()
 
         # initialize graph -> self.graph
         self.load_facility()
@@ -80,9 +80,7 @@ class LightController:
             for branch_set in (res.metadata.get('input_branches', []),
                                res.metadata.get('output_branches', [])):
                 for branch in branch_set:
-                    if branch not in branch_dict:
-                        branch_dict[branch] = set()
-                    branch_dict[branch].add(res)
+                    branch_dict.setdefault(branch, set()).add(res)
 
         # Construct subgraphs and merge
         subgraphs = []
@@ -131,8 +129,8 @@ class LightController:
         self.beamlines[endstation] = []
         for path in paths:
             subgraph = self.graph.subgraph(path)
-            devices = [node[1]['dev'] for node in subgraph.nodes.data()
-                       if node[1]['dev'] is not None]
+            devices = [dat['dev'] for _, dat in subgraph.nodes.data()
+                       if dat['dev'] is not None]
             bp = BeamPath(*devices, name=endstation)
             self.beamlines[endstation].append(bp)
 
@@ -184,6 +182,14 @@ class LightController:
         """
         Return the paths from source to destination by walking the
         graph along device destinations
+
+        Starting from a source node, steps iteratively through a node's
+        successors (nearest neighbors).  If there is one and only one
+        successor, step to that device and repeat.  Once there are no
+        more connections, we have reached the end of the line and may stop.
+
+        Successors are considered invalid if a node's output branch
+        does not match the successor's input.
 
         Returns
         -------
@@ -378,9 +384,18 @@ class LightController:
         last_on_branch = 0
         # weight not used currently, but may be for path finding algos
         edata = {'weight': 0.0, 'branch': branch_name}
-        # Need to properly handle devices that either:
+        # Need to properly handle "dangling" devices that either:
         # only have the current branch in their input (skipped_right)
+        # - these devices will not have output edge
         # only have the current branch in their output (skipped_left)
+        # - these devices will not have an input edge
+
+        # These dangling nodes are distinct from branching nodes, and
+        # will be joined when subgraphs are merged.
+
+        # In addition, after dangling nodes are attached, non-dangling
+        # nodes should be connected, skipping the dangling nodes.
+        # Thus the last_on_branch device must be tracked
         for i in range(len(nodes)):
             curr_dev = nodes[i][1]['dev']
             if (branch_name in curr_dev.input_branches and
@@ -396,7 +411,7 @@ class LightController:
                         edges.append((nodes[li][0], nodes[i][0], edata))
                     skipped_left = []
 
-                    # make edge between last on branch and this on dev
+                    # make edge between last_on_branch and current node
                     # luckily duplicate edges are ignored
                     edges.append((nodes[last_on_branch][0],
                                  nodes[i][0], edata))
@@ -412,8 +427,10 @@ class LightController:
             if set(curr_dev.output_branches) & set(next_dev.input_branches):
                 # base case, make edge as normal
                 edges.append((nodes[i][0], nodes[i+1][0], edata))
+            # process dangling nodes.  Here we skip making edges for
+            # this node, and attach it to next node with branch_name
+            # as its input and output (saved as last_on_branch)
             elif (branch_name not in curr_dev.input_branches):
-                # skip this, attach it to next
                 skipped_left.append(i)
             elif (branch_name not in curr_dev.output_branches):
                 skipped_right.append(i)
