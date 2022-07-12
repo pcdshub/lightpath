@@ -237,7 +237,10 @@ class BeamPath(OphydObject):
                 if curr_status.transmission < self.minimum_transmission:
                     block.append(device)
             # Find unknown and inconsistent devices
-            elif curr_state is not DeviceState.Removed:
+            elif curr_state is DeviceState.Removed:
+                pass
+            # Do not add device to blocking list, it is removed
+            else:
                 block.append(device)
 
             # stash previous device
