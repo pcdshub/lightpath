@@ -80,7 +80,7 @@ class DeviceState(enum.IntEnum):
     Error = 5
 
 
-def find_device_state(device):
+def find_device_state(device: Device) -> Tuple[DeviceState, LightpathState]:
     """
     Report the state of a device
 
@@ -88,11 +88,14 @@ def find_device_state(device):
 
     Parameters
     ----------
-    device : ophyd.Device
+    device : Device
+        ophyd Device implementing the Lightpath interface
 
     Returns
     -------
-    state: DeviceState
+    Tuple[DeviceState, LightpathState]
+        DeviceState enum
+        LightpathState dataclass
     """
     # Gather device information
     try:
@@ -160,7 +163,7 @@ class BeamPath(OphydObject):
     # Transmission setting
     minimum_transmission = 0.1
 
-    def __init__(self, *devices: OphydObject, name: str = None):
+    def __init__(self, *devices: OphydObject, name: Optional[str] = None):
         super().__init__(name=name)
         self.devices = devices
         self._has_subscribed = False
@@ -225,7 +228,7 @@ class BeamPath(OphydObject):
 
             # check to make sure input and output branches match
             # e.g. mirror not pointing to current device
-            elif (prev_device and prev_status and
+            elif (prev_device is not None and prev_status is not None and
                   prev_status.output_branch not in device.input_branches):
                 block.append(prev_device)
             # check inserted
@@ -233,7 +236,7 @@ class BeamPath(OphydObject):
                 # Ignore devices with low enough transmssion
                 if curr_status.transmission < self.minimum_transmission:
                     block.append(device)
-            # Find unknown and faulted devices
+            # Find unknown and inconsistent devices
             elif curr_state is not DeviceState.Removed:
                 block.append(device)
 
@@ -513,7 +516,7 @@ class BeamPath(OphydObject):
         else:
             block = math.inf
         # If device is upstream of impediment
-        if obj and obj.parent.md.z <= block:
+        if obj is not None and obj.parent.md.z <= block:
             self._run_subs(sub_type=self.SUB_PTH_CHNG, device=obj)
 
     def subscribe(
