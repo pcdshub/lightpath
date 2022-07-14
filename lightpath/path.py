@@ -84,7 +84,8 @@ def find_device_state(device: Device) -> Tuple[DeviceState, LightpathState]:
     """
     Report the state of a device
 
-    The device must implement ``.inserted`` and ``removed``.
+    The device must implement ``get_lightpath_state``, which returns a
+    ``LightpathState`` object.
 
     Parameters
     ----------
