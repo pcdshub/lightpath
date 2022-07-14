@@ -1,5 +1,6 @@
+from setuptools import find_packages, setup
+
 import versioneer
-from setuptools import setup, find_packages
 
 with open("requirements.txt", "rt") as fp:
     install_requires = [
@@ -22,7 +23,8 @@ setup(
     entry_points={
         'console_scripts': [
             'lightpath = lightpath.__main__:entrypoint',
-        ]
+        ],
+        "happi.containers": ["lightpath = lightpath.happi.containers"],
     },
     install_requires=install_requires,
     python_requires=">=3.6",

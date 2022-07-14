@@ -9,7 +9,7 @@ from lightpath.ui.widgets import (state_colors, symbol_for_device,
 
 
 @pytest.fixture(scope='function')
-def lightrow(path, qapp, qtbot):
+def lightrow(path, qtbot):
     # Generate lightpath
     w = lightpath.ui.LightRow(path.path[3])
     qtbot.addWidget(w)

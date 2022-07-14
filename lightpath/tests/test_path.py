@@ -1,34 +1,36 @@
 import io
 from unittest.mock import Mock
 
+from ophyd.device import Device
+
 from lightpath import BeamPath
 from lightpath.path import DeviceState, find_device_state
 
 from .conftest import Crystal, Status
 
 
-def test_find_device_state(device):
+def test_find_device_state(device: Device):
     # In
     device.insert()
-    assert find_device_state(device) == DeviceState.Inserted
+    assert find_device_state(device)[0] == DeviceState.Inserted
     # Out
     device.remove()
-    assert find_device_state(device) == DeviceState.Removed
+    assert find_device_state(device)[0] == DeviceState.Removed
     # Unknown
     device.status = Status.unknown
-    assert find_device_state(device) == DeviceState.Unknown
+    assert find_device_state(device)[0] == DeviceState.Unknown
     # Disconnected
     device.status = Status.disconnected
     # Error
     del device.status
-    assert find_device_state(device) == DeviceState.Error
+    assert find_device_state(device)[0] == DeviceState.Error
 
 
-def test_range(path):
+def test_range(path: BeamPath):
     assert path.range == (0., 30.)
 
 
-def test_sort(path):
+def test_sort(path: BeamPath):
     for i, device in enumerate(path.path):
         try:
             # Each devices is before than the next
@@ -38,13 +40,13 @@ def test_sort(path):
             assert i == len(path.devices) - 1
 
 
-def test_branching_finding(path):
+def test_branching_finding(path: BeamPath):
     # Find the optic along the beampath
-    assert path.branches == [path.path[4]]
-    assert isinstance(path.branches[0], Crystal)
+    assert path.branching_devices == [path.path[4]]
+    assert isinstance(path.branching_devices[0], Crystal)
 
 
-def test_clear_beamline(path, branch):
+def test_clear_beamline(path: BeamPath, branch: BeamPath):
     # Completely removed beamline
     assert path.blocking_devices == []
     assert not path.impediment
@@ -65,7 +67,7 @@ def test_clear_beamline(path, branch):
     assert branch.cleared
 
 
-def test_single_impediment(path, branch):
+def test_single_impediment(path: BeamPath, branch: BeamPath):
     # Insert generic device
     path.path[0].insert()
     assert path.impediment == path.path[0]
@@ -98,11 +100,11 @@ def test_single_impediment(path, branch):
 
     # Broken device
     del path.path[0].status
-    assert find_device_state(path.path[0]) == DeviceState.Error
+    assert find_device_state(path.path[0])[0] == DeviceState.Error
     assert path.impediment == path.path[0]
 
 
-def test_multiple_insert_beamline(path):
+def test_multiple_insert_beamline(path: BeamPath):
     # Insert two devices
     path.path[1].insert()
     path.path[3].insert()
@@ -113,7 +115,7 @@ def test_multiple_insert_beamline(path):
     assert path.incident_devices == [path.path[1]]
 
 
-def test_show_device(path):
+def test_show_device(path: BeamPath):
     # Write table to file-like object
     f = io.StringIO()
     path.show_devices(file=f)
@@ -122,7 +124,7 @@ def test_show_device(path):
     assert f.read() == known_table
 
 
-def test_ignore(path):
+def test_ignore(path: BeamPath):
     # Ignore only one device
     target, ignore = path._ignore(path.path[4], passive=True)
     assert ignore == [path.path[4]]
@@ -132,12 +134,12 @@ def test_ignore(path):
 
     # Ignore passive devices in addition
     target, ignore = path._ignore(path.path[3], passive=False)
-    assert ignore == [path.path[5], path.path[3]]
+    assert ignore == [path.path[5], path.path[4], path.path[3]]
     assert path.path[3] not in target
     assert path.path[5] not in target
 
 
-def test_clear(path):
+def test_clear(path: BeamPath):
     # Insert a variety of devices
     path.path[0].insert()
     path.path[1].insert()
@@ -152,7 +154,7 @@ def test_clear(path):
     assert path.incident_devices == []
 
 
-def test_join(path):
+def test_join(path: BeamPath):
     # Create two partial beampaths
     first = BeamPath(*path.path[:4])
     second = BeamPath(*path.path[4:])
@@ -163,7 +165,7 @@ def test_join(path):
     assert second.join(first).path == path.path
 
 
-def test_split(path):
+def test_split(path: BeamPath):
     # Create two partial beampaths
     first = BeamPath(*path.path[:5])
     second = BeamPath(*path.path[5:])
@@ -177,59 +179,27 @@ def test_split(path):
     assert path.split(z=path.path[4].md.z)[1].path == second.path
 
 
-def test_callback(path):
+def test_callback(path: BeamPath):
     # Create mock callback
     cb = Mock()
     # Subscribe to event changes
-    path.subscribe(cb, event_type=path.SUB_PTH_CHNG, run=False)
+    path.subscribe(cb, run=False)
     # Change state of beampath
     path.devices[4].insert()
     # Assert callback has been run
     assert cb.called
 
 
-def test_complex_branching(lcls):
-    # Upstream Optic
-    xcs = [d for d in lcls if d.md.beamline in ['HXR', 'XCS']]
-    bp = BeamPath(*xcs)
-    # Remove all the devices
-    for d in xcs:
-        d.remove()
-    # OffsetMirror should be blocking
-    assert bp.impediment == xcs[4]
-    # Insert OffsetMirror
-    bp.path[4].insert()
-    # Path should be cleared
-    assert bp.blocking_devices == []
-    # Downstream Optic
-    mec = [d for d in lcls if d.md.beamline in ['HXR', 'MEC']]
-    bp = BeamPath(*mec)
-    # Remove all devices
-    for d in mec:
-        d.remove()
-    # Path should be cleared
-    assert bp.impediment == mec[6]
-    # Insert first mirror
-    bp.path[4].insert()
-    assert bp.impediment == mec[4]
-    # Insert second mirror
-    bp.path[6].insert()
-    assert bp.impediment == mec[4]
-    # Retract first mirror
-    bp.path[4].remove()
-    assert bp.blocking_devices == []
-
-
 known_table = """\
-+-------+--------+----------+----------+---------+
-| Name  | Prefix | Position | Beamline |   State |
-+-------+--------+----------+----------+---------+
-| zero  | zero   |  0.00000 |      TST | Removed |
-| one   | one    |  2.00000 |      TST | Removed |
-| two   | two    |  9.00000 |      TST | Removed |
-| three | three  | 15.00000 |      TST | Removed |
-| four  | four   | 16.00000 |      TST | Removed |
-| five  | five   | 24.00000 |      TST | Removed |
-| six   | six    | 30.00000 |      TST | Removed |
-+-------+--------+----------+----------+---------+
++-------+--------+----------+----------------+-----------------+---------+
+| Name  | Prefix | Position | Input Branches | Output Branches |   State |
++-------+--------+----------+----------------+-----------------+---------+
+| zero  | zero   |  0.00000 |        ['TST'] |         ['TST'] | Removed |
+| one   | one    |  2.00000 |        ['TST'] |         ['TST'] | Removed |
+| two   | two    |  9.00000 |        ['TST'] |         ['TST'] | Removed |
+| three | three  | 15.00000 |        ['TST'] |         ['TST'] | Removed |
+| four  | four   | 16.00000 |        ['TST'] |  ['TST', 'SIM'] | Removed |
+| five  | five   | 24.00000 |        ['TST'] |         ['TST'] | Removed |
+| six   | six    | 30.00000 |        ['TST'] |         ['TST'] | Removed |
++-------+--------+----------+----------------+-----------------+---------+
 """

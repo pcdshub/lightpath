@@ -86,7 +86,7 @@ Obviously, whether the pointing is accurately delivered to each hutch is beyond
 the scope of this module, the lightpath does try to generally determine where
 beam is possible by looking at higher level EPICS variables. The device capable
 of steering beam between forks in the path can be found with
-:attr:`.BeamPath.branches`. Each should implement; ``branches``, all possible
+:attr:`.BeamPath.branching_devices`. Each should implement; ``branches``, all possible
 beamline destinations for the optic, and ``destination``, a list of current
 beamlines the device could be sending beam along. When the :class:`.BeamPath`
 object finds an incontinuous beamline, it checks a list of upstream optics to

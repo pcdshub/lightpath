@@ -9,12 +9,12 @@ def test_app_buttons(lcls_client, qtbot):
     lightapp = LightApp(LightController(lcls_client))
     qtbot.addWidget(lightapp)
     # Create widgets
-    assert len(lightapp.select_devices('MEC')) == 10
+    assert len(lightapp.select_devices('MEC')) == 14
     # Setup new display
     mec_idx = lightapp.destination_combo.findText('MEC')
     lightapp.destination_combo.setCurrentIndex(mec_idx)
     lightapp.change_path_display()
-    assert len(lightapp.rows) == 10
+    assert len(lightapp.rows) == 14
 
 
 def test_lightpath_launch_script():
@@ -33,7 +33,7 @@ def test_focus_on_device(lcls_client, monkeypatch, qtbot):
     lightapp.focus_on_device(name=row.device.name)
     lightapp.scroll.ensureWidgetVisible.assert_called_with(row)
     # Go to impediment if no device is provided
-    first_row = lightapp.rows[0][0]
+    first_row = lightapp.rows[1][0]
     first_row.device.insert()
     lightapp.focus_on_device()
     lightapp.scroll.ensureWidgetVisible.assert_called_with(first_row)
@@ -44,6 +44,7 @@ def test_focus_on_device(lcls_client, monkeypatch, qtbot):
 def test_filtering(lcls_client, monkeypatch, qtbot):
     lightapp = LightApp(LightController(lcls_client))
     qtbot.addWidget(lightapp)
+    lightapp.destination_combo.setCurrentIndex(4)  # set current to MEC
     # Create mock functions
     for row in lightapp.rows:
         monkeypatch.setattr(row[0], 'setHidden', Mock())
@@ -61,7 +62,7 @@ def test_filtering(lcls_client, monkeypatch, qtbot):
         row[0].setHidden.reset_mock()
     lightapp.filter()
     for row in lightapp.rows:
-        if row[0].device.removed:
+        if row[0].device.get_lightpath_state().removed:
             row[0].setHidden.assert_called_with(True)
         else:
             row[0].setHidden.assert_called_with(False)
@@ -71,7 +72,7 @@ def test_filtering(lcls_client, monkeypatch, qtbot):
     lightapp.upstream_check.setChecked(False)
     lightapp.filter()
     for row in lightapp.rows:
-        if row[0].device.md.beamline != 'MEC':
+        if row[0].device not in lightapp.light.active_path('MEC').path:
             row[0].setHidden.assert_called_with(True)
         else:
             row[0].setHidden.assert_called_with(False)
@@ -79,7 +80,8 @@ def test_filtering(lcls_client, monkeypatch, qtbot):
     lightapp.remove_check.setChecked(False)
     lightapp.filter()
     for row in lightapp.rows:
-        if row[0].device.md.beamline != 'MEC' or row[0].device.removed:
+        if ((row[0].device not in lightapp.light.active_path('MEC').path)
+                or (row[0].device.get_lightpath_state().removed)):
             row[0].setHidden.assert_called_with(True)
         else:
             row[0].setHidden.assert_called_with(False)
@@ -94,6 +96,7 @@ def test_typhos_display(lcls_client, qtbot):
     assert lightapp.device_detail.isHidden()
     lightapp.show_detailed(lightapp.rows[0][0].device)
     assert lightapp.detail_layout.count() == 3
+    qtbot.addWidget(lightapp.detail_screen)
     assert not lightapp.device_detail.isHidden()
     # Smoke test the hide button without a detailed display
     lightapp.hide_detailed()

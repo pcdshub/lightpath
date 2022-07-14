@@ -1,66 +1,122 @@
+import happi
+
 from lightpath import LightController
 
 
-def test_controller_paths(lcls_client):
+def test_controller_paths(lcls_client: happi.Client):
+    beamlines = {'XPP': 15, 'XCS': 13, 'MFX': 14, 'CXI': 15, 'MEC': 14,
+                 'TMO': 11, 'CRIX': 11, 'qRIX': 11, 'TXI': 5}
+
+    # load controller with all beamlines + invalid ones
     controller = LightController(lcls_client,
-                                 endstations=['MEC', 'CXI', 'HXR', 'XCS'])
+                                 endstations=list(beamlines.keys()) +
+                                 ['NAB', 'SIM'])
     # See that we have all the beamlines accounted for
     assert all(line in controller.beamlines.keys()
-               for line in ['CXI', 'HXR', 'XCS', 'MEC'])
+               for line in beamlines.keys())
     # We have total path lengths
-    assert len(controller.xcs.devices) == 10
-    assert len(controller.hxr.devices) == 7
-    assert len(controller.cxi.devices) == 10
-    assert len(controller.mec.devices) == 10
+    for line, length in beamlines.items():
+        assert len(controller.active_path(line).devices) == length
+
     # Range of each path is correct
-    assert controller.xcs.path[0].name == 'fee_valve1'
-    assert controller.hxr.path[0].name == 'fee_valve1'
-    assert controller.mec.path[0].name == 'fee_valve1'
-    assert controller.cxi.path[0].name == 'fee_valve1'
-    assert controller.xcs.path[-1].name == 's4_stopper'
-    assert controller.hxr.path[-1].name == 'xrt_m2h'
-    assert controller.mec.path[-1].name == 's6_stopper'
-    assert controller.cxi.path[-1].name == 's5_stopper'
+    # all HXR lines share a beginning
+    for line in ['XPP', 'XCS', 'MFX', 'CXI', 'MEC']:
+        assert controller.active_path(line).path[0].name == 'im1l0'
+    # all SXR lines share a beginning
+    for line in ['TMO', 'CRIX', 'qRIX']:
+        assert controller.active_path(line).path[0].name == 'im1k0'
+    # TXI omitted, doesn't work yet
+
+    # XPP Shouldn't end here...
+    # assert controller.active_path('XPP').path[-1].name == 'XCS:LODCM'
+    assert controller.active_path('XCS').path[-1].name == 'im2l3'
+    assert controller.active_path('MFX').path[-1].name == 'im2l5'
+    assert controller.active_path('CXI').path[-1].name == 'im6l0'
+    assert controller.active_path('MEC').path[-1].name == 'im2l4'
+    assert controller.active_path('TMO').path[-1].name == 'sl2k4'
+    assert controller.active_path('CRIX').path[-1].name == 'im4k1'
+    assert controller.active_path('qRIX').path[-1].name == 'im2k2'
 
 
-def test_controller_device_summaries(lcls_client):
-    controller = LightController(lcls_client,
-                                 endstations=['MEC', 'CXI', 'HXR', 'XCS'])
+def test_changing_paths(lcls_ctrl: LightController):
+    assert len(lcls_ctrl.active_path('XCS').path) == 13
+    assert lcls_ctrl.active_path('XCS').path[-1].name == 'im2l3'
+    assert lcls_ctrl.active_path('XCS').path[-2].name == 'xcs_lodcm'
+    assert (['mr1l4', 'xcs_lodcm', 'im5l0', 'sl4l0', 'im6l0'] ==
+            lcls_ctrl.walk_facility()['source_L0'][-5:])
 
+    # insert mirror to take L3 path
+    lcls_ctrl.get_device('mr1l3').insert()
+    assert len(lcls_ctrl.active_path('XCS').path) == 12
+    assert lcls_ctrl.active_path('XCS').path[-1].name == 'im2l3'
+    assert lcls_ctrl.active_path('XCS').path[-2].name == 'sl1l3'
+    assert (['xpp_lodcm', 'mr1l3', 'im1l3', 'sl1l3', 'im2l3'] ==
+            lcls_ctrl.walk_facility()['source_L0'][-5:])
+
+    # remove devices to prevent inter-test tampering
+    lcls_ctrl.get_device('mr1l3').remove()
+
+
+def test_controller_device_summaries(lcls_ctrl: LightController):
     # No impeding devices
-    assert controller.destinations == []
+    assert lcls_ctrl.destinations == []
     # Common impediment
-    controller.hxr.path[0].insert()
-    assert controller.destinations[0].name == 'fee_valve1'
-    controller.hxr.path[0].remove()
+    lcls_ctrl.active_path('XCS').path[1].insert()
+    assert lcls_ctrl.destinations[0].name == 'sl1l0'
+    lcls_ctrl.active_path('XCS').path[1].remove()
     # Use mirrors to change destination
-    controller.xcs.path[-1].insert()
-    controller.cxi.path[-1].insert()
-    assert controller.destinations[0].name == 's5_stopper'
-    controller.hxr.path[4].insert()
-    assert controller.destinations[0].name == 's4_stopper'
-    controller.cxi.path[-1].remove()
-    controller.xcs.path[-1].remove()
-    controller.hxr.path[4].remove()
+    lcls_ctrl.get_device('mr1l4').insert()  # change from L0 -> L4
+    lcls_ctrl.get_device('sl1l4').insert()
+    lcls_ctrl.get_device('sl1l3').insert()
+    assert lcls_ctrl.destinations[0].name == 'sl1l4'
+    lcls_ctrl.get_device('mr1l3').insert()
+    assert lcls_ctrl.destinations[0].name == 'sl1l3'
+    lcls_ctrl.get_device('mr1l4').remove()
+    lcls_ctrl.get_device('sl1l4').remove()
+    lcls_ctrl.get_device('sl1l3').remove()
+    lcls_ctrl.get_device('mr1l3').remove()
 
     # No incident devices
-    assert controller.incident_devices == []
+    assert lcls_ctrl.incident_devices == []
     # Common incident devices
-    controller.hxr.path[3].insert()
-    assert controller.incident_devices[0].name == 'xrt_ipm'
+    xcs_path = lcls_ctrl.active_path('XCS')
+    xcs_path.path[0].insert()
+    assert lcls_ctrl.incident_devices[0].name == 'im1l0'
     # Multiple incident devices
-    controller.hxr.path[6].insert()
-    assert len(controller.incident_devices) == 2
-    controller.mec.path[-3].insert()
-    assert len(controller.incident_devices) == 3
-    controller.mec.path[-3].remove()
-    controller.hxr.path[6].remove()
-    assert len(controller.incident_devices) == 1
+    xcs_path.path[4].insert()
+    assert len(lcls_ctrl.incident_devices) == 2
+    xcs_path.path[5].insert()
+    assert len(lcls_ctrl.incident_devices) == 3
+    xcs_path.path[5].remove()
+    xcs_path.path[4].remove()
+    assert len(lcls_ctrl.incident_devices) == 1
+    xcs_path.path[0].remove()
 
 
-def test_path_to(lcls_client):
-    controller = LightController(lcls_client)
-    bp = controller.path_to(controller.mec.path[-3])
-    assert len(bp.path) == 8
-    mec_path = controller.path_to(controller.mec.path[-1]).path
-    mec_path == controller.mec.path
+def test_path_to(lcls_ctrl: LightController):
+    bp = lcls_ctrl.path_to(lcls_ctrl.active_path('MEC').path[-3])
+    assert len(bp.path) == 12
+    mec_path = lcls_ctrl.path_to(lcls_ctrl.active_path('MEC').path[-1]).path
+    mec_path == lcls_ctrl.active_path('MEC').path
+
+
+def test_walk_facility(lcls_ctrl: LightController):
+    # with all removed, expect beam straight through
+    walk = lcls_ctrl.walk_facility()
+    assert walk['source_L0'][-1] == 'im6l0'
+    assert walk['source_K0'][-1] == 'im4k0'
+
+    # change beam path
+    lcls_ctrl.get_device('mr1k1').insert()
+    lcls_ctrl.get_device('mr1l0').insert()
+    walk = lcls_ctrl.walk_facility()
+    assert walk['source_L0'][-1] == 'im9l1'
+    assert walk['source_K0'][-1] == 'im4k1'
+    assert len(walk['source_L0']) == 5
+    assert len(walk['source_K0']) == 11
+
+    # These beam paths do not represent impediments or destinations.
+    # simply represents where device configurations point
+    incidents = [d.name for d in lcls_ctrl.incident_devices]
+    assert set(incidents) == set(['mr1l0', 'mr1k1'])
+    assert len(lcls_ctrl.destinations) == 0
