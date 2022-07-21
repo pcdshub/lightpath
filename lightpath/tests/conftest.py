@@ -92,7 +92,8 @@ class Valve(Device):
                               attr='_current_destination',
                               kind=Kind.hinted)
 
-    lightpath_summary = Cpt(SummarySignal, name='lp_summary')
+    lightpath_summary = Cpt(SummarySignal, name='lp_summary',
+                            kind='omitted')
 
     lightpath_cpts = ['current_state', 'current_transmission',
                       'current_destination']
