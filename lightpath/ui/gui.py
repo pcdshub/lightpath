@@ -263,6 +263,13 @@ class LightApp(Display):
                 for widget in row:
                     widget.update_light(_in, _out)
 
+    def _destroy_lightpath_summary_signals(self, *args, **kwargs):
+        """ Update all widgets in rows """
+        # destroy all signals
+        logger.debug('destroying all lightpath_summary signals')
+        for row in self.rows:
+            row[0].device.lightpath_summary.destroy()
+
     @pyqtSlot()
     @pyqtSlot(str)
     def focus_on_device(self, name=None):
@@ -362,3 +369,7 @@ class LightApp(Display):
         # Further resize-ing of the widget should affect the fancy slider
         super().resizeEvent(evt)
         self.resizeSlider()
+
+    def closeEvent(self, a0) -> None:
+        self._destroy_lightpath_summary_signals()
+        return super().closeEvent(a0)
