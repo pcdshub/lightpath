@@ -138,8 +138,6 @@ class Valve(Device):
         """
         # Complete request s.t. callbacks run
         self.current_state.put(Status.inserted)
-        # Run subscriptions to device state
-        self._run_subs(obj=self, sub_type=self._default_sub)
         # Return complete status object
         status = DeviceStatus(self)
         status.set_finished()
@@ -151,8 +149,6 @@ class Valve(Device):
         """
         # Complete request
         self.current_state.put(Status.removed)
-        # Run subscriptions to device state
-        self._run_subs(obj=self, sub_type=self._default_sub)
         # Return complete status object
         status = DeviceStatus(self)
         status.set_finished()
@@ -206,14 +202,15 @@ class Crystal(Valve):
 # Fixtures #
 ############
 # Basic Device
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def device():
     return Valve('valve', name='valve', z=40.0, input_branches=['TST'],
                  output_branches=['TST'])
 
 
 # Basic Beamline
-def simulated_path():
+@pytest.fixture(scope='function')
+def path():
     # Assemble device lists
     devices = [Valve('zero', name='zero', z=0., input_branches=['TST'],
                      output_branches=['TST']),
@@ -236,9 +233,9 @@ def simulated_path():
     return BeamPath(*devices, name='TST')
 
 
-@pytest.fixture(scope='function')
-def path():
-    return simulated_path()
+# @pytest.fixture(scope='function')
+# def path():
+#     return simulated_path()
 
 
 # Beamline that requires optic insertion
@@ -306,7 +303,19 @@ def lcls():
 def lcls_client():
     db = os.path.join(os.path.dirname(__file__), 'path.json')
     print(db)
-    return happi.Client(path=db)
+    client = happi.Client(path=db)
+
+    # monkeypatch to never use cache to get device
+    # cached devices will retain callback information between tests
+    old_get = happi.SearchResult.get
+
+    def new_get(self, use_cache=True, **kwargs):
+        return old_get(self, use_cache=False, **kwargs)
+
+    happi.SearchResult.get = new_get
+    yield client
+
+    happi.SearchResult.get = old_get
 
 
 @pytest.fixture(scope='function')
