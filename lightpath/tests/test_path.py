@@ -194,6 +194,16 @@ def test_callback(path: BeamPath):
     assert cb.called
 
 
+def test_summary_signal(device):
+    cb = Mock()
+
+    device.lightpath_summary.subscribe(cb, run=False)
+    device.lightpath_summary.get()
+    device.insert()
+    device.remove()
+    assert cb.called
+
+
 known_table = """\
 +-------+--------+----------+----------------+-----------------+---------+
 | Name  | Prefix | Position | Input Branches | Output Branches |   State |
