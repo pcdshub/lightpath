@@ -9,6 +9,10 @@ from lightpath.path import DeviceState, find_device_state
 from .conftest import Crystal, Status
 
 
+def raiser(*args, **kwargs):
+    raise ValueError
+
+
 def test_find_device_state(device: Device):
     # In
     device.insert()
@@ -17,12 +21,12 @@ def test_find_device_state(device: Device):
     device.remove()
     assert find_device_state(device)[0] == DeviceState.Removed
     # Unknown
-    device.status = Status.unknown
+    device.current_state.put(Status.unknown)
     assert find_device_state(device)[0] == DeviceState.Unknown
     # Disconnected
-    device.status = Status.disconnected
+    device.current_state.put(Status.disconnected)
     # Error
-    del device.status
+    device.get_lightpath_state = raiser
     assert find_device_state(device)[0] == DeviceState.Error
 
 
@@ -99,7 +103,7 @@ def test_single_impediment(path: BeamPath, branch: BeamPath):
     assert branch.cleared is False
 
     # Broken device
-    del path.path[0].status
+    path.path[0].get_lightpath_state = raiser
     assert find_device_state(path.path[0])[0] == DeviceState.Error
     assert path.impediment == path.path[0]
 
