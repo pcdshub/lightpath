@@ -30,7 +30,7 @@ def test_lightpath_launch_script():
 
 
 def test_focus_on_device(lightapp, monkeypatch):
-    row = lightapp.rows[8][0]
+    row = lightapp.rows[7][0]
     monkeypatch.setattr(lightapp.scroll,
                         'ensureWidgetVisible',
                         Mock())
