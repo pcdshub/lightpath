@@ -98,7 +98,9 @@ class LightController:
         """
         Load a beamline given the facility graph.  Finds all possible
         paths from facility sources to the endstation's branch.
-        Branches are mapped to endstations in the config
+        Branches are mapped to endstations in the config.
+        Each branch can be optionally mapped to a final z to
+        consider part of the path.
 
         Loads valid beampaths into the LightController.beamlines
         attribute for latedr access.
@@ -133,7 +135,19 @@ class LightController:
             devices = [dat['dev'] for _, dat in subgraph.nodes.data()
                        if dat['dev'] is not None]
             bp = BeamPath(*devices, name=endstation)
-            self.beamlines[endstation].append(bp)
+
+            try:
+                # access the last z for this branch
+                # end_branches is a dictionary
+                last_z = end_branches[path[-1]]
+                if last_z:
+                    # append path with all devices before last z
+                    self.beamlines[endstation].append(bp.split(last_z)[0])
+                else:
+                    self.beamlines[endstation].append(bp)
+            except TypeError:
+                # end_branches is a simple list, no splitting needed
+                self.beamlines[endstation].append(bp)
 
     @staticmethod
     def imped_z(path: BeamPath) -> float:
