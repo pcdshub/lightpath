@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Set, Tuple
 
 import networkx as nx
 from happi import Client, SearchResult
+from networkx.exception import NodeNotFound
 from ophyd import Device
 
 from .config import beamlines, sources
@@ -121,13 +122,17 @@ class LightController:
         for branch in end_branches:
             # Find the paths from each source to the desired line
             for src in self.sources:
-                if nx.has_path(self.graph, src, branch):
-                    found_paths = nx.all_simple_paths(self.graph,
-                                                      source=src,
-                                                      target=branch)
-                    paths.extend(found_paths)
-                else:
-                    logger.debug(f'No path between {src} and {branch}')
+                try:
+                    if nx.has_path(self.graph, src, branch):
+                        found_paths = nx.all_simple_paths(self.graph,
+                                                          source=src,
+                                                          target=branch)
+                        paths.extend(found_paths)
+                    else:
+                        logger.debug(f'No path between {src} and {branch}')
+                except NodeNotFound:
+                    logger.debug(f'Either source {src} or target {branch} '
+                                 'not found.')
 
         self.beamlines[endstation] = []
         for path in paths:
