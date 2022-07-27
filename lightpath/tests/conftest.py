@@ -197,8 +197,7 @@ def device():
 
 
 # Basic Beamline
-@pytest.fixture(scope='function')
-def path():
+def simulated_path():
     # Assemble device lists
     devices = [Valve('zero', name='zero', z=0., input_branches=['TST'],
                      output_branches=['TST']),
@@ -221,9 +220,9 @@ def path():
     return BeamPath(*devices, name='TST')
 
 
-# @pytest.fixture(scope='function')
-# def path():
-#     return simulated_path()
+@pytest.fixture(scope='function')
+def path():
+    return simulated_path()
 
 
 # Beamline that requires optic insertion
