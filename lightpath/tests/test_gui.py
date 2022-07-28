@@ -46,6 +46,28 @@ def test_focus_on_device(lightapp, monkeypatch):
     lightapp.focus_on_device('blah')
 
 
+def test_upstream_check(lightapp, monkeypatch):
+    assert len(lightapp.select_devices('TMO')) == 11
+
+    tmo_idx = lightapp.destination_combo.findText('TMO')
+    lightapp.destination_combo.setCurrentIndex(tmo_idx)
+    lightapp.change_path_display()
+    assert len(lightapp.rows) == 11
+
+    # Create mock functions
+    for row in lightapp.rows:
+        monkeypatch.setattr(row[0], 'setHidden', Mock())
+
+    lightapp.upstream_device_combo.setCurrentIndex(5)
+    lightapp.update_upstream()
+    upstream_from_device = lightapp.light.active_path('TMO').path[5]
+    for row in lightapp.rows:
+        if (row[0].device.md.z < upstream_from_device.md.z):
+            row[0].setHidden.assert_called_with(True)
+        else:
+            row[0].setHidden.assert_called_with(False)
+
+
 def test_filtering(lightapp, monkeypatch):
     lightapp.destination_combo.setCurrentIndex(4)  # set current to MEC
     # Create mock functions
@@ -59,7 +81,6 @@ def test_filtering(lightapp, monkeypatch):
     device_row = lightapp.rows[2][0]
     device_row.device.insert()
     lightapp.remove_check.setChecked(False)
-    lightapp.upstream_check.setChecked(True)
     # Reset mock
     for row in lightapp.rows:
         row[0].setHidden.reset_mock()
@@ -72,7 +93,6 @@ def test_filtering(lightapp, monkeypatch):
     # Hide upstream devices
     lightapp.select_devices('MEC')
     lightapp.remove_check.setChecked(True)
-    lightapp.upstream_check.setChecked(False)
     lightapp.filter()
     for row in lightapp.rows:
         if row[0].device not in lightapp.light.active_path('MEC').path:
