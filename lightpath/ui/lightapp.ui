@@ -196,6 +196,32 @@
              </item>
             </layout>
            </item>
+           <item>
+            <layout class="QHBoxLayout" name="hide_upstream" stretch="0,1">
+             <property name="spacing">
+              <number>15</number>
+             </property>
+             <property name="bottomMargin">
+              <number>5</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="hide_upstream_label">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Hide upstream of</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="upstream_device_combo"/>
+             </item>
+            </layout>
+           </item>
           </layout>
          </widget>
         </item>
@@ -210,7 +236,7 @@
           <property name="title">
            <string>Filtering Options</string>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,0">
+          <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0">
            <property name="spacing">
             <number>3</number>
            </property>
@@ -220,28 +246,6 @@
            <property name="bottomMargin">
             <number>10</number>
            </property>
-           <item>
-            <widget class="QCheckBox" name="upstream_check">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="font">
-              <font>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Show upstream devices</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-             <property name="tristate">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
            <item>
             <widget class="QCheckBox" name="remove_check">
              <property name="font">
@@ -340,8 +344,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>423</width>
-           <height>434</height>
+           <width>384</width>
+           <height>428</height>
           </rect>
          </property>
          <property name="sizePolicy">

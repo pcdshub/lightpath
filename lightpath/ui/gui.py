@@ -82,8 +82,8 @@ class LightApp(Display):
                                             self.change_path_display)
         self.device_combo.activated[str].connect(self.focus_on_device)
         self.impediment_button.pressed.connect(self.focus_on_device)
+        self.upstream_device_combo.activated[str].connect(self.update_upstream)
         self.remove_check.toggled.connect(self.filter)
-        self.upstream_check.toggled.connect(self.filter)
         self.detail_hide.clicked.connect(self.hide_detailed)
         # Store LightRow objects to manage subscriptions
         self.rows = list()
@@ -161,6 +161,12 @@ class LightApp(Display):
         """
         return self.destination_combo.currentText()
 
+    def selected_upstream_from(self):
+        """
+        Current device selected by upstream combo box
+        """
+        return self.upstream_device_combo.currentText()
+
     @property
     def hidden_devices(self):
         """Device types set to currently be visible"""
@@ -194,9 +200,10 @@ class LightApp(Display):
                 # Clear subscribed row cache
                 self.rows.clear()
                 self.device_combo.clear()
+                self.upstream_device_combo.clear()
             # Hide nothing when switching beamlines
             boxes = self.device_types.children()
-            boxes.extend([self.upstream_check, self.remove_check])
+            boxes.extend([self.remove_check])
             for box in boxes:
                 if isinstance(box, QCheckBox):
                     box.setChecked(True)
@@ -216,6 +223,7 @@ class LightApp(Display):
                         partial(self.show_detailed, row[0].device))
                 # Add device to combo
                 self.device_combo.addItem(row[0].device.name)
+                self.upstream_device_combo.addItem(row[0].device.name)
         # Initialize interface
         for row in self.rows:
             for widget in row:
@@ -289,9 +297,16 @@ class LightApp(Display):
         self.rows[idx][0].setHidden(False)
         self.scroll.ensureWidgetVisible(self.rows[idx][0])
 
+    @pyqtSlot(str)
+    def update_upstream(self, name=None):
+        self.filter()
+
     @pyqtSlot(bool)
     def filter(self, *args):
         """Hide devices along the beamline for a more succinct view"""
+        # grab device z from upstream combo
+        upstream_device = self.selected_upstream_from()
+        upstream_device_z = self.light.get_device(upstream_device).md.z
         for row in self.rows:
             device = row[0].device
             # Hide if a hidden instance of a device type
@@ -303,10 +318,7 @@ class LightApp(Display):
             # TODO: This now looks at the whole active path, which includes
             # upstream devices.  Need to figure out how best to define
             # "upstream" devices now.  Possibly by branch name?
-            beamline = self.selected_beamline()
-            selected_path = self.light.active_path(beamline)
-            hidden_upstream = (not self.upstream_check.isChecked()
-                               and device not in selected_path.path)
+            hidden_upstream = (device.md.z < upstream_device_z)
             # Hide device if any of the criteria are met
             row[0].setHidden(hidden_device_type
                              or hidden_removed
