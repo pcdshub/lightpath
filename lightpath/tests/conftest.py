@@ -287,7 +287,7 @@ def lcls():
 
 
 @pytest.fixture(scope='function')
-def lcls_client():
+def lcls_client(monkeypatch):
     db = os.path.join(os.path.dirname(__file__), 'path.json')
     print(db)
     client = happi.Client(path=db)
@@ -299,10 +299,8 @@ def lcls_client():
     def new_get(self, use_cache=True, **kwargs):
         return old_get(self, use_cache=False, **kwargs)
 
-    happi.SearchResult.get = new_get
-    yield client
-
-    happi.SearchResult.get = old_get
+    monkeypatch.setattr(happi.SearchResult, 'get', new_get)
+    return client
 
 
 @pytest.fixture(scope='function')
