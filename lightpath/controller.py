@@ -141,18 +141,23 @@ class LightController:
                        if dat['dev'] is not None]
             bp = BeamPath(*devices, name=endstation)
 
-            try:
+            if isinstance(end_branches, dict):
                 # access the last z for this branch
-                # end_branches is a dictionary
+                # if end_branches is Dict[BranchName, end_z], grab last
+                # allowable z with the branch name (last node in path)
                 last_z = end_branches[path[-1]]
                 if last_z:
                     # append path with all devices before last z
                     self.beamlines[endstation].append(bp.split(last_z)[0])
                 else:
                     self.beamlines[endstation].append(bp)
-            except TypeError:
+            elif isinstance(end_branches, list):
                 # end_branches is a simple list, no splitting needed
                 self.beamlines[endstation].append(bp)
+            else:
+                raise TypeError('config is incorrectly formatted '
+                                f'(found mapping from {endstation} to '
+                                f'{type(end_branches)}).')
 
     @staticmethod
     def imped_z(path: BeamPath) -> float:
