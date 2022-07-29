@@ -20,6 +20,7 @@ def lightrow(path, qtbot):
 
 def test_widget_updates(lightrow):
     # Toggle device to trigger callbacks
+    lightrow.device.insert()
     lightrow.device.remove()
     assert (to_stylesheet_color(state_colors[0])
             in lightrow.state_label.styleSheet())

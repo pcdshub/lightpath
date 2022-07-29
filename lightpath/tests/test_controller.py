@@ -4,8 +4,8 @@ from lightpath import LightController
 
 
 def test_controller_paths(lcls_client: happi.Client):
-    beamlines = {'XPP': 15, 'XCS': 13, 'MFX': 14, 'CXI': 15, 'MEC': 14,
-                 'TMO': 11, 'CRIX': 11, 'qRIX': 11, 'TXI': 5}
+    beamlines = {'XPP': 8, 'XCS': 13, 'MFX': 14, 'CXI': 15, 'MEC': 14,
+                 'TMO': 11, 'CRIX': 11, 'QRIX': 11, 'TXI': 5}
 
     # load controller with all beamlines + invalid ones
     controller = LightController(lcls_client,
@@ -23,19 +23,18 @@ def test_controller_paths(lcls_client: happi.Client):
     for line in ['XPP', 'XCS', 'MFX', 'CXI', 'MEC']:
         assert controller.active_path(line).path[0].name == 'im1l0'
     # all SXR lines share a beginning
-    for line in ['TMO', 'CRIX', 'qRIX']:
+    for line in ['TMO', 'CRIX', 'QRIX']:
         assert controller.active_path(line).path[0].name == 'im1k0'
     # TXI omitted, doesn't work yet
 
-    # XPP Shouldn't end here...
-    # assert controller.active_path('XPP').path[-1].name == 'XCS:LODCM'
+    assert controller.active_path('XPP').path[-1].name == 'xpp_lodcm'
     assert controller.active_path('XCS').path[-1].name == 'im2l3'
     assert controller.active_path('MFX').path[-1].name == 'im2l5'
     assert controller.active_path('CXI').path[-1].name == 'im6l0'
     assert controller.active_path('MEC').path[-1].name == 'im2l4'
     assert controller.active_path('TMO').path[-1].name == 'sl2k4'
     assert controller.active_path('CRIX').path[-1].name == 'im4k1'
-    assert controller.active_path('qRIX').path[-1].name == 'im2k2'
+    assert controller.active_path('QRIX').path[-1].name == 'im2k2'
 
 
 def test_changing_paths(lcls_ctrl: LightController):

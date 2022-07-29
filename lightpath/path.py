@@ -550,8 +550,6 @@ class BeamPath(OphydObject):
                 try:
                     dev.lightpath_summary.subscribe(self._device_moved,
                                                     run=False)
-                    # get once to initialize SummarySignal
-                    dev.lightpath_summary.get()
                 except Exception:
                     logger.error("BeamPath is unable to subscribe "
                                  "to device %s", dev.name)

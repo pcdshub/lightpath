@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Set, Tuple
 
 import networkx as nx
 from happi import Client, SearchResult
+from networkx.exception import NodeNotFound
 from ophyd import Device
 
 from .config import beamlines, sources
@@ -98,7 +99,9 @@ class LightController:
         """
         Load a beamline given the facility graph.  Finds all possible
         paths from facility sources to the endstation's branch.
-        Branches are mapped to endstations in the config
+        Branches are mapped to endstations in the config.
+        Each branch can be optionally mapped to a final z to
+        consider part of the path.
 
         Loads valid beampaths into the LightController.beamlines
         attribute for latedr access.
@@ -119,13 +122,17 @@ class LightController:
         for branch in end_branches:
             # Find the paths from each source to the desired line
             for src in self.sources:
-                if nx.has_path(self.graph, src, branch):
-                    found_paths = nx.all_simple_paths(self.graph,
-                                                      source=src,
-                                                      target=branch)
-                    paths.extend(found_paths)
-                else:
-                    logger.debug(f'No path between {src} and {branch}')
+                try:
+                    if nx.has_path(self.graph, src, branch):
+                        found_paths = nx.all_simple_paths(self.graph,
+                                                          source=src,
+                                                          target=branch)
+                        paths.extend(found_paths)
+                    else:
+                        logger.debug(f'No path between {src} and {branch}')
+                except NodeNotFound:
+                    logger.debug(f'Either source {src} or target {branch} '
+                                 'not found.')
 
         self.beamlines[endstation] = []
         for path in paths:
@@ -133,7 +140,24 @@ class LightController:
             devices = [dat['dev'] for _, dat in subgraph.nodes.data()
                        if dat['dev'] is not None]
             bp = BeamPath(*devices, name=endstation)
-            self.beamlines[endstation].append(bp)
+
+            if isinstance(end_branches, dict):
+                # access the last z for this branch
+                # if end_branches is Dict[BranchName, end_z], grab last
+                # allowable z with the branch name (last node in path)
+                last_z = end_branches[path[-1]]
+                if last_z:
+                    # append path with all devices before last z
+                    self.beamlines[endstation].append(bp.split(last_z)[0])
+                else:
+                    self.beamlines[endstation].append(bp)
+            elif isinstance(end_branches, list):
+                # end_branches is a simple list, no splitting needed
+                self.beamlines[endstation].append(bp)
+            else:
+                raise TypeError('config is incorrectly formatted '
+                                f'(found mapping from {endstation} to '
+                                f'{type(end_branches)}).')
 
     @staticmethod
     def imped_z(path: BeamPath) -> float:

@@ -128,9 +128,11 @@ class LightRow(InactiveRow):
         # Subscribe device to state changes
         try:
             # Wait for later to update widget
-            self.device.subscribe(self._update_from_device,
-                                  event_type=self.device.SUB_STATE,
-                                  run=False)
+            logger.debug(f"Subscribing widget to device {self.device.name}")
+            self.device.lightpath_summary.subscribe(
+                self._update_from_device,
+                run=False
+            )
         except Exception:
             logger.error("Widget is unable to subscribe to device %s",
                          device.name)
@@ -138,7 +140,6 @@ class LightRow(InactiveRow):
         # Add hints for ophyd Device
         def hinted_filter(walk):
             return walk.item.kind == Kind.hinted
-
         hinted_signals = get_all_signals_from_device(device,
                                                      filter_by=hinted_filter)
         if len(hinted_signals) >= self.MAX_HINTS:

@@ -5,8 +5,7 @@ from types import SimpleNamespace
 import happi
 import pytest
 from ophyd import Component as Cpt
-from ophyd import Device, Kind
-from ophyd.signal import AttributeSignal
+from ophyd import Device, Kind, Signal
 from ophyd.status import DeviceStatus
 from ophyd.utils import DisconnectedError
 from pcdsdevices.signal import AggregateSignal
@@ -82,14 +81,11 @@ class Valve(Device):
     _default_sub = SUB_STATE
     _icon = 'fa.adjust'
 
-    current_state = Cpt(AttributeSignal,
-                        attr='status',
+    current_state = Cpt(Signal, value=Status.removed,
                         kind=Kind.hinted)
-    current_transmission = Cpt(AttributeSignal,
-                               attr='_transmission',
+    current_transmission = Cpt(Signal, value=0.0,
                                kind=Kind.normal)
-    current_destination = Cpt(AttributeSignal,
-                              attr='_current_destination',
+    current_destination = Cpt(Signal, value='N/A',
                               kind=Kind.hinted)
 
     lightpath_summary = Cpt(SummarySignal, name='lp_summary',
@@ -105,23 +101,15 @@ class Valve(Device):
         self.md.z = z
         self.input_branches = input_branches
         self.output_branches = output_branches
-        self.status = Status.removed
+        self.current_state.put(Status.removed)
+        self.current_transmission.put(self._transmission)
+        self.current_destination.put(self.output_branches[0])
         for sig in self.lightpath_cpts:
             self.lightpath_summary.add_signal_by_attr_name(sig)
 
-    @property
-    def _current_destination(self):
-        """String returning current destination"""
-        return self.output_branches[0]
-
-    @property
-    def _current_state(self):
-        """String of state for current_state AttributeSignal"""
-        return self.status
-
     def get_lightpath_state(self):
         """Return LightpathState object"""
-        status = self.status
+        status = self.current_state.get()
         if status == Status.disconnected:
             raise DisconnectedError("Simulated Disconnection")
         inserted = status in (Status.inserted, Status.inconsistent)
@@ -138,8 +126,6 @@ class Valve(Device):
         """
         # Complete request s.t. callbacks run
         self.current_state.put(Status.inserted)
-        # Run subscriptions to device state
-        self._run_subs(obj=self, sub_type=self._default_sub)
         # Return complete status object
         status = DeviceStatus(self)
         status.set_finished()
@@ -151,8 +137,6 @@ class Valve(Device):
         """
         # Complete request
         self.current_state.put(Status.removed)
-        # Run subscriptions to device state
-        self._run_subs(obj=self, sub_type=self._default_sub)
         # Return complete status object
         status = DeviceStatus(self)
         status.set_finished()
@@ -182,31 +166,31 @@ class Crystal(Valve):
     _icon = 'fa.star'
     _transmission = 0.8
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    # when inserted, which branch do you take?
+    _inserted_branch = Cpt(Signal, value=1)
 
-    @property
-    def _current_destination(self):
+    def get_lightpath_state(self):
         """
         Return current beam destination
         """
-        inserted = self.status in (Status.inserted, Status.inconsistent)
-        removed = self.status in (Status.removed, Status.inconsistent)
-        if inserted:
-            return self.output_branches[1]
+        state = super().get_lightpath_state()
+        if state.inserted:
+            br = self._inserted_branch.get()
+            self.current_destination.put(self.output_branches[br])
+            state.output_branch = self.output_branches[br]
 
-        elif removed:
-            return self.output_branches[0]
+        elif state.removed:
+            self.current_destination.put(self.output_branches[0])
+            state.output_branch = self.output_branches[0]
 
-        else:
-            raise ValueError
+        return state
 
 
 ############
 # Fixtures #
 ############
 # Basic Device
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def device():
     return Valve('valve', name='valve', z=40.0, input_branches=['TST'],
                  output_branches=['TST'])
@@ -303,10 +287,20 @@ def lcls():
 
 
 @pytest.fixture(scope='function')
-def lcls_client():
+def lcls_client(monkeypatch):
     db = os.path.join(os.path.dirname(__file__), 'path.json')
     print(db)
-    return happi.Client(path=db)
+    client = happi.Client(path=db)
+
+    # monkeypatch to never use cache to get device
+    # cached devices will retain callback information between tests
+    old_get = happi.SearchResult.get
+
+    def new_get(self, use_cache=True, **kwargs):
+        return old_get(self, use_cache=False, **kwargs)
+
+    monkeypatch.setattr(happi.SearchResult, 'get', new_get)
+    return client
 
 
 @pytest.fixture(scope='function')

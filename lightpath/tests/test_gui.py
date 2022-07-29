@@ -1,13 +1,20 @@
 from distutils.spawn import find_executable
 from unittest.mock import Mock
 
+import pytest
+
 from lightpath.controller import LightController
 from lightpath.ui import LightApp
 
 
-def test_app_buttons(lcls_client, qtbot):
+@pytest.fixture(scope='function')
+def lightapp(lcls_client, qtbot):
     lightapp = LightApp(LightController(lcls_client))
     qtbot.addWidget(lightapp)
+    yield lightapp
+
+
+def test_app_buttons(lightapp):
     # Create widgets
     assert len(lightapp.select_devices('MEC')) == 14
     # Setup new display
@@ -22,10 +29,8 @@ def test_lightpath_launch_script():
     assert find_executable('lightpath')
 
 
-def test_focus_on_device(lcls_client, monkeypatch, qtbot):
-    lightapp = LightApp(LightController(lcls_client))
-    qtbot.addWidget(lightapp)
-    row = lightapp.rows[8][0]
+def test_focus_on_device(lightapp, monkeypatch):
+    row = lightapp.rows[7][0]
     monkeypatch.setattr(lightapp.scroll,
                         'ensureWidgetVisible',
                         Mock())
@@ -41,9 +46,29 @@ def test_focus_on_device(lcls_client, monkeypatch, qtbot):
     lightapp.focus_on_device('blah')
 
 
-def test_filtering(lcls_client, monkeypatch, qtbot):
-    lightapp = LightApp(LightController(lcls_client))
-    qtbot.addWidget(lightapp)
+def test_upstream_check(lightapp, monkeypatch):
+    assert len(lightapp.select_devices('TMO')) == 11
+
+    tmo_idx = lightapp.destination_combo.findText('TMO')
+    lightapp.destination_combo.setCurrentIndex(tmo_idx)
+    lightapp.change_path_display()
+    assert len(lightapp.rows) == 11
+
+    # Create mock functions
+    for row in lightapp.rows:
+        monkeypatch.setattr(row[0], 'setHidden', Mock())
+
+    lightapp.upstream_device_combo.setCurrentIndex(5)
+    lightapp.update_upstream()
+    upstream_from_device = lightapp.light.active_path('TMO').path[5]
+    for row in lightapp.rows:
+        if (row[0].device.md.z < upstream_from_device.md.z):
+            row[0].setHidden.assert_called_with(True)
+        else:
+            row[0].setHidden.assert_called_with(False)
+
+
+def test_filtering(lightapp, monkeypatch):
     lightapp.destination_combo.setCurrentIndex(4)  # set current to MEC
     # Create mock functions
     for row in lightapp.rows:
@@ -56,7 +81,6 @@ def test_filtering(lcls_client, monkeypatch, qtbot):
     device_row = lightapp.rows[2][0]
     device_row.device.insert()
     lightapp.remove_check.setChecked(False)
-    lightapp.upstream_check.setChecked(True)
     # Reset mock
     for row in lightapp.rows:
         row[0].setHidden.reset_mock()
@@ -69,7 +93,6 @@ def test_filtering(lcls_client, monkeypatch, qtbot):
     # Hide upstream devices
     lightapp.select_devices('MEC')
     lightapp.remove_check.setChecked(True)
-    lightapp.upstream_check.setChecked(False)
     lightapp.filter()
     for row in lightapp.rows:
         if row[0].device not in lightapp.light.active_path('MEC').path:
@@ -87,16 +110,13 @@ def test_filtering(lcls_client, monkeypatch, qtbot):
             row[0].setHidden.assert_called_with(False)
 
 
-def test_typhos_display(lcls_client, qtbot):
-    lightapp = LightApp(LightController(lcls_client))
-    qtbot.addWidget(lightapp)
+def test_typhos_display(lightapp):
     # Smoke test the hide button without a detailed display
     lightapp.hide_detailed()
     assert lightapp.detail_layout.count() == 2
     assert lightapp.device_detail.isHidden()
     lightapp.show_detailed(lightapp.rows[0][0].device)
     assert lightapp.detail_layout.count() == 3
-    qtbot.addWidget(lightapp.detail_screen)
     assert not lightapp.device_detail.isHidden()
     # Smoke test the hide button without a detailed display
     lightapp.hide_detailed()

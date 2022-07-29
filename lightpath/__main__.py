@@ -36,6 +36,10 @@ def main(db, hutches):
     db: str
         Path to happi JSON database
     """
+
+    from ophyd.signal import EpicsSignalBase
+    EpicsSignalBase.set_defaults(timeout=10.0, connection_timeout=10.0)
+
     if db is None:
         client = happi.Client.from_config()
     else:
