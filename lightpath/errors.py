@@ -4,3 +4,8 @@ class CoordinateError(Exception):
 
 class PathError(Exception):
     pass
+
+
+class DeviceLoadingError(Exception):
+    """Error encountered while trying to instantiate device"""
+    pass

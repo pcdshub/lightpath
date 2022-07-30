@@ -18,7 +18,7 @@ from networkx.exception import NodeNotFound
 from ophyd import Device
 
 from .config import beamlines, sources
-from .errors import PathError
+from .errors import DeviceLoadingError, PathError
 from .path import BeamPath
 
 logger = logging.getLogger(__name__)
@@ -138,15 +138,20 @@ class LightController:
 
         self.beamlines[endstation] = paths
 
-    def get_paths(self, endstation):
+    def get_paths(self, endstation: str) -> List[BeamPath]:
         """
         Returns the BeamPaths for a specified endstation.
         Create and fill the BeamPaths if they have not been already
 
         Parameters
         ----------
-        endstation : _type_
-            _description_
+        endstation : str
+            name of endstation to return paths for
+
+        Returns
+        -------
+        List[BeamPath]
+            a list of BeamPath's to the requested endstation
         """
         paths = self.beamlines[endstation]
 
@@ -459,14 +464,6 @@ class LightController:
         # label nodes with device name, store ophyd device
         nodes = []
         for res in result_list:
-            # try:
-            #     dev = res.get()
-            # except Exception:
-            #     # TODO: be better about specific exceptions
-            #     logger.debug(
-            #         f'Failed to initialize device: {res["name"]}'
-            #     )
-            #     continue
             nodes.append((res.metadata['name'],
                          {'res': res, 'dev': None}))
 
@@ -557,15 +554,28 @@ class LightController:
         -------
         Device
             requested device
+
+        Raises
+        ------
+        DeviceLoadingError
+            if the requested device is in the facility but cannot be loaded
         """
         try:
             dev_data = self.graph.nodes[device_name]
-            if dev_data['dev'] is not None:
-                return dev_data['dev']
-            elif dev_data['res'] is not None:
-                # not instantiated yet, create and fill
+        except KeyError:
+            logger.error(f'requested device ({device_name}) not in facility')
+            return
+
+        if dev_data['dev'] is not None:
+            return dev_data['dev']
+        elif dev_data['res'] is not None:
+            # not instantiated yet, create and fill
+            try:
                 dev = dev_data['res'].get()
                 self.graph.nodes[device_name]['dev'] = dev
                 return dev
-        except KeyError:
-            logger.error(f'requested device ({device_name}) not found')
+            except Exception:
+                # TODO: create a way to spoof a device for lightpath
+                raise DeviceLoadingError(
+                    f'Failed to initialize device: {device_name}'
+                )
