@@ -10,7 +10,8 @@ where the beam is and what the state of the MPS system is currently.
 """
 import logging
 import math
-from typing import Any, Dict, List, Set, Tuple
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import networkx as nx
 from happi import Client, SearchResult
@@ -19,11 +20,19 @@ from ophyd import Device
 
 from .config import beamlines, sources
 from .errors import PathError
+from .mock_devices import Crystal, Valve
 from .path import BeamPath
 
 logger = logging.getLogger(__name__)
 
 NodeName = str
+MaybeBeamPath = List[Union[List[NodeName], BeamPath]]
+
+
+@dataclass
+class NodeMetadata:
+    res: Optional[SearchResult] = None
+    dev: Optional[Device] = None
 
 
 class LightController:
@@ -51,7 +60,8 @@ class LightController:
 
     def __init__(self, client, endstations=None):
         self.client: Client = client
-        self.beamlines: Dict[str, List[BeamPath]] = dict()
+        # a mapping of endstation name to either a path or initialized BeamPath
+        self.beamlines: Dict[str, MaybeBeamPath] = dict()
         self.sources: Set[str] = set()
 
         # initialize graph -> self.graph
@@ -134,11 +144,36 @@ class LightController:
                     logger.debug(f'Either source {src} or target {branch} '
                                  'not found.')
 
-        self.beamlines[endstation] = []
+        self.beamlines[endstation] = paths
+
+    def get_paths(self, endstation: str) -> List[BeamPath]:
+        """
+        Returns the BeamPaths for a specified endstation.
+        Create and fill the BeamPaths if they have not been already
+
+        Parameters
+        ----------
+        endstation : str
+            name of endstation to return paths for
+
+        Returns
+        -------
+        List[BeamPath]
+            a list of BeamPath's to the requested endstation
+        """
+        paths = self.beamlines[endstation]
+
+        if all([isinstance(path, BeamPath) for path in paths]):
+            return paths
+
+        # create the BeamPaths if they have not been already
+        end_branches = beamlines[endstation]
+        filled_paths = []
         for path in paths:
             subgraph = self.graph.subgraph(path)
-            devices = [dat['dev'] for _, dat in subgraph.nodes.data()
-                       if dat['dev'] is not None]
+            devices = [self.get_device(dev_name)
+                       for dev_name, data in subgraph.nodes.data()
+                       if data['md'].res is not None]
             bp = BeamPath(*devices, name=endstation)
 
             if isinstance(end_branches, dict):
@@ -148,16 +183,19 @@ class LightController:
                 last_z = end_branches[path[-1]]
                 if last_z:
                     # append path with all devices before last z
-                    self.beamlines[endstation].append(bp.split(last_z)[0])
+                    filled_paths.append(bp.split(last_z)[0])
                 else:
-                    self.beamlines[endstation].append(bp)
+                    filled_paths.append(bp)
             elif isinstance(end_branches, list):
                 # end_branches is a simple list, no splitting needed
-                self.beamlines[endstation].append(bp)
+                filled_paths.append(bp)
             else:
                 raise TypeError('config is incorrectly formatted '
                                 f'(found mapping from {endstation} to '
                                 f'{type(end_branches)}).')
+
+        self.beamlines[endstation] = filled_paths
+        return filled_paths
 
     @staticmethod
     def imped_z(path: BeamPath) -> float:
@@ -192,7 +230,7 @@ class LightController:
         path : :class:`BeamPath`
             the active path
         """
-        paths = self.beamlines[dest]
+        paths = self.get_paths(dest)
         if len(paths) == 1:
             return paths[0]
 
@@ -298,7 +336,8 @@ class LightController:
                 return imped
 
         dests = set()
-        for paths in self.beamlines.values():
+        for endstation in self.beamlines.keys():
+            paths = self.get_paths(endstation)
             for path in paths:
                 dest = find_dest(path)
                 if dest is not None:
@@ -316,7 +355,7 @@ class LightController:
         List[Device]
             list of devices loaded in the facility
         """
-        return [n[1]['dev'] for n in self.graph.nodes.data()]
+        return [n[1]['md'].dev for n in self.graph.nodes.data()]
 
     @property
     def incident_devices(self) -> List[Device]:
@@ -330,7 +369,8 @@ class LightController:
         """
         devices = set()
 
-        for paths in self.beamlines.values():
+        for endstation in self.beamlines.keys():
+            paths = self.get_paths(endstation)
             for path in paths:
                 devices.update(path.incident_devices)
 
@@ -370,8 +410,8 @@ class LightController:
         subgraphs = [self.graph.subgraph(p) for p in paths]
         beampaths = []
         for subg in subgraphs:
-            devs = [data['dev'] for _, data in subg.nodes.data()
-                    if data['dev'] is not None]
+            devs = [data['md'].dev for _, data in subg.nodes.data()
+                    if data['md'].dev is not None]
             beampaths.append(BeamPath(*devs, name=f'{device.md.name}_path'))
 
         return beampaths
@@ -429,18 +469,12 @@ class LightController:
         graph = nx.DiGraph()
         result_list = list(branch_devs)
         result_list.sort(key=lambda x: x.metadata['z'])
-        # label nodes with device name, store ophyd device
+        # label nodes with device name, store SearchResult and leave
+        # a place for the ophyd device
         nodes = []
         for res in result_list:
-            try:
-                dev = res.get()
-            except Exception:
-                # TODO: be better about specific exceptions
-                logger.debug(
-                    f'Failed to initialize device: {res["name"]}'
-                )
-                continue
-            nodes.append((res.metadata['name'], {'dev': dev}))
+            nodes.append((res.metadata['name'],
+                         {'md': NodeMetadata(res=res, dev=None)}))
 
         # construct edges
         edges: List[Tuple[NodeName, NodeName, Dict[str, Any]]] = []
@@ -462,9 +496,9 @@ class LightController:
         # nodes should be connected, skipping the dangling nodes.
         # Thus the last_on_branch device must be tracked
         for i in range(len(nodes)):
-            curr_dev = nodes[i][1]['dev']
-            if (branch_name in curr_dev.input_branches and
-                    branch_name in curr_dev.output_branches):
+            curr_dev = nodes[i][1]['md'].res
+            if (branch_name in curr_dev.metadata['input_branches'] and
+                    branch_name in curr_dev.metadata['output_branches']):
                 if last_on_branch != i:
                     # attach skipped devices
                     for ri in skipped_right:
@@ -484,28 +518,30 @@ class LightController:
                 last_on_branch = i
 
             try:
-                next_dev = nodes[i+1][1]['dev']
+                next_dev = nodes[i+1][1]['md'].res
             except IndexError:
                 # we are at the end, skip steps that look ahead
                 continue
 
-            if set(curr_dev.output_branches) & set(next_dev.input_branches):
+            if (set(curr_dev.metadata['output_branches']) &
+                    set(next_dev.metadata['input_branches'])):
                 # base case, make edge as normal
                 edges.append((nodes[i][0], nodes[i+1][0], edata))
             # process dangling nodes.  Here we skip making edges for
             # this node, and attach it to next node with branch_name
             # as its input and output (saved as last_on_branch)
-            elif (branch_name not in curr_dev.input_branches):
+            elif (branch_name not in curr_dev.metadata['input_branches']):
                 skipped_left.append(i)
-            elif (branch_name not in curr_dev.output_branches):
+            elif (branch_name not in curr_dev.metadata['output_branches']):
                 skipped_right.append(i)
 
         # add sources
         if branch_name in sources:
-            nodes.insert(0, (f'source_{branch_name}', {'dev': None}))
+            nodes.insert(0, (f'source_{branch_name}',
+                             {'md': NodeMetadata()}))
             edges.append((nodes[0][0], nodes[1][0], edata))
         # add end point
-        nodes.append((branch_name, {'dev': None}))
+        nodes.append((branch_name, {'md': NodeMetadata()}))
         edges.append((nodes[-2][0], nodes[-1][0], edata))
 
         graph.add_nodes_from(nodes)
@@ -514,7 +550,7 @@ class LightController:
         graph.name = str(branch_name)
         return graph
 
-    def get_device(self, device: NodeName) -> Device:
+    def get_device(self, device_name: NodeName) -> Device:
         """
         Return device from graph
 
@@ -526,9 +562,55 @@ class LightController:
         Returns
         -------
         Device
-            requested device
+            requested device, or a mock version of the device
         """
         try:
-            return self.graph.nodes[device]['dev']
+            dev_data = self.graph.nodes[device_name]['md']
         except KeyError:
-            logger.error(f'requested device ({device}) not found')
+            logger.error(f'requested device ({device_name}) not in facility')
+            return
+
+        if dev_data.dev is not None:
+            return dev_data.dev
+        elif dev_data.res is not None:
+            # not instantiated yet, create and fill
+            try:
+                dev = dev_data.res.get()
+                self.graph.nodes[device_name]['md'].dev = dev
+                return dev
+            except Exception:
+                logger.error(f'Device {device_name} failed to load, '
+                             'attempting to make a mock device')
+                dev = make_mock_device(dev_data.res)
+                self.graph.nodes[device_name]['md'].dev = dev
+                return dev
+
+
+def make_mock_device(result: SearchResult) -> Device:
+    """
+    Create a mock device that implements the Lightpath Interface using
+    the metadata provided. If more than one output branch is found,
+    uses a slightly more complicated ``Crystal`` mock device.  Creates
+    a ``Valve`` mock device otherwise
+
+    Parameters
+    ----------
+    result : SearchResult
+        a happi.SearchResult containing the metadata needed to mock
+
+    Returns
+    -------
+    Device
+        a mock device usable in the Lightpath app
+    """
+    md = result.metadata
+    if len(md['output_branches']) > 1:
+        MockClass = Crystal
+    else:
+        MockClass = Valve
+
+    mock_dev = MockClass(md['prefix'], name='MOCK_' + md['name'], z=md['z'],
+                         input_branches=md['input_branches'],
+                         output_branches=md['output_branches'])
+
+    return mock_dev

@@ -5,7 +5,7 @@ from lightpath import LightController
 
 def test_controller_paths(lcls_client: happi.Client):
     beamlines = {'XPP': 8, 'XCS': 13, 'MFX': 14, 'CXI': 15, 'MEC': 14,
-                 'TMO': 11, 'CRIX': 11, 'QRIX': 11, 'TXI': 5}
+                 'TMO': 12, 'CRIX': 11, 'QRIX': 11, 'TXI': 5}
 
     # load controller with all beamlines + invalid ones
     controller = LightController(lcls_client,
@@ -38,17 +38,15 @@ def test_controller_paths(lcls_client: happi.Client):
 
 
 def test_changing_paths(lcls_ctrl: LightController):
-    assert len(lcls_ctrl.active_path('XCS').path) == 13
     assert lcls_ctrl.active_path('XCS').path[-1].name == 'im2l3'
-    assert lcls_ctrl.active_path('XCS').path[-2].name == 'xcs_lodcm'
+    assert lcls_ctrl.active_path('XCS').path[-3].name == 'mr1l4'
     assert (['mr1l4', 'xcs_lodcm', 'im5l0', 'sl4l0', 'im6l0'] ==
             lcls_ctrl.walk_facility()['source_L0'][-5:])
 
     # insert mirror to take L3 path
     lcls_ctrl.get_device('mr1l3').insert()
-    assert len(lcls_ctrl.active_path('XCS').path) == 12
     assert lcls_ctrl.active_path('XCS').path[-1].name == 'im2l3'
-    assert lcls_ctrl.active_path('XCS').path[-2].name == 'sl1l3'
+    assert lcls_ctrl.active_path('XCS').path[-3].name == 'im1l3'
     assert (['xpp_lodcm', 'mr1l3', 'im1l3', 'sl1l3', 'im2l3'] ==
             lcls_ctrl.walk_facility()['source_L0'][-5:])
 
@@ -119,3 +117,11 @@ def test_walk_facility(lcls_ctrl: LightController):
     incidents = [d.name for d in lcls_ctrl.incident_devices]
     assert set(incidents) == set(['mr1l0', 'mr1k1'])
     assert len(lcls_ctrl.destinations) == 0
+
+
+def test_mock_device(lcls_ctrl: LightController):
+    # break some metadata
+    lcls_ctrl.graph.nodes['sl1k2']['md'].res.metadata['device_class'] = ''
+
+    # smoke test device loading
+    lcls_ctrl.get_device('sl1k2')

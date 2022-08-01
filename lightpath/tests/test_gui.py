@@ -47,12 +47,12 @@ def test_focus_on_device(lightapp, monkeypatch):
 
 
 def test_upstream_check(lightapp, monkeypatch):
-    assert len(lightapp.select_devices('TMO')) == 11
+    assert len(lightapp.select_devices('TMO')) == 12
 
     tmo_idx = lightapp.destination_combo.findText('TMO')
     lightapp.destination_combo.setCurrentIndex(tmo_idx)
     lightapp.change_path_display()
-    assert len(lightapp.rows) == 11
+    assert len(lightapp.rows) == 12
 
     # Create mock functions
     for row in lightapp.rows:

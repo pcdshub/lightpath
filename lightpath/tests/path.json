@@ -186,7 +186,7 @@
         "active": true,
         "args": ["{{prefix}}"],
         "creation": "Wed Jun 22 09:53:24 2022",
-        "device_class": "pcdsdevices.pim.XPIM",
+        "device_class": "lightpath.tests.conftest.IPIMB",
         "documentation": null,
         "input_branches": [
             "K4"
