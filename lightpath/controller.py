@@ -18,7 +18,8 @@ from networkx.exception import NodeNotFound
 from ophyd import Device
 
 from .config import beamlines, sources
-from .errors import DeviceLoadingError, PathError
+from .errors import PathError
+from .mock_devices import Crystal, Valve
 from .path import BeamPath
 
 logger = logging.getLogger(__name__)
@@ -575,7 +576,38 @@ class LightController:
                 self.graph.nodes[device_name]['dev'] = dev
                 return dev
             except Exception:
-                # TODO: create a way to spoof a device for lightpath
-                raise DeviceLoadingError(
-                    f'Failed to initialize device: {device_name}'
-                )
+                logger.error(f'Device {device_name} failed to load, '
+                             'attempting to make a mock device')
+                dev = make_mock_device(dev_data['res'])
+                self.graph.nodes[device_name]['dev'] = dev
+                return dev
+
+
+def make_mock_device(result: SearchResult) -> Device:
+    """
+    Create a mock device that implements the Lightpath Interface using
+    the metadata provided. If more than one output branch is found,
+    uses a slightly more complicated ``Crystal`` mock device.  Creates
+    a ``Valve`` mock device otherwise
+
+    Parameters
+    ----------
+    result : SearchResult
+        a happi.SearchResult containing the metadata needed to mock
+
+    Returns
+    -------
+    Device
+        a mock device usable in the Lightpath app
+    """
+    md = result.metadata
+    if len(md['output_branches']) > 1:
+        MockClass = Crystal
+    else:
+        MockClass = Valve
+
+    mock_dev = MockClass(md['prefix'], name='MOCK_' + md['name'], z=md['z'],
+                         input_branches=md['input_branches'],
+                         output_branches=md['output_branches'])
+
+    return mock_dev
