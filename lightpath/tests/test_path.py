@@ -4,9 +4,8 @@ from unittest.mock import Mock
 from ophyd.device import Device
 
 from lightpath import BeamPath
+from lightpath.mock_devices import Crystal, Status
 from lightpath.path import DeviceState, find_device_state
-
-from .conftest import Crystal, Status
 
 
 def raiser(*args, **kwargs):
