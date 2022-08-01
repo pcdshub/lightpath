@@ -10,7 +10,8 @@ where the beam is and what the state of the MPS system is currently.
 """
 import logging
 import math
-from typing import Any, Dict, List, Set, Tuple, Union
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import networkx as nx
 from happi import Client, SearchResult
@@ -26,6 +27,12 @@ logger = logging.getLogger(__name__)
 
 NodeName = str
 MaybeBeamPath = List[Union[List[NodeName], BeamPath]]
+
+
+@dataclass
+class NodeMetadata:
+    res: Optional[SearchResult] = None
+    dev: Optional[Device] = None
 
 
 class LightController:
@@ -166,7 +173,7 @@ class LightController:
             subgraph = self.graph.subgraph(path)
             devices = [self.get_device(dev_name)
                        for dev_name, data in subgraph.nodes.data()
-                       if data['res'] is not None]
+                       if data['md'].res is not None]
             bp = BeamPath(*devices, name=endstation)
 
             if isinstance(end_branches, dict):
@@ -348,7 +355,7 @@ class LightController:
         List[Device]
             list of devices loaded in the facility
         """
-        return [n[1]['dev'] for n in self.graph.nodes.data()]
+        return [n[1]['md'].dev for n in self.graph.nodes.data()]
 
     @property
     def incident_devices(self) -> List[Device]:
@@ -403,8 +410,8 @@ class LightController:
         subgraphs = [self.graph.subgraph(p) for p in paths]
         beampaths = []
         for subg in subgraphs:
-            devs = [data['dev'] for _, data in subg.nodes.data()
-                    if data['dev'] is not None]
+            devs = [data['md'].dev for _, data in subg.nodes.data()
+                    if data['md'].dev is not None]
             beampaths.append(BeamPath(*devs, name=f'{device.md.name}_path'))
 
         return beampaths
@@ -467,7 +474,7 @@ class LightController:
         nodes = []
         for res in result_list:
             nodes.append((res.metadata['name'],
-                         {'res': res, 'dev': None}))
+                         {'md': NodeMetadata(res=res, dev=None)}))
 
         # construct edges
         edges: List[Tuple[NodeName, NodeName, Dict[str, Any]]] = []
@@ -489,7 +496,7 @@ class LightController:
         # nodes should be connected, skipping the dangling nodes.
         # Thus the last_on_branch device must be tracked
         for i in range(len(nodes)):
-            curr_dev = nodes[i][1]['res']
+            curr_dev = nodes[i][1]['md'].res
             if (branch_name in curr_dev.metadata['input_branches'] and
                     branch_name in curr_dev.metadata['output_branches']):
                 if last_on_branch != i:
@@ -511,7 +518,7 @@ class LightController:
                 last_on_branch = i
 
             try:
-                next_dev = nodes[i+1][1]['res']
+                next_dev = nodes[i+1][1]['md'].res
             except IndexError:
                 # we are at the end, skip steps that look ahead
                 continue
@@ -531,10 +538,10 @@ class LightController:
         # add sources
         if branch_name in sources:
             nodes.insert(0, (f'source_{branch_name}',
-                             {'res': None, 'dev': None}))
+                             {'md': NodeMetadata()}))
             edges.append((nodes[0][0], nodes[1][0], edata))
         # add end point
-        nodes.append((branch_name, {'res': None, 'dev': None}))
+        nodes.append((branch_name, {'md': NodeMetadata()}))
         edges.append((nodes[-2][0], nodes[-1][0], edata))
 
         graph.add_nodes_from(nodes)
@@ -558,24 +565,24 @@ class LightController:
             requested device, or a mock version of the device
         """
         try:
-            dev_data = self.graph.nodes[device_name]
+            dev_data = self.graph.nodes[device_name]['md']
         except KeyError:
             logger.error(f'requested device ({device_name}) not in facility')
             return
 
-        if dev_data['dev'] is not None:
-            return dev_data['dev']
-        elif dev_data['res'] is not None:
+        if dev_data.dev is not None:
+            return dev_data.dev
+        elif dev_data.res is not None:
             # not instantiated yet, create and fill
             try:
-                dev = dev_data['res'].get()
-                self.graph.nodes[device_name]['dev'] = dev
+                dev = dev_data.res.get()
+                self.graph.nodes[device_name]['md'].dev = dev
                 return dev
             except Exception:
                 logger.error(f'Device {device_name} failed to load, '
                              'attempting to make a mock device')
-                dev = make_mock_device(dev_data['res'])
-                self.graph.nodes[device_name]['dev'] = dev
+                dev = make_mock_device(dev_data.res)
+                self.graph.nodes[device_name]['md'].dev = dev
                 return dev
 
 

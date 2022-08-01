@@ -121,7 +121,7 @@ def test_walk_facility(lcls_ctrl: LightController):
 
 def test_mock_device(lcls_ctrl: LightController):
     # break some metadata
-    lcls_ctrl.graph.nodes['sl1k2']['res'].metadata['device_class'] = ''
+    lcls_ctrl.graph.nodes['sl1k2']['md'].res.metadata['device_class'] = ''
 
     # smoke test device loading
     lcls_ctrl.get_device('sl1k2')
