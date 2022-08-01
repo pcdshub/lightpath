@@ -462,7 +462,8 @@ class LightController:
         graph = nx.DiGraph()
         result_list = list(branch_devs)
         result_list.sort(key=lambda x: x.metadata['z'])
-        # label nodes with device name, store ophyd device
+        # label nodes with device name, store SearchResult and leave
+        # a place for the ophyd device
         nodes = []
         for res in result_list:
             nodes.append((res.metadata['name'],
@@ -554,12 +555,7 @@ class LightController:
         Returns
         -------
         Device
-            requested device
-
-        Raises
-        ------
-        DeviceLoadingError
-            if the requested device is in the facility but cannot be loaded
+            requested device, or a mock version of the device
         """
         try:
             dev_data = self.graph.nodes[device_name]
