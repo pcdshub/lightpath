@@ -117,3 +117,11 @@ def test_walk_facility(lcls_ctrl: LightController):
     incidents = [d.name for d in lcls_ctrl.incident_devices]
     assert set(incidents) == set(['mr1l0', 'mr1k1'])
     assert len(lcls_ctrl.destinations) == 0
+
+
+def test_mock_device(lcls_ctrl: LightController):
+    # break some metadata
+    lcls_ctrl.graph.nodes['sl1k2']['res'].metadata['device_class'] = ''
+
+    # smoke test device loading
+    lcls_ctrl.get_device('sl1k2')
