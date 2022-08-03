@@ -22,7 +22,7 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'lightpath = lightpath.__main__:entrypoint',
+            'lightpath = lightpath.main:entrypoint',
         ],
         "happi.containers": ["lightpath = lightpath.happi.containers"],
     },
