@@ -333,9 +333,10 @@ class LightApp(Display):
 
     def clear_subs(self):
         """
-        Clear the subscription event
+        Clear BeamPath-related subscription events
         """
         self.path.clear_sub(self.update_path)
+        self.path.clear_device_subs()
 
     @pyqtSlot()
     def show_detailed(self, device):
