@@ -183,12 +183,11 @@ class LightApp(Display):
             logger.debug("Resorting beampath display ...")
             # Remove old detailed screen
             self.hide_detailed()
-            # Grab all the light rows
-            rows = [self.load_device_row(d)
-                    for d in self.select_devices(self.selected_beamline())]
+
             # Clear layout if previously loaded rows exist
             if self.rows:
                 # Clear our subscribtions
+                logger.debug('clear existing subscriptions')
                 for row in self.rows:
                     # Remove from layout
                     self.lightLayout.removeWidget(row[0])
@@ -207,7 +206,12 @@ class LightApp(Display):
             for box in boxes:
                 if isinstance(box, QCheckBox):
                     box.setChecked(True)
+
+            # Grab all the light rows
+            rows = [self.load_device_row(d)
+                    for d in self.select_devices(self.selected_beamline())]
             # Add all the widgets to the display
+            logger.debug('Add widgets to display')
             for i, row in enumerate(rows):
                 # Cache row to later clear subscriptions
                 self.rows.append(row)
@@ -277,6 +281,7 @@ class LightApp(Display):
         logger.debug('destroying all lightpath_summary signals')
         for row in self.rows:
             row[0].device.lightpath_summary.destroy()
+            row[1].device.lightpath_summary.destroy()
 
     @pyqtSlot()
     @pyqtSlot(str)
