@@ -211,7 +211,7 @@ class LightRow(InactiveRow):
         """
         Clear the subscription event
         """
-        self.device.clear_sub(self.update_state)
+        self.device.lightpath_summary.clear_sub(self._update_from_device)
 
 
 class DeviceWidget(QLabel):

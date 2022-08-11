@@ -556,6 +556,17 @@ class BeamPath(OphydObject):
             self._has_subscribed = True
         super().subscribe(cb, event_type=event_type, run=run)
 
+    def clear_device_subs(self) -> None:
+        """
+        Clears the ._device_moved callbacks from all devices in the path.
+        Distinct from BeamPath.clear_sub, which unsubscribes a specific
+        callback from the BeamPath object itself.
+        """
+        if self._has_subscribed:
+            for dev in self.devices:
+                dev.lightpath_summary.clear_sub(self._device_moved)
+            self._has_subscribed = False
+
     def _repr_info(self):
         yield('range',   self.range)
         yield('devices', len(self.devices))
