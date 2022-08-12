@@ -9,6 +9,8 @@ from functools import partial
 import numpy as np
 import pcdsdevices.device_types as dtypes
 import typhos
+from pcdsdevices.attenuator import AttBase
+from pcdsdevices.ipm import IPMMotion
 from pcdsdevices.valve import PPSStopper
 from pydm import Display
 from qtpy.QtCore import Qt
@@ -44,7 +46,7 @@ class LightApp(Display):
 
     parent : optional
     """
-    shown_types = [dtypes.Attenuator, dtypes.GateValve, dtypes.IPM,
+    shown_types = [AttBase, dtypes.GateValve, IPMMotion,
                    dtypes.LODCM, dtypes.OffsetMirror, dtypes.PIM, PPSStopper,
                    dtypes.PulsePicker, dtypes.Slits, dtypes.Stopper,
                    dtypes.XFLS]
@@ -317,7 +319,8 @@ class LightApp(Display):
         for row in self.rows:
             device = row[0].device
             # Hide if a hidden instance of a device type
-            hidden_device_type = type(device) in self.hidden_devices
+            hidden_device_type = any([isinstance(device, dtype)
+                                      for dtype in self.hidden_devices])
             # Hide if removed
             hidden_removed = (not self.remove_check.isChecked()
                               and row[0].last_state == DeviceState.Removed)
