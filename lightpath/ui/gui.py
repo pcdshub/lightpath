@@ -115,6 +115,8 @@ class LightApp(Display):
         if dark:
             typhos.use_stylesheet(dark=True)
 
+        self.setWindowTitle('Lightpath')
+
     def destinations(self):
         """
         All possible beamline destinations sorted by end point
