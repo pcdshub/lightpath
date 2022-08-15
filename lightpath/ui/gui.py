@@ -11,6 +11,7 @@ import pcdsdevices.device_types as dtypes
 import typhos
 from pcdsdevices.attenuator import AttBase
 from pcdsdevices.ipm import IPMMotion
+from pcdsdevices.mirror import KBOMirror, XOffsetMirror
 from pcdsdevices.valve import PPSStopper
 from pydm import Display
 from qtpy.QtCore import Qt
@@ -46,10 +47,12 @@ class LightApp(Display):
 
     parent : optional
     """
-    shown_types = [AttBase, dtypes.GateValve, IPMMotion,
-                   dtypes.LODCM, dtypes.OffsetMirror, dtypes.PIM, PPSStopper,
-                   dtypes.PulsePicker, dtypes.Slits, dtypes.Stopper,
-                   dtypes.XFLS]
+    shown_types = {'Attenuator': AttBase, 'Gate Valve': dtypes.GateValve,
+                   'IPM': IPMMotion, 'LODCM': dtypes.LODCM,
+                   'KBOMirror': KBOMirror, 'OffsetMirror': XOffsetMirror,
+                   'PIM': dtypes.PIM, 'PPSStopper': PPSStopper,
+                   'PulsePicker': dtypes.PulsePicker, 'Slit': dtypes.Slits,
+                   'Stopper': dtypes.Stopper, 'XFLS': dtypes.XFLS}
 
     def __init__(self, controller, beamline=None,
                  parent=None, dark=True):
@@ -100,15 +103,15 @@ class LightApp(Display):
         self.destination_combo.setCurrentIndex(idx)
         # Add all of our device type options
         max_columns = 3
-        for i, row in enumerate(np.array_split(self.shown_types,
+        for i, row in enumerate(np.array_split(list(self.shown_types.items()),
                                                max_columns)):
             for j, device_type in enumerate(row):
                 # Add box to layout
-                box = QCheckBox(device_type.__name__)
+                box = QCheckBox(device_type[0])
                 box.setChecked(True)
                 self.device_types.layout().addWidget(box, j, i)
                 # Hook up box to hide function
-                self.device_buttons[box] = device_type
+                self.device_buttons[box] = device_type[1]
                 box.toggled.connect(self.filter)
         # Setup the UI
         self.change_path_display()
