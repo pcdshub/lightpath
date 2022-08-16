@@ -134,8 +134,8 @@ class LightApp(Display):
         Create LightRow for device
         """
         # Create two widgets
-        widgets = (LightRow(device),
-                   LightRow(device))
+        widgets = (LightRow(device, self.path),
+                   LightRow(device, self.path))
         # Condense the second
         widgets[1].condense()
         return widgets
@@ -281,6 +281,9 @@ class LightApp(Display):
                 # Update widget display
                 for widget in row:
                     widget.update_light(_in, _out)
+                    # Reconsider blocking device state
+                    if device is block:
+                        widget.update_state()
 
     def _destroy_lightpath_summary_signals(self, *args, **kwargs):
         """ Update all widgets in rows """

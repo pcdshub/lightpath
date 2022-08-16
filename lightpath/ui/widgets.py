@@ -18,12 +18,15 @@ from lightpath.path import DeviceState, find_device_state
 logger = logging.getLogger(__name__)
 
 # Define the state colors that correspond to DeviceState
-state_colors = [QColor(124, 252, 0),  # Removed
-                QColor(255, 0, 0),  # Inserted
-                QColor(255, 215, 0),  # Unknown
-                QColor(255, 215, 0),  # Disconnected
-                QColor(255, 0, 255),  # Disconnected
-                QColor(255, 0, 255)]  # Error
+state_colors = {
+    'removed': QColor(124, 252, 0),  # Removed (green)
+    'half_removed': QColor(0, 176, 255),  # half-removed (light blue)
+    'blocking': QColor(255, 0, 0),  # Inserted (red)
+    'unknown': QColor(255, 215, 0),  # Unknown (yellow)
+    'inconsistent': QColor(255, 215, 0),  # Inconsistent (yellow)
+    'disconnected': QColor(255, 0, 255),  # Disconnected (purple)
+    'error': QColor(255, 0, 255)  # Error (purple)
+}
 
 
 def to_stylesheet_color(color):
@@ -39,7 +42,7 @@ def symbol_for_device(device):
 
     This depends on the hidden attribute ``_icon`` that specifies a valid icon
     name to be loaded by the ``qtawesome`` library. If no icon is specified,
-    ``"fa.square"` is used instead."""
+    ``"fa.square"`` is used instead."""
     try:
         symbol = getattr(device, '_icon')
     except AttributeError:
@@ -52,9 +55,10 @@ class InactiveRow(Display):
     """
     Inactive row for happi container
     """
-    def __init__(self, device, parent=None):
+    def __init__(self, device, path, parent=None):
         super().__init__(parent=parent)
         self.device = device
+        self.path = path
         # Initialize prior state variable
         self.last_state = DeviceState.Disconnected
         # Create labels
@@ -121,8 +125,8 @@ class LightRow(InactiveRow):
     MAX_HINTS = 2
     device_updated = Signal()
 
-    def __init__(self, device, parent=None):
-        super().__init__(device, parent=parent)
+    def __init__(self, device, path, parent=None):
+        super().__init__(device, path, parent=parent)
         self.device_updated.connect(self.update_state)
 
         # Subscribe device to state changes
@@ -177,6 +181,38 @@ class LightRow(InactiveRow):
         self.command_layout.insertWidget(count - 1, label, 0, Qt.AlignHCenter)
         self.command_layout.insertWidget(count, widget, 0, Qt.AlignHCenter)
 
+    def get_state_color(self) -> QColor:
+        """
+        Determine the icon color given the device state and path status
+        If device is an impediment: StateColor.Blocking
+        If device is removed: StateColor.Removed
+        If device is inserted, not blocking (mirrors): StateColor.HalfRemoved
+        If device is unknown / errored: StateColor.Error
+
+        Could take a color map in the future?  Colorblind support?
+
+        Returns
+        -------
+        QColor
+            the color to apply to the icon
+        """
+        device_state, _ = find_device_state(self.device)
+        blocking_devices = self.path.blocking_devices
+
+        if device_state is DeviceState.Disconnected:
+            return state_colors['disconnected']
+        elif device_state is DeviceState.Error:
+            return state_colors['error']
+        elif device_state is DeviceState.Inserted:
+            if self.device not in blocking_devices:
+                return state_colors['half_removed']
+            else:
+                return state_colors['blocking']
+        elif device_state is DeviceState.Removed:
+            return state_colors['removed']
+        else:
+            return state_colors['unknown']
+
     def update_state(self, *args, **kwargs):
         """
         Update the state label
@@ -191,7 +227,7 @@ class LightRow(InactiveRow):
         self.last_state = find_device_state(self.device)[0]
         # Set label to state description
         self.state_label.setText(self.last_state.name)
-        color = state_colors[self.last_state.value]
+        color = self.get_state_color()
         style_color = to_stylesheet_color(color)
         style_sheet = "QLabel {color: %s}" % style_color
         self.state_label.setStyleSheet(style_sheet)
