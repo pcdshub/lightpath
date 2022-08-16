@@ -48,7 +48,7 @@ class Valve(Device):
     _veto = False
     SUB_STATE = 'sub_state_changed'
     _default_sub = SUB_STATE
-    _icon = 'fa.adjust'
+    _icon = 'fa5.adjust'
 
     current_state = Cpt(Signal, value=Status.removed,
                         kind=Kind.hinted)
@@ -117,7 +117,7 @@ class IPIMB(Valve):
     Generic Passive Device
     """
     _transmission = 0.6
-    _icon = 'fa.th-large'
+    _icon = 'fa5s.th-large'
 
 
 class Stopper(Valve):
@@ -125,14 +125,14 @@ class Stopper(Valve):
     Generic Veto Device
     """
     _veto = True
-    _icon = 'fa.times-circle'
+    _icon = 'fa5.times-circle'
 
 
 class Crystal(Valve):
     """
     Generic branching device
     """
-    _icon = 'fa.star'
+    _icon = 'fa5.star'
     _transmission = 0.8
 
     # when inserted, which branch do you take?
