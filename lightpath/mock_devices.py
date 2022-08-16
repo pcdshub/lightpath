@@ -116,7 +116,7 @@ class IPIMB(Valve):
     """
     Generic Passive Device
     """
-    _transmission = 0.6
+    _transmission = 0.5
     _icon = 'fa5s.th-large'
 
 

@@ -137,7 +137,8 @@ def test_ignore(path: BeamPath):
 
     # Ignore passive devices in addition
     target, ignore = path._ignore(path.path[3], passive=False)
-    assert ignore == [path.path[5], path.path[4], path.path[3]]
+    assert all([dev in ignore for
+                dev in [path.path[5], path.path[4], path.path[3]]])
     assert path.path[3] not in target
     assert path.path[5] not in target
 
@@ -193,7 +194,30 @@ def test_callback(path: BeamPath):
     assert cb.called
 
 
-def test_summary_signal(device):
+def test_attenuation(path: BeamPath):
+    assert path.impediment is None
+
+    # insert imagers to attenuate 0.5 per --> 4 needed to drop below 0.1
+    for i in [5, 6, 7, 8, 9]:
+        path.path[i].insert()
+
+    assert path.impediment == path.path[8]
+    assert path.blocking_devices == [path.path[8], path.path[9]]
+
+    path.path[8].remove()
+    assert path.impediment == path.path[9]
+    assert path.blocking_devices == [path.path[9]]
+
+    path.path[8].insert()
+    path.path[5].remove()
+    assert path.impediment == path.path[9]
+    assert path.blocking_devices == [path.path[9]]
+
+    path.path[9].remove()
+    assert path.impediment is None
+
+
+def test_summary_signal(device: Device):
     cb = Mock()
 
     device.lightpath_summary.subscribe(cb, run=False)

@@ -60,7 +60,15 @@ def simulated_path():
                        output_branches=['TST', 'SIM']),
                IPIMB('five', name='five', z=24., input_branches=['TST'],
                      output_branches=['TST']),
-               Valve('six', name='six', z=30., input_branches=['TST'],
+               IPIMB('six', name='six', z=24.2, input_branches=['TST'],
+                     output_branches=['TST']),
+               IPIMB('seven', name='seven', z=24.4, input_branches=['TST'],
+                     output_branches=['TST']),
+               IPIMB('eight', name='eight', z=24.6, input_branches=['TST'],
+                     output_branches=['TST']),
+               IPIMB('nine', name='nine', z=24.8, input_branches=['TST'],
+                     output_branches=['TST']),
+               Valve('ten', name='ten', z=30., input_branches=['TST'],
                      output_branches=['TST'])
                ]
     # Create semi-random order
