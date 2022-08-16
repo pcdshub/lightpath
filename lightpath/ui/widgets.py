@@ -107,12 +107,11 @@ class LightRow(InactiveRow):
     Basic Widget to display LightDevice information
 
     The widget shows the device information and state, updating looking at the
-    devices :attr:`.inserted` and :attr:`.removed` attributes. The
-    :attr:`.remove_button` also allows the user to remove devices by calling
-    the :meth:`.remove` method of the given device. The identical button is
-    setup if the device is determined to have an `insert` method. Finally,
-    PyDMRectangle is used to show the current path of the beam through the
-    table
+    device in the context of the path it resides in The device provided is
+    expected to implement the ``LightpathMixin`` interface provided in
+    ``pcdsdevices``.  This widget subscribes to the device's
+    ``lightpath_summary`` signal for updates.  Finally, PyDMRectangle is used
+    to show the current path of the beam through the table.
 
     Parameters
     ----------
@@ -189,6 +188,9 @@ class LightRow(InactiveRow):
         If device is inserted, not blocking (mirrors): StateColor.HalfRemoved
         If device is unknown / errored: StateColor.Error
 
+        The color of the labels should quickly point users to blocking devices,
+        while providing useful information about each device's state.
+
         Could take a color map in the future?  Colorblind support?
 
         Returns
@@ -217,11 +219,7 @@ class LightRow(InactiveRow):
         """
         Update the state label
 
-        The displayed state can be one of ``Unknown`` , ``Inserted``,
-        ``Removed`` or ``Error``, with ``Unknown`` being if the device is not
-        inserted or removed, and error being if the device is reporting as both
-        inserted and removed. The color of the label is also adjusted to either
-        green or red to quickly
+        Icon color is determined by ``LightRow.get_state_color()``.
         """
         # Interpret state
         self.last_state = find_device_state(self.device)[0]
