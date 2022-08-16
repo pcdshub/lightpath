@@ -152,6 +152,14 @@ def lcls_client(monkeypatch):
     return client
 
 
+def simulated_lcls():
+    """ LightController with simulated lcls facility for testing """
+    db = os.path.join(os.path.dirname(__file__), 'path.json')
+    client = happi.Client(path=db)
+
+    return LightController(client)
+
+
 @pytest.fixture(scope='function')
 def lcls_ctrl(lcls_client: happi.Client):
     print(f'first item: {lcls_client.search()[0]}')
