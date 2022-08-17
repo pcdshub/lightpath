@@ -21,6 +21,7 @@ from typhos import TyphosDeviceDisplay
 
 from lightpath.path import DeviceState
 
+from ..mock_devices import IPIMB, Crystal, Stopper
 from .widgets import LightRow
 
 logger = logging.getLogger(__name__)
@@ -52,7 +53,9 @@ class LightApp(Display):
                    'KBOMirror': KBOMirror, 'OffsetMirror': XOffsetMirror,
                    'PIM': dtypes.PIM, 'PPSStopper': PPSStopper,
                    'PulsePicker': dtypes.PulsePicker, 'Slit': dtypes.Slits,
-                   'Stopper': dtypes.Stopper, 'XFLS': dtypes.XFLS}
+                   'Stopper': dtypes.Stopper, 'XFLS': dtypes.XFLS,
+                   'SIM_IPIMB': IPIMB, 'SIM_Stopper': Stopper,
+                   'SIM_Crystal': Crystal}
 
     def __init__(self, controller, beamline=None,
                  parent=None, dark=True):
@@ -92,6 +95,8 @@ class LightApp(Display):
         self.detail_hide.clicked.connect(self.hide_detailed)
         # Store LightRow objects to manage subscriptions
         self.rows = list()
+        # store device type filter widgets
+        self._device_checkboxes = list()
         # Select the beamline to begin with
         beamline = beamline or self.destinations()[0]
         try:
@@ -101,18 +106,6 @@ class LightApp(Display):
             idx = 0
         # Move the ComboBox
         self.destination_combo.setCurrentIndex(idx)
-        # Add all of our device type options
-        max_columns = 3
-        for i, row in enumerate(np.array_split(list(self.shown_types.items()),
-                                               max_columns)):
-            for j, device_type in enumerate(row):
-                # Add box to layout
-                box = QCheckBox(device_type[0])
-                box.setChecked(True)
-                self.device_types.layout().addWidget(box, j, i)
-                # Hook up box to hide function
-                self.device_buttons[box] = device_type[1]
-                box.toggled.connect(self.filter)
         # Setup the UI
         self.change_path_display()
         self.resizeSlider()
@@ -179,6 +172,40 @@ class LightApp(Display):
         return [dtype for button, dtype in self.device_buttons.items()
                 if not button.isChecked()]
 
+    def update_device_types(self):
+        """
+        Update the device type filter check boxes bases on devices
+        currently in the path
+        """
+        with self._lock:
+            # find valid device types. any() short circuits, yay generators!
+            valid_types = {}
+            for type_name, dtype in self.shown_types.items():
+                if any(isinstance(dev, dtype) for dev in self.path.path):
+                    valid_types[type_name] = dtype
+
+            # clear old checkboxes
+            for child in self._device_checkboxes:
+                self.device_types.layout().removeWidget(child)
+                self.device_buttons.pop(child)
+                child.deleteLater()
+
+            self._device_checkboxes.clear()
+
+            # populate grid with available device types
+            max_columns = 3
+            for i, row in enumerate(np.array_split(list(valid_types.items()),
+                                                   max_columns)):
+                for j, device_type in enumerate(row):
+                    # Add box to layout
+                    box = QCheckBox(device_type[0])
+                    box.setChecked(True)
+                    self.device_types.layout().addWidget(box, j, i)
+                    # Hook up box to hide function
+                    self.device_buttons[box] = device_type[1]
+                    box.toggled.connect(self.filter)
+                    self._device_checkboxes.append(box)
+
     @pyqtSlot()
     @pyqtSlot(bool)
     def change_path_display(self, value=None):
@@ -213,7 +240,7 @@ class LightApp(Display):
                 if isinstance(box, QCheckBox):
                     box.setChecked(True)
 
-            # Grab all the light rows
+            # Grab all the light rows (self.path set here)
             rows = [self.load_device_row(d)
                     for d in self.select_devices(self.selected_beamline())]
             # Add all the widgets to the display
@@ -240,6 +267,8 @@ class LightApp(Display):
                 widget.update_state()
         # Update the state of the path
         self.update_path()
+        # Update device type checkboxes
+        self.update_device_types()
 
     def ui_filename(self):
         """
