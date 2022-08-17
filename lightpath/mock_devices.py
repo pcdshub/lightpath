@@ -48,7 +48,7 @@ class Valve(Device):
     _veto = False
     SUB_STATE = 'sub_state_changed'
     _default_sub = SUB_STATE
-    _icon = 'fa5.adjust'
+    _icon = 'fa.adjust'
 
     current_state = Cpt(Signal, value=Status.removed,
                         kind=Kind.hinted)
