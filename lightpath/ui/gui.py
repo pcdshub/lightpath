@@ -124,10 +124,9 @@ class LightApp(Display):
 
     def destinations(self):
         """
-        All possible beamline destinations sorted by end point
+        All possible beamline destinations
         """
-        return sorted(list(self.light.beamlines.keys()),
-                      key=lambda x: self.light.active_path(x).range[0])
+        return list(self.light.beamlines.keys())
 
     def load_device_row(self, device):
         """
