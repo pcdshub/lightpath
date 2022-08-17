@@ -21,7 +21,7 @@ from typhos import TyphosDeviceDisplay
 
 from lightpath.path import DeviceState
 
-from ..mock_devices import IPIMB, Crystal, Stopper
+from ..mock_devices import IPIMB, Crystal, Stopper, Valve
 from .widgets import LightRow
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ class LightApp(Display):
                    'PulsePicker': dtypes.PulsePicker, 'Slit': dtypes.Slits,
                    'Stopper': dtypes.Stopper, 'XFLS': dtypes.XFLS,
                    'SIM_IPIMB': IPIMB, 'SIM_Stopper': Stopper,
-                   'SIM_Crystal': Crystal}
+                   'SIM_Crystal': Crystal, 'SIM_Valve': Valve}
 
     def __init__(self, controller, beamline=None,
                  parent=None, dark=True):
