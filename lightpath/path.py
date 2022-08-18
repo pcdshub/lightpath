@@ -236,12 +236,11 @@ class BeamPath(OphydObject):
                 block.append(prev_device)
             # check inserted
             elif curr_state is DeviceState.Inserted:
-                current_transmission *= curr_status.transmission
-                # Blocking if single device has low enough transmssion
-                if curr_status.transmission < self.minimum_transmission:
-                    block.append(device)
+                if curr_status.transmission > 1:
+                    logger.error(f'{device.name} reports transmission > 1')
+                current_transmission *= min(curr_status.transmission, 1)
                 # Any device seeing current transmission below min would block
-                elif current_transmission < self.minimum_transmission:
+                if current_transmission < self.minimum_transmission:
                     block.append(device)
             # Do not add device to blocking list, it is removed
             elif curr_state is DeviceState.Removed:
