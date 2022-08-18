@@ -40,7 +40,7 @@ class Status:
     disconnected = 4
 
 
-class Valve(Device):
+class BaseValve(Device):
     """
     Basic device to facilitate in/out positioning
     """
@@ -112,7 +112,12 @@ class Valve(Device):
         return status
 
 
-class IPIMB(Valve):
+class Valve(BaseValve):
+    """ subclass to differentiate from other mock devices """
+    pass
+
+
+class IPIMB(BaseValve):
     """
     Generic Passive Device
     """
@@ -120,7 +125,7 @@ class IPIMB(Valve):
     _icon = 'fa5s.th-large'
 
 
-class Stopper(Valve):
+class Stopper(BaseValve):
     """
     Generic Veto Device
     """
@@ -128,7 +133,7 @@ class Stopper(Valve):
     _icon = 'fa5.times-circle'
 
 
-class Crystal(Valve):
+class Crystal(BaseValve):
     """
     Generic branching device
     """
