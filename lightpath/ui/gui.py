@@ -66,6 +66,7 @@ class LightApp(Display):
         self.detail_screen = None
         self.device_buttons = dict()
         self._lock = threading.Lock()
+        self._prev_block = None
         # Create empty layout
         self.lightLayout = QHBoxLayout()
         self.lightLayout.setSpacing(1)
@@ -310,8 +311,10 @@ class LightApp(Display):
                 for widget in row:
                     widget.update_light(_in, _out)
                     # Reconsider blocking device state
-                    if device is block:
+                    if (device is self._prev_block or device is block):
                         widget.update_state()
+
+            self._prev_block = block
 
     def _destroy_lightpath_summary_signals(self, *args, **kwargs):
         """ Update all widgets in rows """
