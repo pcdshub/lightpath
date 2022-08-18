@@ -183,10 +183,10 @@ class LightRow(InactiveRow):
     def get_state_color(self) -> QColor:
         """
         Determine the icon color given the device state and path status
-        If device is an impediment: StateColor.Blocking
-        If device is removed: StateColor.Removed
-        If device is inserted, not blocking (mirrors): StateColor.HalfRemoved
-        If device is unknown / errored: StateColor.Error
+        If device is an impediment: state_color['blocking']
+        If device is removed: state_color['removed']
+        If device is in, not blocking (mirrors): state_color['half_removed']
+        If device is unknown / errored: state_color['error']
 
         The color of the labels should quickly point users to blocking devices,
         while providing useful information about each device's state.
