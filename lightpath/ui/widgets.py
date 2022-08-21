@@ -203,17 +203,17 @@ class LightRow(InactiveRow):
 
         if device_state is DeviceState.Disconnected:
             return state_colors['disconnected']
-        elif device_state is DeviceState.Error:
+        if device_state is DeviceState.Error:
             return state_colors['error']
-        elif device_state is DeviceState.Inserted:
+        if device_state is DeviceState.Inserted:
             if self.device not in blocking_devices:
                 return state_colors['half_removed']
             else:
                 return state_colors['blocking']
-        elif device_state is DeviceState.Removed:
+        if device_state is DeviceState.Removed:
             return state_colors['removed']
-        else:
-            return state_colors['unknown']
+
+        return state_colors['unknown']
 
     def update_state(self, *args, **kwargs):
         """

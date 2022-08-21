@@ -114,8 +114,6 @@ class LightApp(Display):
         if dark:
             typhos.use_stylesheet(dark=True)
 
-        self.setWindowTitle('Lightpath')
-
     def destinations(self):
         """
         All possible beamline destinations
@@ -270,6 +268,7 @@ class LightApp(Display):
         self.update_path()
         # Update device type checkboxes
         self.update_device_types()
+        self.setWindowTitle(f'Lightpath - {self.selected_beamline()}')
 
     def ui_filename(self):
         """
