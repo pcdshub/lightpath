@@ -7,12 +7,7 @@ import threading
 from functools import partial
 
 import numpy as np
-import pcdsdevices.device_types as dtypes
 import typhos
-from pcdsdevices.attenuator import AttBase
-from pcdsdevices.ipm import IPMMotion
-from pcdsdevices.mirror import KBOMirror, XOffsetMirror
-from pcdsdevices.valve import PPSStopper
 from pydm import Display
 from qtpy.QtCore import Qt
 from qtpy.QtCore import Slot as pyqtSlot
@@ -21,7 +16,6 @@ from typhos import TyphosDeviceDisplay
 
 from lightpath.path import DeviceState
 
-from ..mock_devices import IPIMB, Crystal, Stopper, Valve
 from .widgets import LightRow
 
 logger = logging.getLogger(__name__)
@@ -48,15 +42,6 @@ class LightApp(Display):
 
     parent : optional
     """
-    shown_types = {'Attenuator': AttBase, 'Gate Valve': dtypes.GateValve,
-                   'IPM': IPMMotion, 'LODCM': dtypes.LODCM,
-                   'KBOMirror': KBOMirror, 'OffsetMirror': XOffsetMirror,
-                   'PIM': dtypes.PIM, 'PPSStopper': PPSStopper,
-                   'PulsePicker': dtypes.PulsePicker, 'Slit': dtypes.Slits,
-                   'Stopper': dtypes.Stopper, 'XFLS': dtypes.XFLS,
-                   'SIM_IPIMB': IPIMB, 'SIM_Stopper': Stopper,
-                   'SIM_Crystal': Crystal, 'SIM_Valve': Valve}
-
     def __init__(self, controller, beamline=None,
                  parent=None, dark=True):
         super().__init__(parent=parent)
@@ -72,8 +57,9 @@ class LightApp(Display):
         self.lightLayout.setSpacing(1)
         self.widget_rows.setLayout(self.lightLayout)
         self.device_types.setLayout(QGridLayout())
+        self.device_types.layout().setVerticalSpacing(2)
         self.overview.setLayout(QHBoxLayout())
-        self.overview.layout().setSpacing(2)
+        self.overview.layout().setSpacing(4)
         self.overview.layout().setContentsMargins(2, 2, 2, 2)
         # Setup the fancy overview slider
         slide_scroll = self.scroll.horizontalScrollBar()
@@ -177,11 +163,10 @@ class LightApp(Display):
         currently in the path
         """
         with self._lock:
-            # find valid device types. any() short circuits, yay generators!
             valid_types = {}
-            for type_name, dtype in self.shown_types.items():
-                if any(isinstance(dev, dtype) for dev in self.path.path):
-                    valid_types[type_name] = dtype
+            for dev in self.path.path:
+                mod_name = dev.__module__
+                valid_types[(mod_name.split('.', 1)[1])] = mod_name
 
             # clear old checkboxes
             for child in self._device_checkboxes:
@@ -355,7 +340,7 @@ class LightApp(Display):
         for row in self.rows:
             device = row[0].device
             # Hide if a hidden instance of a device type
-            hidden_device_type = any([isinstance(device, dtype)
+            hidden_device_type = any([device.__module__ == dtype
                                       for dtype in self.hidden_devices])
             # Hide if removed
             hidden_removed = (not self.remove_check.isChecked()
