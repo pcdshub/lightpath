@@ -217,12 +217,6 @@ class LightApp(Display):
                 self.rows.clear()
                 self.device_combo.clear()
                 self.upstream_device_combo.clear()
-            # # Hide nothing when switching beamlines
-            # boxes = self.device_types.children()
-            # boxes.extend([self.remove_check])
-            # for box in boxes:
-            #     if isinstance(box, QCheckBox):
-            #         box.setChecked(True)
 
             # Grab all the light rows (self.path set here)
             rows = [self.load_device_row(d)
