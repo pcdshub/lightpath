@@ -6,5 +6,8 @@
    :hidden:
 
    tutorial.rst
+   interface.rst
    controller.rst
    path.rst
+
+   upcoming_changes.rst

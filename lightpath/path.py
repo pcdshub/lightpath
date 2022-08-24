@@ -1,10 +1,10 @@
 """
 The :class:`.BeamPath` is the main abstraction for the lightpath module,
 grouping together a set of devices using the :class:`.LightInterface` and
-representing the path between them as single object. While the manipulation of
-each of these object should be done at the device level, the
-:meth:`.BeamPath.clear` does provide a powerful tool to quickly change the
-status of the path.
+representing the path between them as single object. Rhe manipulation of
+each of these object should be done at the device level, and while this
+may be done inside of lightpath via detailed screens, lightpath is not
+repsonsible for inserting or removing devices.
 
 The :class:`.BeamPath` object is also not meant to be a rigid representation,
 :meth:`.BeamPath.split` and :meth:`.BeamPath.join` both allow for slicing and
@@ -357,6 +357,11 @@ class BeamPath(OphydObject):
             Returns list of status objects returned by
             :meth:`.LightInterface.remove`
         """
+
+        logger.error('BeamPath.clear() has been deprecated.  '
+                     'Lightpath is not responsible for removing or '
+                     'inserting devices')
+        return
         logger.info('Clearing beampath %s ...', self)
         # Assemble device list
         target_devices, ignored = self._ignore(ignore, passive=passive)

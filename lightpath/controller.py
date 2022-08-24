@@ -1,12 +1,20 @@
 """
 While the :class:`.BeamPath` object provides basic control functionality, the
 :class:`.LightController` is what does the organization of all of LCLS's
-devices. After parsing through all of the given devices, each beamline is
-contsructed as a :class:`.BeamPath` object. This includes not only devices on
-the upstream beamline but all of the beamlines before it. For example, the MEC
-beampath will include devices in both the FEE and the XRT. The
-:class:`.LightController` handles this logic as well as a basic overview of
-where the beam is and what the state of the MPS system is currently.
+devices. The facility is represented by an Acyclic Direced Graph (DAG),
+starting at the source and ending at the beamline hutches.  After parsing
+through all of the given devices, each beamline is contsructed as a
+:class:`.BeamPath` object. This includes not only devices on the upstream
+beamline but all of the beamlines before it. For example, the MEC beampath will
+include devices in both the FEE and the XRT. In some cases there are multiple
+possible paths beam may take to reach a given endstation.  In the case of
+multiple possible paths, the :method:`.LightController.active_path` will
+return the path with the latest impediment.  (equivalently, the path that
+lets the beam through farthest)
+
+The :class:`.LightController`
+handles this logic as well as a basic overview of where the beam is and
+the current state of the MPS system
 """
 import logging
 import math
