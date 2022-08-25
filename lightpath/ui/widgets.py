@@ -18,12 +18,15 @@ from lightpath.path import DeviceState, find_device_state
 logger = logging.getLogger(__name__)
 
 # Define the state colors that correspond to DeviceState
-state_colors = [QColor(124, 252, 0),  # Removed
-                QColor(255, 0, 0),  # Inserted
-                QColor(255, 215, 0),  # Unknown
-                QColor(255, 215, 0),  # Disconnected
-                QColor(255, 0, 255),  # Disconnected
-                QColor(255, 0, 255)]  # Error
+state_colors = {
+    'removed': QColor(124, 252, 0),  # Removed (green)
+    'half_removed': QColor(0, 176, 255),  # half-removed (light blue)
+    'blocking': QColor(255, 0, 0),  # Inserted (red)
+    'unknown': QColor(255, 215, 0),  # Unknown (yellow)
+    'inconsistent': QColor(255, 215, 0),  # Inconsistent (yellow)
+    'disconnected': QColor(255, 0, 255),  # Disconnected (purple)
+    'error': QColor(255, 0, 255)  # Error (purple)
+}
 
 
 def to_stylesheet_color(color):
@@ -39,7 +42,7 @@ def symbol_for_device(device):
 
     This depends on the hidden attribute ``_icon`` that specifies a valid icon
     name to be loaded by the ``qtawesome`` library. If no icon is specified,
-    ``"fa.square"` is used instead."""
+    ``"fa.square"`` is used instead."""
     try:
         symbol = getattr(device, '_icon')
     except AttributeError:
@@ -52,9 +55,10 @@ class InactiveRow(Display):
     """
     Inactive row for happi container
     """
-    def __init__(self, device, parent=None):
+    def __init__(self, device, path, parent=None):
         super().__init__(parent=parent)
         self.device = device
+        self.path = path
         # Initialize prior state variable
         self.last_state = DeviceState.Disconnected
         # Create labels
@@ -103,12 +107,11 @@ class LightRow(InactiveRow):
     Basic Widget to display LightDevice information
 
     The widget shows the device information and state, updating looking at the
-    devices :attr:`.inserted` and :attr:`.removed` attributes. The
-    :attr:`.remove_button` also allows the user to remove devices by calling
-    the :meth:`.remove` method of the given device. The identical button is
-    setup if the device is determined to have an `insert` method. Finally,
-    PyDMRectangle is used to show the current path of the beam through the
-    table
+    device in the context of the path it resides in The device provided is
+    expected to implement the ``LightpathMixin`` interface provided in
+    ``pcdsdevices``.  This widget subscribes to the device's
+    ``lightpath_summary`` signal for updates.  Finally, PyDMRectangle is used
+    to show the current path of the beam through the table.
 
     Parameters
     ----------
@@ -121,8 +124,8 @@ class LightRow(InactiveRow):
     MAX_HINTS = 2
     device_updated = Signal()
 
-    def __init__(self, device, parent=None):
-        super().__init__(device, parent=parent)
+    def __init__(self, device, path, parent=None):
+        super().__init__(device, path, parent=parent)
         self.device_updated.connect(self.update_state)
 
         # Subscribe device to state changes
@@ -177,21 +180,52 @@ class LightRow(InactiveRow):
         self.command_layout.insertWidget(count - 1, label, 0, Qt.AlignHCenter)
         self.command_layout.insertWidget(count, widget, 0, Qt.AlignHCenter)
 
+    def get_state_color(self) -> QColor:
+        """
+        Determine the icon color given the device state and path status
+        If device is an impediment: state_color['blocking']
+        If device is removed: state_color['removed']
+        If device is in, not blocking (mirrors): state_color['half_removed']
+        If device is unknown / errored: state_color['error']
+
+        The color of the labels should quickly point users to blocking devices,
+        while providing useful information about each device's state.
+
+        Could take a color map in the future?  Colorblind support?
+
+        Returns
+        -------
+        QColor
+            the color to apply to the icon
+        """
+        device_state, _ = find_device_state(self.device)
+        blocking_devices = self.path.blocking_devices
+
+        if device_state is DeviceState.Disconnected:
+            return state_colors['disconnected']
+        if device_state is DeviceState.Error:
+            return state_colors['error']
+        if device_state is DeviceState.Inserted:
+            if self.device not in blocking_devices:
+                return state_colors['half_removed']
+            else:
+                return state_colors['blocking']
+        if device_state is DeviceState.Removed:
+            return state_colors['removed']
+
+        return state_colors['unknown']
+
     def update_state(self, *args, **kwargs):
         """
         Update the state label
 
-        The displayed state can be one of ``Unknown`` , ``Inserted``,
-        ``Removed`` or ``Error``, with ``Unknown`` being if the device is not
-        inserted or removed, and error being if the device is reporting as both
-        inserted and removed. The color of the label is also adjusted to either
-        green or red to quickly
+        Icon color is determined by ``LightRow.get_state_color()``.
         """
         # Interpret state
         self.last_state = find_device_state(self.device)[0]
         # Set label to state description
         self.state_label.setText(self.last_state.name)
-        color = state_colors[self.last_state.value]
+        color = self.get_state_color()
         style_color = to_stylesheet_color(color)
         style_sheet = "QLabel {color: %s}" % style_color
         self.state_label.setStyleSheet(style_sheet)

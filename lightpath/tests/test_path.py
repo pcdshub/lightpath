@@ -1,4 +1,5 @@
 import io
+import re
 from unittest.mock import Mock
 
 from ophyd.device import Device
@@ -124,7 +125,18 @@ def test_show_device(path: BeamPath):
     path.show_devices(file=f)
     # Read from start of document
     f.seek(0)
-    assert f.read() == known_table
+    # read into string, compare line by line
+    out = f.read().split('\n')
+    # match header line
+    assert re.search(header_pattern, out[1])
+
+    for i, line in enumerate(out[3:-2]):
+        dev = path.path[i]
+        data = [dev.name, dev.prefix, dev.md.z,
+                '\\' + str(dev.input_branches) + '\\',
+                '\\' + str(dev.output_branches) + '\\']
+        body = body_pattern.format(*data)
+        assert re.search(body, line)
 
 
 def test_ignore(path: BeamPath):
@@ -137,7 +149,8 @@ def test_ignore(path: BeamPath):
 
     # Ignore passive devices in addition
     target, ignore = path._ignore(path.path[3], passive=False)
-    assert ignore == [path.path[5], path.path[4], path.path[3]]
+    assert all([dev in ignore for
+                dev in [path.path[5], path.path[4], path.path[3]]])
     assert path.path[3] not in target
     assert path.path[5] not in target
 
@@ -193,7 +206,30 @@ def test_callback(path: BeamPath):
     assert cb.called
 
 
-def test_summary_signal(device):
+def test_attenuation(path: BeamPath):
+    assert path.impediment is None
+
+    # insert imagers to attenuate 0.5 per --> 4 needed to drop below 0.1
+    for i in [5, 6, 7, 8, 9]:
+        path.path[i].insert()
+
+    assert path.impediment == path.path[8]
+    assert path.blocking_devices == [path.path[8], path.path[9]]
+
+    path.path[8].remove()
+    assert path.impediment == path.path[9]
+    assert path.blocking_devices == [path.path[9]]
+
+    path.path[8].insert()
+    path.path[5].remove()
+    assert path.impediment == path.path[9]
+    assert path.blocking_devices == [path.path[9]]
+
+    path.path[9].remove()
+    assert path.impediment is None
+
+
+def test_summary_signal(device: Device):
     cb = Mock()
 
     device.lightpath_summary.subscribe(cb, run=False)
@@ -203,16 +239,7 @@ def test_summary_signal(device):
     assert cb.called
 
 
-known_table = """\
-+-------+--------+----------+----------------+-----------------+---------+
-| Name  | Prefix | Position | Input Branches | Output Branches |   State |
-+-------+--------+----------+----------------+-----------------+---------+
-| zero  | zero   |  0.00000 |        ['TST'] |         ['TST'] | Removed |
-| one   | one    |  2.00000 |        ['TST'] |         ['TST'] | Removed |
-| two   | two    |  9.00000 |        ['TST'] |         ['TST'] | Removed |
-| three | three  | 15.00000 |        ['TST'] |         ['TST'] | Removed |
-| four  | four   | 16.00000 |        ['TST'] |  ['TST', 'SIM'] | Removed |
-| five  | five   | 24.00000 |        ['TST'] |         ['TST'] | Removed |
-| six   | six    | 30.00000 |        ['TST'] |         ['TST'] | Removed |
-+-------+--------+----------+----------------+-----------------+---------+
-"""
+# regex patterns for show_devices test
+header_pattern = (r'^\| Name *\| Prefix *\| Position *\| Input Branches *'
+                  r'\| Output Branches *\| *State \|$')
+body_pattern = r'^\| {} *\| {} *\| *{:.5f} *\| *{} \| *{} \| Removed \|$'

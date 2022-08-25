@@ -14,7 +14,7 @@ def lightapp(lcls_client, qtbot):
     yield lightapp
 
 
-def test_app_buttons(lightapp):
+def test_app_buttons(lightapp: LightApp):
     # Create widgets
     assert len(lightapp.select_devices('MEC')) == 14
     # Setup new display
@@ -29,7 +29,7 @@ def test_lightpath_launch_script():
     assert find_executable('lightpath')
 
 
-def test_focus_on_device(lightapp, monkeypatch):
+def test_focus_on_device(lightapp: LightApp, monkeypatch):
     row = lightapp.rows[7][0]
     monkeypatch.setattr(lightapp.scroll,
                         'ensureWidgetVisible',
@@ -46,7 +46,7 @@ def test_focus_on_device(lightapp, monkeypatch):
     lightapp.focus_on_device('blah')
 
 
-def test_upstream_check(lightapp, monkeypatch):
+def test_upstream_check(lightapp: LightApp, monkeypatch):
     assert len(lightapp.select_devices('TMO')) == 12
 
     tmo_idx = lightapp.destination_combo.findText('TMO')
@@ -68,7 +68,7 @@ def test_upstream_check(lightapp, monkeypatch):
             row[0].setHidden.assert_called_with(False)
 
 
-def test_filtering(lightapp, monkeypatch):
+def test_filtering(lightapp: LightApp, monkeypatch):
     lightapp.destination_combo.setCurrentIndex(4)  # set current to MEC
     # Create mock functions
     for row in lightapp.rows:
@@ -110,7 +110,7 @@ def test_filtering(lightapp, monkeypatch):
             row[0].setHidden.assert_called_with(False)
 
 
-def test_typhos_display(lightapp):
+def test_typhos_display(lightapp: LightApp):
     # Smoke test the hide button without a detailed display
     lightapp.hide_detailed()
     assert lightapp.detail_layout.count() == 2

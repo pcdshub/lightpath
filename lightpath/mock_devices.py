@@ -40,7 +40,7 @@ class Status:
     disconnected = 4
 
 
-class Valve(Device):
+class BaseValve(Device):
     """
     Basic device to facilitate in/out positioning
     """
@@ -48,7 +48,7 @@ class Valve(Device):
     _veto = False
     SUB_STATE = 'sub_state_changed'
     _default_sub = SUB_STATE
-    _icon = 'fa.adjust'
+    _icon = 'fa5s.adjust'
 
     current_state = Cpt(Signal, value=Status.removed,
                         kind=Kind.hinted)
@@ -112,27 +112,32 @@ class Valve(Device):
         return status
 
 
-class IPIMB(Valve):
+class Valve(BaseValve):
+    """ subclass to differentiate from other mock devices """
+    pass
+
+
+class IPIMB(BaseValve):
     """
     Generic Passive Device
     """
-    _transmission = 0.6
-    _icon = 'fa.th-large'
+    _transmission = 0.5
+    _icon = 'fa5s.th-large'
 
 
-class Stopper(Valve):
+class Stopper(BaseValve):
     """
     Generic Veto Device
     """
     _veto = True
-    _icon = 'fa.times-circle'
+    _icon = 'fa5.times-circle'
 
 
-class Crystal(Valve):
+class Crystal(BaseValve):
     """
     Generic branching device
     """
-    _icon = 'fa.star'
+    _icon = 'fa5.star'
     _transmission = 0.8
 
     # when inserted, which branch do you take?

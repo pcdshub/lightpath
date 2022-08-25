@@ -214,12 +214,14 @@ class BeamPath(OphydObject):
         Returns
         -------
         List[Device]
-            list of blockoing devices
+            list of blocking devices
         """
         # Cache important prior devices
         prev_device = None
         prev_status = None
         block = list()
+        current_transmission = 1
+
         for device in self.path:
             curr_state, curr_status = find_device_state(device)
 
@@ -234,13 +236,16 @@ class BeamPath(OphydObject):
                 block.append(prev_device)
             # check inserted
             elif curr_state is DeviceState.Inserted:
-                # Ignore devices with low enough transmssion
-                if curr_status.transmission < self.minimum_transmission:
+                if curr_status.transmission > 1:
+                    logger.error(f'{device.name} reports transmission > 1')
+                current_transmission *= min(curr_status.transmission, 1)
+                # Any device seeing current transmission below min would block
+                if current_transmission < self.minimum_transmission:
                     block.append(device)
-            # Find unknown and inconsistent devices
+            # Do not add device to blocking list, it is removed
             elif curr_state is DeviceState.Removed:
                 pass
-            # Do not add device to blocking list, it is removed
+            # Unknown and inconsistent devices block
             else:
                 block.append(device)
 
