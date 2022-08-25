@@ -357,11 +357,6 @@ class BeamPath(OphydObject):
             Returns list of status objects returned by
             :meth:`.LightInterface.remove`
         """
-
-        logger.error('BeamPath.clear() has been deprecated.  '
-                     'Lightpath is not responsible for removing or '
-                     'inserting devices')
-        return
         logger.info('Clearing beampath %s ...', self)
         # Assemble device list
         target_devices, ignored = self._ignore(ignore, passive=passive)
