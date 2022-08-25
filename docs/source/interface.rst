@@ -62,6 +62,20 @@ the device by being passed in as a keyword argument.
 Device Status (Lightpath Status)
 --------------------------------
 
+What does your ophyd device need?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In the simplest sense, your device needs to present the following API:
+
+* ``device.lightpath_summary``: a signal that changes whenever the
+  Lightpath-state of the device changes
+* ``device.get_lightpath_state()``: a method that returns a
+  ``lightpath.LightpathState`` dataclass, containing the Lightpath-state
+  of the device
+
+How is this implemented?
+^^^^^^^^^^^^^^^^^^^^^^^^
+
 The main point of interaction between Lightpath and a device's dynamic
 information should be the ``get_lightpath_state()`` method.  This method is
 expected to return a dataclass with the following fields:

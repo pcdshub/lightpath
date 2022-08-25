@@ -1,17 +1,17 @@
 """
-The :class:`.BeamPath` is the main abstraction for the lightpath module,
-grouping together a set of devices using the :class:`.LightInterface` and
-representing the path between them as single object. Rhe manipulation of
-each of these object should be done at the device level, and while this
-may be done inside of lightpath via detailed screens, lightpath is not
-repsonsible for inserting or removing devices.
+The :class:`.BeamPath` is the main abstraction for the Lightpath module,
+grouping together a set of devices using the :ref:`Lightpath
+interface<interface_api>` and representing the path between them as single
+object. The manipulation of each of these object should be done at the device
+level, and while this may be done inside of Lightpath via detailed screens,
+Lightpath is not repsonsible for inserting or removing devices.
 
 The :class:`.BeamPath` object is also not meant to be a rigid representation,
 :meth:`.BeamPath.split` and :meth:`.BeamPath.join` both allow for slicing and
 combining of different areas of the LCLS beamline. However, keep in mind that
 the path only knows the state of the devices it contains, so certain methods
 might not return an accurate representation of reality if an upstream device is
-affecting the beam.
+secretly affecting the beam.
 """
 from __future__ import annotations
 
@@ -139,7 +139,7 @@ class BeamPath(OphydObject):
     devices : :class:`.LightDevice`
         Arguments are interpreted as LightDevices along a common beamline.
 
-    name = str, optional
+    name : str, optional
         Name of the BeamPath
 
     Raises
