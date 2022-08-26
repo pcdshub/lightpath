@@ -1,10 +1,9 @@
 """
 While the :class:`.BeamPath` object provides basic control functionality, the
 :class:`.LightController` is what does the organization of all of LCLS's
-devices. The facility is represented by an Acyclic Direced Graph (DAG),
-starting at the source and ending at the beamline hutches.  After parsing
-through all of the given devices, each beamline is contsructed as a
-:class:`.BeamPath` object.
+devices. The facility is represented by an Direced Graph, starting at the
+source and ending at the beamline hutches.  After parsing through all of the
+given devices, each beamline is contsructed as a :class:`.BeamPath` object.
 
 This includes not only devices on the upstream beamline but all of the
 beamlines before it. For example, the MEC beampath will include devices in both
@@ -262,16 +261,16 @@ class LightController:
 
     def walk_facility(self) -> Dict[NodeName, List[NodeName]]:
         """
-        Return the paths from source to destination by walking the
-        graph along device destinations
+        Return the paths from each source to its destination by walking the
+        graph.
 
         Starting from a source node, steps iteratively through a node's
-        successors (nearest neighbors).  If there is one and only one
-        successor, step to that device and repeat.  Once there are no
-        more connections, we have reached the end of the line and may stop.
+        successors (nearest neighbors).  If there is one and only one valid
+        successor, step to that device and repeat.  Once there are no more
+        connections, we have reached the end of the line.
 
-        Successors are considered invalid if a node's output branch
-        does not match the successor's input.
+        Successors are considered invalid if a node's output branch does not
+        match the successor's input.
 
         Returns
         -------
@@ -447,13 +446,13 @@ class LightController:
         sources: List[NodeName] = []
     ) -> nx.DiGraph:
         """
-        Create a graph with devices from branch_devs as nodes,
+        Create a graph with devices from ``branch_devs`` as nodes,
         arranged in z-order.
 
-        It is assumed that all devices lie on branch: branch_name
+        It is assumed that all devices lie on branch: ``branch_name``
 
-        If sources is provided, will prepend a source node at the
-        beginning of the branch when branch_name == sources
+        If ``sources`` is provided, will prepend a source node at the
+        beginning of the branch if ``branch_name == sources``
 
         Parameters
         ----------
@@ -557,7 +556,8 @@ class LightController:
 
     def get_device(self, device_name: NodeName) -> Device:
         """
-        Return device from graph
+        Return device in the facility.  Creates the device if it has
+        not been already.
 
         Parameters
         ----------

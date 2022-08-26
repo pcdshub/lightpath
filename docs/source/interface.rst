@@ -7,13 +7,16 @@ Device Interface
 To make loading and updating lightpath as simple as possible, lightpath
 relies on two external sources of information:
 
-1. A database definition of the device (static)
-2. A snapshot of the device's current status (dynamic)
+1. A database definition of the device (static, ``happi``)
+2. A snapshot of the device's current status (dynamic, ``ophyd``)
 
-The first of these two is simple to understand.  This information allows us
+The first of these two is simple to understand, this information allows us
 to properly place the device in the facility relative to the other devices.
 The second, device status, allows us to see where the device is pointing and
 if it is permitting beam at a given point in time.
+
+The static information is held in the ``happi`` database, while the dynamic
+information is read from the device's ``ophyd`` representation.
 
 Database Definition
 -------------------
@@ -58,6 +61,10 @@ An example container has been included in lightpath as
 entrypoints.  In this example, the database information is used to instantiate
 the device by being passed in as a keyword argument.
 
+LCLS modifies this container slightly, adding LCLS-relevant metadata and the
+option to omit the ``input_branches`` / ``output_branches`` keyword arguments
+for devices that do not implement the LightpathInterface.  (see
+``pcdsdevices.happi.containeres.LCLSLightpathItem``)
 
 Device Status (Lightpath Status)
 --------------------------------
@@ -161,12 +168,13 @@ following:
                 output_branch=self.output_branches[0]
             )
 
-In this case we are leveraging the ``LightpathMixin`` class, which does
-most of the repetitive setup for us (creating ``lightpath_summary`` signal,
-setting up lightpath state caching, etc.).  This mixin delegates the
-calculation of the lightpaht state to the ``calc_lightpath_state`` method,
-which is to be written by the device creator.  Furthermore, the mixin
-looks for a list of component names called ``lightpath_cpts``, which will
-``lightpath_summary`` will watch for changes.  Upon a change in one of these
-signals, the LightpathMixin will get the values of each component and pass
-them to ``calc_lightpath_state``.
+In this case we are leveraging the ``LightpathMixin`` class, which does most of
+the repetitive setup for us (creating ``lightpath_summary`` signal, subscribing
+to relevant components, setting up lightpath state caching, checking that the
+subclass is correctly configured, etc.).  This mixin delegates the calculation
+of the lightpaht state to the ``calc_lightpath_state`` method, which is to be
+written by the device creator.  Furthermore, the mixin looks for a list of
+component names called ``lightpath_cpts``, which will ``lightpath_summary``
+will watch for changes.  Upon a change in one of these signals, the
+LightpathMixin will get the values of each component and pass them to
+``calc_lightpath_state``.

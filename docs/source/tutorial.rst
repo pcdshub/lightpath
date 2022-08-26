@@ -55,6 +55,8 @@ convenience of testing, but real devices may not.
 
    path.blocking_devices
 
+   path.show_devices()
+
 
 The most upstream blocking device by checking the :attr:`.BeamPath.impediment`
 
@@ -72,10 +74,10 @@ The most upstream blocking device by checking the :attr:`.BeamPath.impediment`
 Branching Logic, and Graph Construction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 In order to determine the state of the "beamline", Lightpath must first
-understand where the various devices lie along the beam path.  Lightpath
-does this by constructing a Directed Acyclic Graph (DAG) with the devices
-as nodes. This formulation allows Lightpath to find any and all valid paths to
-any given device, given the state of the facility at that time.
+understand where the various devices lie along the beam path.  Lightpath does
+this by constructing a Directed Graph with the devices as nodes. This
+formulation allows Lightpath to find any and all valid paths to any given
+device, given the state of the facility at that time.
 
 In order to do this, each device considered by lightpath must carry with
 it the following metadata:
@@ -84,12 +86,12 @@ it the following metadata:
 * output branches
 * z-position
 
-This is the minimum information needed to construct the facility graph.
+This is the minimum information needed to place a device in the facility graph.
 To simplify matters for the user, lightpath orders devices on the same
 branch by their z-position, or distance from the light source.
 
-Implementation details (device API, happi database information) are
-explained in the :ref:`interface_api` section
+For more implementation details (device API, happi database information)
+see the :ref:`interface_api` section
 
 LCLS Specific Notes
 ^^^^^^^^^^^^^^^^^^^
