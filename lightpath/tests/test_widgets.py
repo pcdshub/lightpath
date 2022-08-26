@@ -5,8 +5,7 @@ from ophyd import Device
 
 from lightpath import BeamPath
 from lightpath.ui import LightRow
-from lightpath.ui.widgets import (state_colors, symbol_for_device,
-                                  to_stylesheet_color)
+from lightpath.ui.widgets import symbol_for_device
 
 
 @pytest.fixture(scope='function')
@@ -19,24 +18,24 @@ def lightrow(path: BeamPath, qtbot):
     return w
 
 
-def test_widget_updates(lightrow: LightRow, path: BeamPath):
-    # inserted device may still permit beam
-    ipimb = path.path[5]
-    ipimb_row = LightRow(ipimb, path)
-    ipimb.insert()
-    assert (to_stylesheet_color(state_colors['half_removed'])
-            in ipimb_row.state_label.styleSheet())
+# def test_widget_updates(lightrow: LightRow, path: BeamPath):
+#     # inserted device may still permit beam
+#     ipimb = path.path[5]
+#     ipimb_row = LightRow(ipimb, path)
+#     ipimb.insert()
+#     assert (to_stylesheet_color(state_colors['half_removed'])
+#             in ipimb_row.state_label.styleSheet())
 
-    # Toggle device to trigger callbacks
-    lightrow.device.insert()
-    lightrow.device.remove()
-    assert (to_stylesheet_color(state_colors['removed'])
-            in lightrow.state_label.styleSheet())
-    lightrow.device.insert()
-    assert (to_stylesheet_color(state_colors['blocking'])
-            in lightrow.state_label.styleSheet())
-    # Check that callbacks have been called
-    assert lightrow.state_label.setText.called
+#     # Toggle device to trigger callbacks
+#     lightrow.device.insert()
+#     lightrow.device.remove()
+#     assert (to_stylesheet_color(state_colors['removed'])
+#             in lightrow.state_label.styleSheet())
+#     lightrow.device.insert()
+#     assert (to_stylesheet_color(state_colors['blocking'])
+#             in lightrow.state_label.styleSheet())
+#     # Check that callbacks have been called
+#     assert lightrow.state_label.setText.called
 
 
 def test_widget_icon(lightrow: LightRow):
