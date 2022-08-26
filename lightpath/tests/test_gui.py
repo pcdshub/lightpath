@@ -110,15 +110,17 @@ def test_filtering(lightapp: LightApp, monkeypatch):
             row[0].setHidden.assert_called_with(False)
 
 
-# def test_typhos_display(lightapp: LightApp):
-#     # Smoke test the hide button without a detailed display
-#     lightapp.hide_detailed()
-#     assert lightapp.detail_layout.count() == 2
-#     assert lightapp.device_detail.isHidden()
-#     lightapp.show_detailed(lightapp.rows[0][0].device)
-#     assert lightapp.detail_layout.count() == 3
-#     assert not lightapp.device_detail.isHidden()
-#     # Smoke test the hide button without a detailed display
-#     lightapp.hide_detailed()
-#     assert lightapp.detail_layout.count() == 2
-#     assert lightapp.device_detail.isHidden()
+def test_typhos_display(qtbot, lightapp: LightApp):
+    # Smoke test the hide button without a detailed display
+    lightapp.hide_detailed()
+    assert lightapp.detail_layout.count() == 2
+    assert lightapp.device_detail.isHidden()
+    lightapp.show_detailed(lightapp.rows[0][0].device)
+    assert lightapp.detail_layout.count() == 3
+    # add this other widget to qtbot for cleanup
+    qtbot.addWidget(lightapp.detail_layout.itemAt(1))
+    assert not lightapp.device_detail.isHidden()
+    # Smoke test the hide button without a detailed display
+    lightapp.hide_detailed()
+    assert lightapp.detail_layout.count() == 2
+    assert lightapp.device_detail.isHidden()
