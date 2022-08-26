@@ -240,6 +240,6 @@ def test_summary_signal(device: Device):
 
 
 # regex patterns for show_devices test
-header_pattern = (r'^\| Name *\| Prefix *\| Position *\| Input Branches *'
-                  r'\| Output Branches *\| *State \|$')
-body_pattern = r'^\| {} *\| {} *\| *{:.5f} *\| *{} \| *{} \| Removed \|$'
+header_pattern = (r'^\| *Name *\| *Prefix *\| *Position *\| *Input Branches *'
+                  r'\| *Output Branches *\| *State *\|$')
+body_pattern = r'^\| *{} *\| *{} *\| *{:.5f} *\| *{} *\| *{} *\| *Removed *\|$'
