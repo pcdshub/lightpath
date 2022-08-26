@@ -13,6 +13,7 @@
    :caption: API Documentation
    :hidden:
 
+   cli.rst
    controller.rst
    path.rst
 

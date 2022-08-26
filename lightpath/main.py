@@ -19,9 +19,10 @@ def create_arg_parser():
                               'Takes local happi config by default'))
     parser.add_argument('--version', dest='version', action='store_true',
                         help='Print the current version of the Lightpath')
-    parser.add_argument('--sim', dest='sim', action='store_true')
+    parser.add_argument('--sim', dest='sim', action='store_true',
+                        help='Opens lightpath with a simulated LCLS facility')
     parser.add_argument('--hutches', dest='hutches', nargs='+',
-                        help='Experimental Endstation to show the Lightpath')
+                        help='Experimental endstation(s) to show in Lightpath')
     parser.add_argument('--debug', dest='debug', action='store_true',
                         help='Show the DEBUG logging stream')
     return parser
