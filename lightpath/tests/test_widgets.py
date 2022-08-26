@@ -1,21 +1,21 @@
-from unittest.mock import Mock
+# from unittest.mock import Mock
 
-import pytest
-from ophyd import Device
+# import pytest
+# from ophyd import Device
 
-from lightpath import BeamPath
-from lightpath.ui import LightRow
-from lightpath.ui.widgets import symbol_for_device
+# from lightpath import BeamPath
+# from lightpath.ui import LightRow
+# from lightpath.ui.widgets import symbol_for_device
 
 
-@pytest.fixture(scope='function')
-def lightrow(path: BeamPath, qtbot):
-    # Generate lightpath
-    w = LightRow(path.path[3], path)
-    qtbot.addWidget(w)
-    # Replace Update functions with mocks
-    setattr(w.state_label, 'setText', Mock())
-    return w
+# @pytest.fixture(scope='function')
+# def lightrow(path: BeamPath, qtbot):
+#     # Generate lightpath
+#     w = LightRow(path.path[3], path)
+#     qtbot.addWidget(w)
+#     # Replace Update functions with mocks
+#     setattr(w.state_label, 'setText', Mock())
+#     return w
 
 
 # def test_widget_updates(lightrow: LightRow, path: BeamPath):
@@ -38,18 +38,18 @@ def lightrow(path: BeamPath, qtbot):
 #     assert lightrow.state_label.setText.called
 
 
-def test_widget_icon(lightrow: LightRow):
-    assert symbol_for_device(lightrow.device) == lightrow.device._icon
-    # Smoke test a device without an icon
-    device = Device(name='test')
-    symbol_for_device(device)
-    # Smoke test a device with a malformed icon
-    device._icon = 'definetly not an icon'
-    lr = LightRow(device, lightrow.path)
-    lr.update_state()
+# def test_widget_icon(lightrow: LightRow):
+#     assert symbol_for_device(lightrow.device) == lightrow.device._icon
+#     # Smoke test a device without an icon
+#     device = Device(name='test')
+#     symbol_for_device(device)
+#     # Smoke test a device with a malformed icon
+#     device._icon = 'definetly not an icon'
+#     lr = LightRow(device, lightrow.path)
+#     lr.update_state()
 
 
-def test_widget_hints(lightrow: LightRow):
-    hint_count = len(lightrow.device.hints['fields'])
-    # Check for label and control for each hint plus spacer
-    assert lightrow.command_layout.count() == 2 * hint_count + 1
+# def test_widget_hints(lightrow: LightRow):
+#     hint_count = len(lightrow.device.hints['fields'])
+#     # Check for label and control for each hint plus spacer
+#     assert lightrow.command_layout.count() == 2 * hint_count + 1
