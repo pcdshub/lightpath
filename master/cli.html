@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LCLS Lightpath &mdash; LCLS Lightpath 0.6.9+127.gaad07bd documentation</title>
+  <title>Command Line Interface &mdash; LCLS Lightpath 0.6.9+127.gaad07bd documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -19,7 +19,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Introduction" href="tutorial.html" /> 
+    <link rel="next" title="LightController" href="controller.html" />
+    <link rel="prev" title="Device Interface" href="interface.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -27,7 +28,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="#" class="icon icon-home"> LCLS Lightpath
+            <a href="index.html" class="icon icon-home"> LCLS Lightpath
           </a>
               <div class="version">
                 0.6.9+127.gaad07bd
@@ -46,8 +47,11 @@
 <li class="toctree-l1"><a class="reference internal" href="interface.html">Device Interface</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Command Line Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Named Arguments">Named Arguments</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="controller.html">LightController</a></li>
 <li class="toctree-l1"><a class="reference internal" href="path.html">BeamPath</a></li>
 </ul>
@@ -62,17 +66,17 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">LCLS Lightpath</a>
+          <a href="index.html">LCLS Lightpath</a>
       </nav>
 
       <div class="wy-nav-content">
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
-      <li>LCLS Lightpath</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Command Line Interface</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/cli.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -80,31 +84,36 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="lcls-lightpath">
-<h1>LCLS Lightpath<a class="headerlink" href="#lcls-lightpath" title="Permalink to this heading"></a></h1>
-<a class="reference external image-reference" href="https://travis-ci.org/pcdshub/lightpath"><img alt="https://travis-ci.org/pcdshub/lightpath.svg?branch=master" src="https://travis-ci.org/pcdshub/lightpath.svg?branch=master" /></a>
-<p>Python module for control of LCLS beamlines</p>
-<p>By abstracting individual devices into larger collections of paths, operators
-can quickly guide beam to experimental end stations. Instead of dealing with
-the individual interfaces for each device, devices are summarized in states.
-This allows operators to quickly view and manipulate large sections of the
-beamline when the goal is to simply handle beam delivery.</p>
-<section id="conda">
-<h2>Conda<a class="headerlink" href="#conda" title="Permalink to this heading"></a></h2>
-<p>Install the most recent tagged build:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">lightpath</span> <span class="o">-</span><span class="n">c</span> <span class="n">pcds</span><span class="o">-</span><span class="n">tag</span>  <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span>
+  <section id="command-line-interface">
+<h1>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Permalink to this heading"></a></h1>
+<p><p>Launch the Lightpath UI</p>
+</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">lightpath</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">db</span> <span class="n">DB</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">version</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">sim</span><span class="p">]</span>
+                 <span class="p">[</span><span class="o">--</span><span class="n">hutches</span> <span class="n">HUTCHES</span> <span class="p">[</span><span class="n">HUTCHES</span> <span class="o">...</span><span class="p">]]</span> <span class="p">[</span><span class="o">--</span><span class="n">debug</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Install the most recent development build:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">lightpath</span> <span class="o">-</span><span class="n">c</span> <span class="n">pcds</span><span class="o">-</span><span class="n">dev</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span>
-</pre></div>
-</div>
-<div class="toctree-wrapper compound">
-</div>
-<div class="toctree-wrapper compound">
-</div>
-<div class="toctree-wrapper compound">
-</div>
+<section id="Named Arguments">
+<h2>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this heading"></a></h2>
+<dl class="option-list">
+<dt><kbd>--db</kbd></dt>
+<dd><p>Path to device configuration. Takes local happi config by default</p>
+</dd>
+<dt><kbd>--version</kbd></dt>
+<dd><p>Print the current version of the Lightpath</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>--sim</kbd></dt>
+<dd><p>Opens lightpath with a simulated LCLS facility</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>--hutches</kbd></dt>
+<dd><p>Experimental endstation(s) to show in Lightpath</p>
+</dd>
+<dt><kbd>--debug</kbd></dt>
+<dd><p>Show the DEBUG logging stream</p>
+<p>Default: False</p>
+</dd>
+</dl>
 </section>
 </section>
 
@@ -112,7 +121,8 @@ beamline when the goal is to simply handle beam delivery.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="tutorial.html" class="btn btn-neutral float-right" title="Introduction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="interface.html" class="btn btn-neutral float-left" title="Device Interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="controller.html" class="btn btn-neutral float-right" title="LightController" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

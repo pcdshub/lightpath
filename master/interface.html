@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Device Interface &mdash; LCLS Lightpath 0.6.9+127.gaad07bd documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Command Line Interface" href="cli.html" />
+    <link rel="prev" title="Introduction" href="tutorial.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> LCLS Lightpath
+          </a>
+              <div class="version">
+                0.6.9+127.gaad07bd
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Controlling the beamline</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Device Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#database-definition">Database Definition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#device-status-lightpath-status">Device Status (Lightpath Status)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#what-does-your-ophyd-device-need">What does your ophyd device need?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-is-this-implemented">How is this implemented?</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="controller.html">LightController</a></li>
+<li class="toctree-l1"><a class="reference internal" href="path.html">BeamPath</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="upcoming_changes.html">Upcoming Changes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">LCLS Lightpath</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Device Interface</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/interface.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="device-interface">
+<span id="interface-api"></span><h1>Device Interface<a class="headerlink" href="#device-interface" title="Permalink to this heading"></a></h1>
+<p>To make loading and updating lightpath as simple as possible, lightpath
+relies on two external sources of information:</p>
+<ol class="arabic simple">
+<li><p>A database definition of the device (static, <code class="docutils literal notranslate"><span class="pre">happi</span></code>)</p></li>
+<li><p>A snapshot of the device’s current status (dynamic, <code class="docutils literal notranslate"><span class="pre">ophyd</span></code>)</p></li>
+</ol>
+<p>The first of these two is simple to understand, this information allows us
+to properly place the device in the facility relative to the other devices.
+The second, device status, allows us to see where the device is pointing and
+if it is permitting beam at a given point in time.</p>
+<p>The static information is held in the <code class="docutils literal notranslate"><span class="pre">happi</span></code> database, while the dynamic
+information is read from the device’s <code class="docutils literal notranslate"><span class="pre">ophyd</span></code> representation.</p>
+<section id="database-definition">
+<h2>Database Definition<a class="headerlink" href="#database-definition" title="Permalink to this heading"></a></h2>
+<p>An example of a valid lightpath happi definition:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">+------------------+-------------------------------------------------------------------------+</span>
+<span class="go">| EntryInfo        | Value                                                                   |</span>
+<span class="go">+------------------+-------------------------------------------------------------------------+</span>
+<span class="go">| active           | True                                                                    |</span>
+<span class="go">| args             | [&#39;{{prefix}}&#39;]                                                          |</span>
+<span class="go">| beamline         | LFE                                                                     |</span>
+<span class="go">| creation         | Mon Jul 18 16:05:21 2022                                                |</span>
+<span class="go">| device_class     | pcdsdevices.attenuator.FEESolidAttenuator                               |</span>
+<span class="go">| documentation    | None                                                                    |</span>
+<span class="go">| functional_group | N/A                                                                     |</span>
+<span class="go">| input_branches   | [&#39;L0&#39;]                                                                  |</span>
+<span class="go">| ioc_arch         | None                                                                    |</span>
+<span class="go">| ioc_engineer     | None                                                                    |</span>
+<span class="go">| ioc_hutch        | None                                                                    |</span>
+<span class="go">| ioc_location     | None                                                                    |</span>
+<span class="go">| ioc_name         | None                                                                    |</span>
+<span class="go">| ioc_release      | None                                                                    |</span>
+<span class="go">| ioc_type         | None                                                                    |</span>
+<span class="go">| kwargs           | {&#39;input_branches&#39;: &#39;{{input_branches}}&#39;, &#39;name&#39;: &#39;{{name}}&#39;,            |</span>
+<span class="go">|                  | &#39;output_branches&#39;: &#39;{{output_branches}}&#39;}                               |</span>
+<span class="go">| last_edit        | Mon Jul 18 16:05:21 2022                                                |</span>
+<span class="go">| lightpath        | True                                                                    |</span>
+<span class="go">| location_group   | N/A                                                                     |</span>
+<span class="go">| name             | at2l0                                                                   |</span>
+<span class="go">| output_branches  | [&#39;L0&#39;]                                                                  |</span>
+<span class="go">| prefix           | AT2L0:XTES                                                              |</span>
+<span class="go">| stand            | L0S07                                                                   |</span>
+<span class="go">| type             | pcdsdevices.happi.containers.LCLSLightpathItem                          |</span>
+<span class="go">| z                | 734.50000                                                               |</span>
+<span class="go">+------------------+-------------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+<p>An example container has been included in lightpath as
+<code class="docutils literal notranslate"><span class="pre">lightpath.happi.containers.LightpathItem</span></code>, and is discoverable via python
+entrypoints.  In this example, the database information is used to instantiate
+the device by being passed in as a keyword argument.</p>
+<p>LCLS modifies this container slightly, adding LCLS-relevant metadata and the
+option to omit the <code class="docutils literal notranslate"><span class="pre">input_branches</span></code> / <code class="docutils literal notranslate"><span class="pre">output_branches</span></code> keyword arguments
+for devices that do not implement the LightpathInterface.  (see
+<code class="docutils literal notranslate"><span class="pre">pcdsdevices.happi.containeres.LCLSLightpathItem</span></code>)</p>
+</section>
+<section id="device-status-lightpath-status">
+<h2>Device Status (Lightpath Status)<a class="headerlink" href="#device-status-lightpath-status" title="Permalink to this heading"></a></h2>
+<section id="what-does-your-ophyd-device-need">
+<h3>What does your ophyd device need?<a class="headerlink" href="#what-does-your-ophyd-device-need" title="Permalink to this heading"></a></h3>
+<p>In the simplest sense, your device needs to present the following API:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">device.lightpath_summary</span></code>: a signal that changes whenever the
+Lightpath-state of the device changes</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">device.get_lightpath_state()</span></code>: a method that returns a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">lightpath.LightpathState</span></code> dataclass instance, containing the
+Lightpath-state of the device</p></li>
+</ul>
+</section>
+<section id="how-is-this-implemented">
+<h3>How is this implemented?<a class="headerlink" href="#how-is-this-implemented" title="Permalink to this heading"></a></h3>
+<p>The main point of interaction between Lightpath and a device’s dynamic
+information should be the <code class="docutils literal notranslate"><span class="pre">get_lightpath_state()</span></code> method.  This method is
+expected to return a dataclass with the following fields:</p>
+<ul class="simple">
+<li><p><strong>inserted</strong>: if the device is inserted</p></li>
+<li><p><strong>removed</strong>: if the device is removed</p></li>
+<li><p><strong>output_branch</strong>: the name of the branch this device is delivering beam to</p></li>
+<li><p><strong>transmission</strong>: the transmission of this device</p></li>
+</ul>
+<p>Lightpath also subscribes to a signal called <code class="docutils literal notranslate"><span class="pre">lightpath_summary</span></code>, which is
+expected to change whenever the lightpath status of the device has changed.
+When Lightpath sees a change in this signal, it will query <code class="docutils literal notranslate"><span class="pre">get_lightpath_state()</span></code>
+for the updated status of the device.  (Lightpath may also query
+<code class="docutils literal notranslate"><span class="pre">get_lightpath_state()</span></code> at other points).</p>
+<p>Putting all of this together, a minimal device definition that fulfills the
+lightpath interface requirements might look like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">lightpath</span> <span class="kn">import</span> <span class="n">LightpathState</span>
+<span class="kn">from</span> <span class="nn">ophyd</span> <span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">EpicsSignal</span>
+<span class="kn">from</span> <span class="nn">ophyd</span> <span class="kn">import</span> <span class="n">Component</span> <span class="k">as</span> <span class="n">Cpt</span>
+
+<span class="k">class</span> <span class="nc">MyDevice</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
+
+    <span class="c1"># if we were to only care about one signal</span>
+    <span class="n">lightpath_summary</span> <span class="o">=</span> <span class="n">Cpt</span><span class="p">(</span><span class="n">EpicsSignal</span><span class="p">,</span> <span class="s1">&#39;:MY:PV&#39;</span><span class="p">)</span>
+
+    <span class="n">input_branches</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;K0&#39;</span><span class="p">]</span>
+    <span class="n">output_branches</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;K0&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">get_lightpath_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">LightpathState</span><span class="p">(</span>
+            <span class="n">inserted</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">removed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">transmission</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">output_branch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_branches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p>This would work, strictly speaking, but is far from being optimized and easy to use.</p>
+<p>To make things easier, LCLS has implemented this as an ophyd device mixin in
+<code class="docutils literal notranslate"><span class="pre">pcdsdevices.interfaces.LightpathMixin</span></code>.  Notably, this mixin caches the
+lightpath state, so that calls to <code class="docutils literal notranslate"><span class="pre">get_lightpath_state()</span></code> do not overwhelm
+the ophyd callback queue with Channel Access requests.  This was found to be
+necessary for beam paths with many devices.</p>
+<p>In LCLS, you might see a device object definition that looks like the
+following:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">lightpath</span> <span class="kn">import</span> <span class="n">LightpathState</span>
+<span class="kn">from</span> <span class="nn">pcdsdevices.interface</span> <span class="kn">import</span> <span class="n">LightpathMixin</span>
+<span class="kn">from</span> <span class="nn">ophyd</span> <span class="kn">import</span> <span class="n">Device</span>
+
+<span class="k">class</span> <span class="nc">BaseDevice</span><span class="p">(</span><span class="n">Device</span><span class="p">,</span> <span class="n">LightpathMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for some specific device</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Mark as parent class for lightpath interface</span>
+    <span class="n">lightpath_cpts</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;xwidth.user_readback&#39;</span><span class="p">,</span> <span class="s1">&#39;ywidth.user_readback&#39;</span><span class="p">]</span>
+
+    <span class="n">nominal_aperature</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+    <span class="c1"># &lt; ... unrelated methods snipped ... &gt;</span>
+
+    <span class="k">def</span> <span class="nf">calc_lightpath_state</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">xwidth</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">ywidth</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LightpathState</span><span class="p">:</span>
+        <span class="n">widths</span> <span class="o">=</span> <span class="p">[</span><span class="n">xwidth</span><span class="p">,</span> <span class="n">ywidth</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inserted</span> <span class="o">=</span> <span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">widths</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">nominal_aperture</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_removed</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inserted</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transmission</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inserted</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+        <span class="k">return</span> <span class="n">LightpathState</span><span class="p">(</span>
+            <span class="n">inserted</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_inserted</span><span class="p">,</span>
+            <span class="n">removed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_removed</span><span class="p">,</span>
+            <span class="n">transmission</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_transmission</span><span class="p">,</span>
+            <span class="n">output_branch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_branches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p>In this case we are leveraging the <code class="docutils literal notranslate"><span class="pre">LightpathMixin</span></code> class, which does most of
+the repetitive setup for us (creating <code class="docutils literal notranslate"><span class="pre">lightpath_summary</span></code> signal, subscribing
+to relevant components, setting up lightpath state caching, checking that the
+subclass is correctly configured, etc.).  This mixin delegates the calculation
+of the lightpath state to the <code class="docutils literal notranslate"><span class="pre">calc_lightpath_state</span></code> method, which is to be
+written by the device creator.  Furthermore, the mixin looks for a list of
+component names called <code class="docutils literal notranslate"><span class="pre">lightpath_cpts</span></code>, which will <code class="docutils literal notranslate"><span class="pre">lightpath_summary</span></code>
+will watch for changes.  Upon a change in one of these signals, the
+LightpathMixin will get the values of each component and pass them to
+<code class="docutils literal notranslate"><span class="pre">calc_lightpath_state</span></code>.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorial.html" class="btn btn-neutral float-left" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cli.html" class="btn btn-neutral float-right" title="Command Line Interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, SLAC National Accelerator Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

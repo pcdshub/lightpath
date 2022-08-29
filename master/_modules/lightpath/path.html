@@ -1,72 +1,35 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>lightpath.path &mdash; LCLS Lightpath 0.6.7+4.gfa4c1a5 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+  <title>lightpath.path &mdash; LCLS Lightpath 0.6.9+127.gaad07bd documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="../../_static/js/theme.js"></script>
-
-    
+    <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="../../index.html" class="icon icon-home"> LCLS Lightpath
-          
-
-          
           </a>
-
-          
-            
-            
               <div class="version">
-                0.6.7+4.gfa4c1a5
+                0.6.9+127.gaad07bd
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -74,121 +37,106 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <p class="caption"><span class="caption-text">Controlling the beamline</span></p>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Controlling the beamline</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../interface.html">Device Interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">Command Line Interface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../controller.html">LightController</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../path.html">BeamPath</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../upcoming_changes.html">Upcoming Changes</a></li>
+</ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">LCLS Lightpath</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-        
           <li><a href="../index.html">Module code</a> &raquo;</li>
-        
       <li>lightpath.path</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   <h1>Source code for lightpath.path</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">The :class:`.BeamPath` is the main abstraction for the lightpath module,</span>
-<span class="sd">grouping together a set of devices using the :class:`.LightInterface` and</span>
-<span class="sd">representing the path between them as single object. While the manipulation of</span>
-<span class="sd">each of these object should be done at the device level, the</span>
-<span class="sd">:meth:`.BeamPath.clear` does provide a powerful tool to quickly change the</span>
-<span class="sd">status of the path.</span>
+<span class="sd">The :class:`.BeamPath` is the main abstraction for the Lightpath module,</span>
+<span class="sd">grouping together a set of devices using the :ref:`Lightpath</span>
+<span class="sd">interface&lt;interface_api&gt;` and representing the path between them as single</span>
+<span class="sd">object. The manipulation of each of these object should be done at the device</span>
+<span class="sd">level, and while this may be done inside of Lightpath via detailed screens,</span>
+<span class="sd">Lightpath is not responsible for inserting or removing devices.</span>
 
 <span class="sd">The :class:`.BeamPath` object is also not meant to be a rigid representation,</span>
 <span class="sd">:meth:`.BeamPath.split` and :meth:`.BeamPath.join` both allow for slicing and</span>
 <span class="sd">combining of different areas of the LCLS beamline. However, keep in mind that</span>
 <span class="sd">the path only knows the state of the devices it contains, so certain methods</span>
 <span class="sd">might not return an accurate representation of reality if an upstream device is</span>
-<span class="sd">affecting the beam.</span>
+<span class="sd">secretly affecting the beam.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
 <span class="kn">import</span> <span class="nn">enum</span>
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
-<span class="kn">from</span> <span class="nn">prettytable</span> <span class="kn">import</span> <span class="n">PrettyTable</span>
+<span class="kn">from</span> <span class="nn">ophyd</span> <span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceStatus</span>
 <span class="kn">from</span> <span class="nn">ophyd.ophydobj</span> <span class="kn">import</span> <span class="n">OphydObject</span>
 <span class="kn">from</span> <span class="nn">ophyd.status</span> <span class="kn">import</span> <span class="n">wait</span> <span class="k">as</span> <span class="n">status_wait</span>
 <span class="kn">from</span> <span class="nn">ophyd.utils</span> <span class="kn">import</span> <span class="n">DisconnectedError</span>
+<span class="kn">from</span> <span class="nn">prettytable</span> <span class="kn">import</span> <span class="n">PrettyTable</span>
 
 <span class="kn">from</span> <span class="nn">.errors</span> <span class="kn">import</span> <span class="n">CoordinateError</span>
-
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<span class="k">class</span> <span class="nc">DeviceState</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+<div class="viewcode-block" id="LightpathState"><a class="viewcode-back" href="../../path.html#lightpath.path.LightpathState">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">LightpathState</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The lightpath-relevant state of a device. Devices must return an</span>
+<span class="sd">    instance of this dataclass via the ``get_lightpath_state()`` method.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    inserted : bool</span>
+
+<span class="sd">    removed : bool</span>
+
+<span class="sd">    transmission : float</span>
+
+<span class="sd">    output_branch : str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">inserted</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">removed</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">transmission</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">output_branch</span><span class="p">:</span> <span class="nb">str</span></div>
+
+
+<span class="k">class</span> <span class="nc">DeviceState</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">IntEnum</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Description of BeamStates</span>
 
@@ -227,46 +175,51 @@
     <span class="n">Error</span> <span class="o">=</span> <span class="mi">5</span>
 
 
-<span class="k">def</span> <span class="nf">find_device_state</span><span class="p">(</span><span class="n">device</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">find_device_state</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">DeviceState</span><span class="p">,</span> <span class="n">LightpathState</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Report the state of a device</span>
 
-<span class="sd">    The device must implement ``.inserted`` and ``removed``.</span>
+<span class="sd">    The device must implement ``get_lightpath_state``, which returns a</span>
+<span class="sd">    ``LightpathState`` object.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    device : ophyd.Device</span>
+<span class="sd">    device : Device</span>
+<span class="sd">        ophyd Device implementing the Lightpath interface</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    state: DeviceState</span>
+<span class="sd">    Tuple[DeviceState, LightpathState]</span>
+<span class="sd">        DeviceState enum</span>
+<span class="sd">        LightpathState dataclass</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Gather device information</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">_in</span><span class="p">,</span> <span class="n">_out</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">inserted</span><span class="p">,</span> <span class="n">device</span><span class="o">.</span><span class="n">removed</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">get_lightpath_state</span><span class="p">()</span>
+        <span class="n">_in</span><span class="p">,</span> <span class="n">_out</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">inserted</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">removed</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Device </span><span class="si">%s</span><span class="s2"> reporting; IN=</span><span class="si">%s</span><span class="s2">, OUT=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
                      <span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">_in</span><span class="p">,</span> <span class="n">_out</span><span class="p">)</span>
     <span class="c1"># Check if this was an error with an EPICS connection</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">TimeoutError</span><span class="p">,</span> <span class="n">DisconnectedError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unable to connect to </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Disconnected</span>
+        <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Disconnected</span><span class="p">,</span> <span class="kc">None</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Unable to determine device state for </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Error</span>
+        <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Error</span><span class="p">,</span> <span class="kc">None</span>
     <span class="c1"># Check state consistency and return proper Enum</span>
     <span class="c1"># In</span>
     <span class="k">if</span> <span class="n">_in</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_out</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Inserted</span>
+        <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Inserted</span><span class="p">,</span> <span class="n">state</span>
     <span class="c1"># Out</span>
     <span class="k">elif</span> <span class="n">_out</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_in</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Removed</span>
+        <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Removed</span><span class="p">,</span> <span class="n">state</span>
     <span class="c1"># Both In and Out</span>
     <span class="k">elif</span> <span class="n">_out</span> <span class="ow">and</span> <span class="n">_in</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Inconsistent</span>
+        <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Inconsistent</span><span class="p">,</span> <span class="n">state</span>
     <span class="c1"># Neither In or Out</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Unknown</span>
+        <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Unknown</span><span class="p">,</span> <span class="n">state</span>
 
 
 <div class="viewcode-block" id="BeamPath"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath">[docs]</a><span class="k">class</span> <span class="nc">BeamPath</span><span class="p">(</span><span class="n">OphydObject</span><span class="p">):</span>
@@ -281,7 +234,7 @@
 <span class="sd">    devices : :class:`.LightDevice`</span>
 <span class="sd">        Arguments are interpreted as LightDevices along a common beamline.</span>
 
-<span class="sd">    name = str, optional</span>
+<span class="sd">    name : str, optional</span>
 <span class="sd">        Name of the BeamPath</span>
 
 <span class="sd">    Raises</span>
@@ -306,7 +259,7 @@
     <span class="c1"># Transmission setting</span>
     <span class="n">minimum_transmission</span> <span class="o">=</span> <span class="mf">0.1</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">devices</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">devices</span><span class="p">:</span> <span class="n">OphydObject</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">devices</span> <span class="o">=</span> <span class="n">devices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_has_subscribed</span> <span class="o">=</span> <span class="kc">False</span>
@@ -331,90 +284,87 @@
                             <span class="s1">&#39;attribute </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">branches</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Branching devices along the path</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">devices</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="s1">&#39;branches&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)]</span>
+    <span class="k">def</span> <span class="nf">branching_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Device</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot; List[Device]: Branching devices along the path &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">devices</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="s1">&#39;output_branches&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Starting z position of beamline</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">range</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot; Tuple[float, float]: Starting z position of beamline &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        List of devices ordered by coordinates</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">path</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Device</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot; List[Device]: List of devices ordered by coordinates &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">devices</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">dev</span><span class="p">:</span> <span class="n">dev</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">blocking_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">blocking_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Device</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A list of devices that are currently inserted or are in unknown</span>
 <span class="sd">        positions. This includes devices downstream of the first</span>
 <span class="sd">        :attr:`.impediment`</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        List[Device]</span>
+<span class="sd">            list of blocking devices</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Cache important prior devices</span>
-        <span class="n">prior</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">last_branches</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">prev_device</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">prev_status</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">block</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">current_transmission</span> <span class="o">=</span> <span class="mi">1</span>
+
         <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
-            <span class="c1"># If we have switched beamlines</span>
-            <span class="k">if</span> <span class="n">prior</span> <span class="ow">and</span> <span class="n">device</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">beamline</span> <span class="o">!=</span> <span class="n">prior</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">beamline</span><span class="p">:</span>
-                <span class="c1"># Find improperly configured optics</span>
-                <span class="k">for</span> <span class="n">optic</span> <span class="ow">in</span> <span class="n">last_branches</span><span class="p">:</span>
-                    <span class="c1"># If this optic is responsible for delivering beam</span>
-                    <span class="c1"># to this hutch and it is not configured to do so.</span>
-                    <span class="c1"># Mark it as blocking</span>
-                    <span class="k">if</span> <span class="n">device</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">beamline</span> <span class="ow">in</span> <span class="n">optic</span><span class="o">.</span><span class="n">branches</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">device</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">beamline</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">optic</span><span class="o">.</span><span class="n">destination</span><span class="p">:</span>
-                            <span class="n">block</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">optic</span><span class="p">)</span>
-                    <span class="c1"># Otherwise ensure it is removed from the beamline</span>
-                    <span class="k">elif</span> <span class="n">optic</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">beamline</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">optic</span><span class="o">.</span><span class="n">destination</span><span class="p">:</span>
-                        <span class="n">block</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">optic</span><span class="p">)</span>
-                <span class="c1"># Clear optics that have been evaluated</span>
-                <span class="n">last_branches</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="n">curr_state</span><span class="p">,</span> <span class="n">curr_status</span> <span class="o">=</span> <span class="n">find_device_state</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
-            <span class="c1"># If our last device was an optic, make sure it wasn&#39;t required</span>
-            <span class="c1"># to continue along this beampath</span>
-            <span class="k">elif</span> <span class="p">(</span><span class="n">prior</span> <span class="ow">in</span> <span class="n">last_branches</span>
-                    <span class="ow">and</span> <span class="n">device</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">beamline</span> <span class="ow">in</span> <span class="n">prior</span><span class="o">.</span><span class="n">branches</span>
-                    <span class="ow">and</span> <span class="n">device</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">beamline</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">prior</span><span class="o">.</span><span class="n">destination</span><span class="p">):</span>
-                <span class="n">block</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">last_branches</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-
-            <span class="c1"># Find branching devices and store</span>
-            <span class="c1"># They will be marked as blocking by downstream devices</span>
-            <span class="n">dev_state</span> <span class="o">=</span> <span class="n">find_device_state</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">device</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">branches</span><span class="p">:</span>
-                <span class="n">last_branches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-            <span class="c1"># Find inserted devices</span>
-            <span class="k">elif</span> <span class="n">dev_state</span> <span class="o">==</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Inserted</span><span class="p">:</span>
-                <span class="c1"># Ignore devices with low enough transmssion</span>
-                <span class="n">trans</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="s1">&#39;transmission&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">trans</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_transmission</span><span class="p">:</span>
-                    <span class="n">block</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-            <span class="c1"># Find unknown and faulted devices</span>
-            <span class="k">elif</span> <span class="n">dev_state</span> <span class="o">!=</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Removed</span><span class="p">:</span>
+            <span class="c1"># short circuit if statuses are in error</span>
+            <span class="k">if</span> <span class="n">curr_state</span> <span class="ow">in</span> <span class="p">(</span><span class="n">DeviceState</span><span class="o">.</span><span class="n">Error</span><span class="p">,</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Unknown</span><span class="p">):</span>
                 <span class="n">block</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-            <span class="c1"># Stache our prior device</span>
-            <span class="n">prior</span> <span class="o">=</span> <span class="n">device</span>
+
+            <span class="c1"># check to make sure input and output branches match</span>
+            <span class="c1"># e.g. mirror not pointing to current device</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">prev_device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">prev_status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
+                  <span class="n">prev_status</span><span class="o">.</span><span class="n">output_branch</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">device</span><span class="o">.</span><span class="n">input_branches</span><span class="p">):</span>
+                <span class="n">block</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prev_device</span><span class="p">)</span>
+            <span class="c1"># check inserted</span>
+            <span class="k">elif</span> <span class="n">curr_state</span> <span class="ow">is</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Inserted</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">curr_status</span><span class="o">.</span><span class="n">transmission</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> reports transmission &gt; 1&#39;</span><span class="p">)</span>
+                <span class="n">current_transmission</span> <span class="o">*=</span> <span class="nb">min</span><span class="p">(</span><span class="n">curr_status</span><span class="o">.</span><span class="n">transmission</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="c1"># Any device seeing current transmission below min would block</span>
+                <span class="k">if</span> <span class="n">current_transmission</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_transmission</span><span class="p">:</span>
+                    <span class="n">block</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="c1"># Do not add device to blocking list, it is removed</span>
+            <span class="k">elif</span> <span class="n">curr_state</span> <span class="ow">is</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Removed</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="c1"># Unknown and inconsistent devices block</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">block</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+            <span class="c1"># stash previous device</span>
+            <span class="n">prev_device</span> <span class="o">=</span> <span class="n">device</span>
+            <span class="n">prev_status</span> <span class="o">=</span> <span class="n">curr_status</span>
 
         <span class="k">return</span> <span class="n">block</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">incident_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">incident_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Device</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A list of devices the beam is currently incident on. This includes the</span>
 <span class="sd">        current :attr:`.impediment` and any upstream devices that may be</span>
 <span class="sd">        inserted but have more transmission than :attr:`.minimum_transmission`</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        List[Device]</span>
+<span class="sd">            List of incident devices</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Find device information</span>
         <span class="n">inserted</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span>
-                    <span class="k">if</span> <span class="n">find_device_state</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">==</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Inserted</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">find_device_state</span><span class="p">(</span><span class="n">d</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Inserted</span><span class="p">]</span>
         <span class="n">impediment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">impediment</span>
         <span class="c1"># No blocking devices, all inserted devices incident</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">impediment</span><span class="p">:</span>
@@ -422,17 +372,19 @@
         <span class="c1"># Otherwise only return upstream of the impediment</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">inserted</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span> <span class="o">&lt;=</span> <span class="n">impediment</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span><span class="p">]</span>
 
-<div class="viewcode-block" id="BeamPath.show_devices"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.show_devices">[docs]</a>    <span class="k">def</span> <span class="nf">show_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="BeamPath.show_devices"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.show_devices">[docs]</a>    <span class="k">def</span> <span class="nf">show_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">:</span> <span class="n">TextIO</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print a table of the devices along the beamline</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        file : file-like object</span>
-<span class="sd">            File to writable</span>
+<span class="sd">        file : TextIO</span>
+<span class="sd">            File-like object to write output to.  Default behavior is</span>
+<span class="sd">            printing to sys.stdout</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Initialize Table</span>
-        <span class="n">pt</span> <span class="o">=</span> <span class="n">PrettyTable</span><span class="p">([</span><span class="s1">&#39;Name&#39;</span><span class="p">,</span> <span class="s1">&#39;Prefix&#39;</span><span class="p">,</span> <span class="s1">&#39;Position&#39;</span><span class="p">,</span> <span class="s1">&#39;Beamline&#39;</span><span class="p">,</span> <span class="s1">&#39;State&#39;</span><span class="p">])</span>
+        <span class="n">pt</span> <span class="o">=</span> <span class="n">PrettyTable</span><span class="p">([</span><span class="s1">&#39;Name&#39;</span><span class="p">,</span> <span class="s1">&#39;Prefix&#39;</span><span class="p">,</span> <span class="s1">&#39;Position&#39;</span><span class="p">,</span> <span class="s1">&#39;Input Branches&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;Output Branches&#39;</span><span class="p">,</span> <span class="s1">&#39;State&#39;</span><span class="p">])</span>
         <span class="c1"># Adjust Table settings</span>
         <span class="n">pt</span><span class="o">.</span><span class="n">align</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span>
         <span class="n">pt</span><span class="o">.</span><span class="n">align</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;l&#39;</span>
@@ -440,16 +392,14 @@
         <span class="n">pt</span><span class="o">.</span><span class="n">float_format</span> <span class="o">=</span> <span class="s1">&#39;8.5&#39;</span>
         <span class="c1"># Add info</span>
         <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
-            <span class="n">pt</span><span class="o">.</span><span class="n">add_row</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span><span class="p">,</span>
-                        <span class="n">d</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">beamline</span><span class="p">,</span> <span class="n">find_device_state</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
+            <span class="n">pt</span><span class="o">.</span><span class="n">add_row</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">input_branches</span><span class="p">,</span>
+                        <span class="n">d</span><span class="o">.</span><span class="n">output_branches</span><span class="p">,</span> <span class="n">find_device_state</span><span class="p">(</span><span class="n">d</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
         <span class="c1"># Show table</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">pt</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">file</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">impediment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        First blocking device along the path</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">impediment</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Device</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot; Device: First blocking device along the path &quot;&quot;&quot;</span>
         <span class="c1"># Find device information</span>
         <span class="n">blocks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocking_devices</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">blocks</span><span class="p">:</span>
@@ -459,21 +409,31 @@
             <span class="k">return</span> <span class="n">blocks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">cleared</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">cleared</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Whether beamline is clear of any devices that are below the</span>
 <span class="sd">        :attr:`.minimum_transmission`</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            whether beamline is clear of impediments</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocking_devices</span><span class="p">)</span>
 
-<div class="viewcode-block" id="BeamPath.clear"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-              <span class="n">passive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="BeamPath.clear"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ignore</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Device</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">passive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">DeviceStatus</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Clear the beampath of all obstructions</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        wait : bool</span>
+<span class="sd">        wait : bool, optional</span>
 <span class="sd">            Wait for all devices to complete their motion</span>
 
 <span class="sd">        timeout : float, optional</span>
@@ -488,7 +448,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        statuses :</span>
+<span class="sd">        statuses : List[ophyd.DeviceStatus]</span>
 <span class="sd">            Returns list of status objects returned by</span>
 <span class="sd">            :meth:`.LightInterface.remove`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -499,8 +459,8 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Removing devices along the beampath ...&#39;</span><span class="p">)</span>
         <span class="n">status</span> <span class="o">=</span> <span class="p">[</span><span class="n">device</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
                   <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">target_devices</span>
-                  <span class="k">if</span> <span class="n">find_device_state</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="n">DeviceState</span><span class="o">.</span><span class="n">Inserted</span><span class="p">,</span>
-                                                   <span class="n">DeviceState</span><span class="o">.</span><span class="n">Unknown</span><span class="p">)</span>
+                  <span class="k">if</span> <span class="n">find_device_state</span><span class="p">(</span><span class="n">device</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="n">DeviceState</span><span class="o">.</span><span class="n">Inserted</span><span class="p">,</span>
+                                                      <span class="n">DeviceState</span><span class="o">.</span><span class="n">Unknown</span><span class="p">)</span>
                   <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="s1">&#39;remove&#39;</span><span class="p">)]</span>
         <span class="c1"># Wait parameters</span>
         <span class="k">if</span> <span class="n">wait</span><span class="p">:</span>
@@ -515,7 +475,7 @@
 
         <span class="k">return</span> <span class="n">status</span></div>
 
-<div class="viewcode-block" id="BeamPath.join"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.join">[docs]</a>    <span class="k">def</span> <span class="nf">join</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">beampaths</span><span class="p">):</span>
+<div class="viewcode-block" id="BeamPath.join"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.join">[docs]</a>    <span class="k">def</span> <span class="nf">join</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">beampaths</span><span class="p">:</span> <span class="n">BeamPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BeamPath</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Join multiple beampaths with the current one</span>
 
@@ -537,7 +497,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">BeamPath</span><span class="o">.</span><span class="n">from_join</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">beampaths</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="BeamPath.split"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.split">[docs]</a>    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="BeamPath.split"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.split">[docs]</a>    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">z</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Device</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">BeamPath</span><span class="p">,</span> <span class="n">BeamPath</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Split the beampath producing two new BeamPath objects either by a</span>
 <span class="sd">        specific position or a devices location</span>
@@ -547,7 +511,7 @@
 <span class="sd">        z : float</span>
 <span class="sd">            Z position to split the paths</span>
 
-<span class="sd">        device  : LightDevice, name, or base PV</span>
+<span class="sd">        device : LightDevice, name, or base PV</span>
 <span class="sd">            The specified device will be the last device in the first</span>
 <span class="sd">            :class:`.BeamPath` object</span>
 
@@ -558,7 +522,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Not enough information</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">z</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">device</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must supply information where to split the path&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Must supply where to split the path (either z or device)&quot;</span>
+            <span class="p">)</span>
         <span class="c1"># Grab the z if given a device</span>
         <span class="k">if</span> <span class="n">device</span><span class="p">:</span>
             <span class="n">z</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span>
@@ -571,7 +537,7 @@
                 <span class="n">BeamPath</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">devices</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span> <span class="o">&gt;</span> <span class="n">z</span><span class="p">]))</span></div>
 
 <div class="viewcode-block" id="BeamPath.from_join"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.from_join">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_join</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">beampaths</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">from_join</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">beampaths</span><span class="p">:</span> <span class="n">BeamPath</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BeamPath</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Join other beampaths with the current one</span>
 
@@ -602,14 +568,18 @@
         <span class="c1"># Create a new instance</span>
         <span class="k">return</span> <span class="n">BeamPath</span><span class="p">(</span><span class="o">*</span><span class="nb">set</span><span class="p">(</span><span class="n">devices</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_ignore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ignore_devices</span><span class="p">,</span> <span class="n">passive</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_ignore</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ignore_devices</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Device</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Device</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">passive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Device</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Device</span><span class="p">]]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Assemble list of available devices with some exclusions</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        ignore_devices : list</span>
-<span class="sd">            Devices to ignore</span>
+<span class="sd">            Device(s) to ignore</span>
 
 <span class="sd">        passive : bool</span>
 <span class="sd">            If False, ignore passive devices</span>
@@ -625,7 +595,8 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">passive</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Passive devices will be ignored ...&quot;</span><span class="p">)</span>
             <span class="n">ignore</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">devices</span>
-                           <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">transmission</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_transmission</span><span class="p">])</span>
+                           <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">get_lightpath_state</span><span class="p">()</span><span class="o">.</span><span class="n">transmission</span> <span class="o">&gt;</span>
+                           <span class="bp">self</span><span class="o">.</span><span class="n">minimum_transmission</span><span class="p">])</span>
         <span class="c1"># Add ignored devices</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ignore_devices</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
             <span class="n">ignore</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ignore_devices</span><span class="p">)</span>
@@ -649,10 +620,15 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">block</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">inf</span>
         <span class="c1"># If device is upstream of impediment</span>
-        <span class="k">if</span> <span class="n">obj</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span> <span class="o">&lt;=</span> <span class="n">block</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span> <span class="o">&lt;=</span> <span class="n">block</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_run_subs</span><span class="p">(</span><span class="n">sub_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">SUB_PTH_CHNG</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">obj</span><span class="p">)</span>
 
-<div class="viewcode-block" id="BeamPath.subscribe"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.subscribe">[docs]</a>    <span class="k">def</span> <span class="nf">subscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cb</span><span class="p">,</span> <span class="n">event_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="BeamPath.subscribe"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.subscribe">[docs]</a>    <span class="k">def</span> <span class="nf">subscribe</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+        <span class="n">event_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Subscribe to changes of the valve</span>
 
@@ -672,14 +648,24 @@
             <span class="k">for</span> <span class="n">dev</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">devices</span><span class="p">:</span>
                 <span class="c1"># Add callback here!</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="n">dev</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device_moved</span><span class="p">,</span>
-                                  <span class="n">event_type</span><span class="o">=</span><span class="n">dev</span><span class="o">.</span><span class="n">SUB_STATE</span><span class="p">,</span>
-                                  <span class="n">run</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="n">dev</span><span class="o">.</span><span class="n">lightpath_summary</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device_moved</span><span class="p">,</span>
+                                                    <span class="n">run</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;BeamPath is unable to subscribe &quot;</span>
                                  <span class="s2">&quot;to device </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">dev</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_has_subscribed</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span> <span class="n">event_type</span><span class="o">=</span><span class="n">event_type</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="n">run</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BeamPath.clear_device_subs"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.clear_device_subs">[docs]</a>    <span class="k">def</span> <span class="nf">clear_device_subs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clears the ._device_moved callbacks from all devices in the path.</span>
+<span class="sd">        Distinct from BeamPath.clear_sub, which unsubscribes a specific</span>
+<span class="sd">        callback from the BeamPath object itself.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_subscribed</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">dev</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">devices</span><span class="p">:</span>
+                <span class="n">dev</span><span class="o">.</span><span class="n">lightpath_summary</span><span class="o">.</span><span class="n">clear_sub</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device_moved</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_has_subscribed</span> <span class="o">=</span> <span class="kc">False</span></div>
 
     <span class="k">def</span> <span class="nf">_repr_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">yield</span><span class="p">(</span><span class="s1">&#39;range&#39;</span><span class="p">,</span>   <span class="bp">self</span><span class="o">.</span><span class="n">range</span><span class="p">)</span>
@@ -695,46 +681,30 @@
 </pre></div>
 
            </div>
-           
           </div>
           <footer>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2017, SLAC National Accelerator Laboratory.
-
-    </p>
+    <p>&#169; Copyright 2017, SLAC National Accelerator Laboratory.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
