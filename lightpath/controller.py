@@ -1,12 +1,20 @@
 """
 While the :class:`.BeamPath` object provides basic control functionality, the
-:class:`.LightController` is what does the organization of all of LCLS's
-devices. After parsing through all of the given devices, each beamline is
-contsructed as a :class:`.BeamPath` object. This includes not only devices on
-the upstream beamline but all of the beamlines before it. For example, the MEC
-beampath will include devices in both the FEE and the XRT. The
-:class:`.LightController` handles this logic as well as a basic overview of
-where the beam is and what the state of the MPS system is currently.
+:class:`.LightController` is what organizes of all of LCLS's
+devices. The facility is represented by an Directed Graph, starting at the
+source and ending at the beamline hutches.  After placing each device in the
+facility graph, each beamline is constructed as a :class:`.BeamPath` object.
+
+This includes not only devices on the upstream beamline but all of the
+beamlines before it. For example, the MEC beampath will include devices in both
+the FEE and the XRT.  The MEC beampath will also contain devices that appear in
+XPP's and XCS's beampath. In some cases there are multiple possible paths beam
+may take to reach a given endstation.  In the case of multiple possible paths,
+the :meth:`.LightController.active_path` will return the path with the latest
+impediment.  (equivalently, the path that lets the beam through farthest)
+
+The :class:`.LightController` handles this logic as well as a basic overview of
+where the beam is
 """
 import logging
 import math
@@ -42,23 +50,19 @@ class LightController:
     Handles grouping devices into beamlines and joining paths together. Also
     provides an overview of the state of the entire beamline
 
-    Attributes
-    ----------
-    containers: list
-        List of happi Device objects that were unable to be instantiated
-
     Parameters
     ----------
     client : happi.Client
         Happi Client
 
-    endstations: list, optional
+    endstations: List[str], optional
         List of experimental endstations to load BeamPath objects for. If left
         as None, all endstations will be loaded
     """
     graph: nx.DiGraph
 
-    def __init__(self, client, endstations=None):
+    def __init__(self, client: Client,
+                 endstations: Optional[List[str]] = None):
         self.client: Client = client
         # a mapping of endstation name to either a path or initialized BeamPath
         self.beamlines: Dict[str, MaybeBeamPath] = dict()
@@ -257,16 +261,16 @@ class LightController:
 
     def walk_facility(self) -> Dict[NodeName, List[NodeName]]:
         """
-        Return the paths from source to destination by walking the
-        graph along device destinations
+        Return the paths from each source to its destination by walking the
+        graph.
 
         Starting from a source node, steps iteratively through a node's
-        successors (nearest neighbors).  If there is one and only one
-        successor, step to that device and repeat.  Once there are no
-        more connections, we have reached the end of the line and may stop.
+        successors (nearest neighbors).  If there is one and only one valid
+        successor, step to that device and repeat.  Once there are no more
+        connections, we have reached the end of the line.
 
-        Successors are considered invalid if a node's output branch
-        does not match the successor's input.
+        Successors are considered invalid if a node's output branch does not
+        match the successor's input.
 
         Returns
         -------
@@ -442,13 +446,13 @@ class LightController:
         sources: List[NodeName] = []
     ) -> nx.DiGraph:
         """
-        Create a graph with devices from branch_devs as nodes,
+        Create a graph with devices from ``branch_devs`` as nodes,
         arranged in z-order.
 
-        It is assumed that all devices lie on branch: branch_name
+        It is assumed that all devices lie on branch: ``branch_name``
 
-        If sources is provided, will prepend a source node at the
-        beginning of the branch when branch_name == sources
+        If ``sources`` is provided, will prepend a source node at the
+        beginning of the branch if ``branch_name == sources``
 
         Parameters
         ----------
@@ -552,7 +556,8 @@ class LightController:
 
     def get_device(self, device_name: NodeName) -> Device:
         """
-        Return device from graph
+        Return device in the facility.  Creates the device if it has
+        not been already.
 
         Parameters
         ----------

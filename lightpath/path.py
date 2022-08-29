@@ -1,17 +1,17 @@
 """
-The :class:`.BeamPath` is the main abstraction for the lightpath module,
-grouping together a set of devices using the :class:`.LightInterface` and
-representing the path between them as single object. While the manipulation of
-each of these object should be done at the device level, the
-:meth:`.BeamPath.clear` does provide a powerful tool to quickly change the
-status of the path.
+The :class:`.BeamPath` is the main abstraction for the Lightpath module,
+grouping together a set of devices using the :ref:`Lightpath
+interface<interface_api>` and representing the path between them as single
+object. The manipulation of each of these object should be done at the device
+level, and while this may be done inside of Lightpath via detailed screens,
+Lightpath is not responsible for inserting or removing devices.
 
 The :class:`.BeamPath` object is also not meant to be a rigid representation,
 :meth:`.BeamPath.split` and :meth:`.BeamPath.join` both allow for slicing and
 combining of different areas of the LCLS beamline. However, keep in mind that
 the path only knows the state of the devices it contains, so certain methods
 might not return an accurate representation of reality if an upstream device is
-affecting the beam.
+secretly affecting the beam.
 """
 from __future__ import annotations
 
@@ -35,6 +35,20 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class LightpathState:
+    """
+    The lightpath-relevant state of a device. Devices must return an
+    instance of this dataclass via the ``get_lightpath_state()`` method.
+
+    Attributes
+    ----------
+    inserted : bool
+
+    removed : bool
+
+    transmission : float
+
+    output_branch : str
+    """
     inserted: bool
     removed: bool
     transmission: float
@@ -139,7 +153,7 @@ class BeamPath(OphydObject):
     devices : :class:`.LightDevice`
         Arguments are interpreted as LightDevices along a common beamline.
 
-    name = str, optional
+    name : str, optional
         Name of the BeamPath
 
     Raises

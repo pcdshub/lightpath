@@ -127,6 +127,7 @@ def test_show_device(path: BeamPath):
     f.seek(0)
     # read into string, compare line by line
     out = f.read().split('\n')
+    print(out)
     # match header line
     assert re.search(header_pattern, out[1])
 
@@ -240,6 +241,6 @@ def test_summary_signal(device: Device):
 
 
 # regex patterns for show_devices test
-header_pattern = (r'^\| Name *\| Prefix *\| Position *\| Input Branches *'
-                  r'\| Output Branches *\| *State \|$')
-body_pattern = r'^\| {} *\| {} *\| *{:.5f} *\| *{} \| *{} \| Removed \|$'
+header_pattern = (r'^\| *Name *\| *Prefix *\| *Position *\| *Input Branches *'
+                  r'\| *Output Branches *\| *State *\|$')
+body_pattern = r'^\| *{} *\| *{} *\| *{:.5f} *\| *{} *\| *{} *\| *Removed *\|$'
