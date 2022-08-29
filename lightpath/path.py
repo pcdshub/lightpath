@@ -114,14 +114,23 @@ def find_device_state(device: Device) -> Tuple[DeviceState, LightpathState]:
     """
     # Gather device information
     try:
+        for sig in device.lightpath_summary._signals:
+            if not sig.connected:
+                # Check if relevant signals are connected
+                logger.warning(f"Unable to connect to device: {device}, "
+                               f"signal: {sig.name}")
+                return DeviceState.Disconnected, None
+
         state = device.get_lightpath_state()
         _in, _out = state.inserted, state.removed
         logger.debug("Device %s reporting; IN=%s, OUT=%s",
                      device.name, _in, _out)
-    # Check if this was an error with an EPICS connection
     except (TimeoutError, DisconnectedError) as exc:
-        logger.warning("Unable to connect to %r", device)
-        logger.debug(exc, exc_info=True)
+        # Technically it's possible to still have a timeout error, but
+        # it means our previous connection check gave a false positive
+        # severity should be a tad higher in this case
+        logger.error("Unable to connect to %r", device)
+        logger.error(exc, exc_info=True)
         return DeviceState.Disconnected, None
     except Exception:
         logger.exception("Unable to determine device state for %r", device)
