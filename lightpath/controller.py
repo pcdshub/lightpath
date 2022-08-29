@@ -1,9 +1,9 @@
 """
 While the :class:`.BeamPath` object provides basic control functionality, the
-:class:`.LightController` is what does the organization of all of LCLS's
-devices. The facility is represented by an Direced Graph, starting at the
-source and ending at the beamline hutches.  After parsing through all of the
-given devices, each beamline is contsructed as a :class:`.BeamPath` object.
+:class:`.LightController` is what organizes of all of LCLS's
+devices. The facility is represented by an Directed Graph, starting at the
+source and ending at the beamline hutches.  After placing each device in the
+facility graph, each beamline is constructed as a :class:`.BeamPath` object.
 
 This includes not only devices on the upstream beamline but all of the
 beamlines before it. For example, the MEC beampath will include devices in both

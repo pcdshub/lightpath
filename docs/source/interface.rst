@@ -77,8 +77,8 @@ In the simplest sense, your device needs to present the following API:
 * ``device.lightpath_summary``: a signal that changes whenever the
   Lightpath-state of the device changes
 * ``device.get_lightpath_state()``: a method that returns a
-  ``lightpath.LightpathState`` dataclass, containing the Lightpath-state
-  of the device
+  :class:`lightpath.LightpathState` dataclass instance, containing the
+  Lightpath-state of the device
 
 How is this implemented?
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -104,10 +104,10 @@ lightpath interface requirements might look like:
 .. code-block:: python
 
     from lightpath import LightpathState
-    from ophyd import EpicsSignal
+    from ophyd import Device, EpicsSignal
     from ophyd import Component as Cpt
 
-    class MyDevice():
+    class MyDevice(Device):
 
         # if we were to only care about one signal
         lightpath_summary = Cpt(EpicsSignal, ':MY:PV')
@@ -117,10 +117,10 @@ lightpath interface requirements might look like:
 
         def get_lightpath_state(self):
             return LightpathState(
-                inserted = True,
-                removed = True,
-                transmission = 1,
-                output_branch = self.output_branches[0]
+                inserted=True,
+                removed=True,
+                transmission=1,
+                output_branch=self.output_branches[0]
             )
 
 This would work, strictly speaking, but is far from being optimized and easy to use.
@@ -172,7 +172,7 @@ In this case we are leveraging the ``LightpathMixin`` class, which does most of
 the repetitive setup for us (creating ``lightpath_summary`` signal, subscribing
 to relevant components, setting up lightpath state caching, checking that the
 subclass is correctly configured, etc.).  This mixin delegates the calculation
-of the lightpaht state to the ``calc_lightpath_state`` method, which is to be
+of the lightpath state to the ``calc_lightpath_state`` method, which is to be
 written by the device creator.  Furthermore, the mixin looks for a list of
 component names called ``lightpath_cpts``, which will ``lightpath_summary``
 will watch for changes.  Upon a change in one of these signals, the

@@ -4,7 +4,7 @@ grouping together a set of devices using the :ref:`Lightpath
 interface<interface_api>` and representing the path between them as single
 object. The manipulation of each of these object should be done at the device
 level, and while this may be done inside of Lightpath via detailed screens,
-Lightpath is not repsonsible for inserting or removing devices.
+Lightpath is not responsible for inserting or removing devices.
 
 The :class:`.BeamPath` object is also not meant to be a rigid representation,
 :meth:`.BeamPath.split` and :meth:`.BeamPath.join` both allow for slicing and
@@ -35,6 +35,20 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class LightpathState:
+    """
+    The lightpath-relevant state of a device. Devices must return an
+    instance of this dataclass via the ``get_lightpath_state()`` method.
+
+    Attributes
+    ----------
+    inserted : bool
+
+    removed : bool
+
+    transmission : float
+
+    output_branch : str
+    """
     inserted: bool
     removed: bool
     transmission: float
