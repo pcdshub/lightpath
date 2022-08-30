@@ -1,0 +1,31 @@
+# database file
+db: '/cds/home/r/roberttk/devrepos/lightpath/lightpath/tests/path.json'
+
+# Experimental endstations to load
+hutches:
+  - XCS
+  - TMO
+  - XPP
+
+# Epics default timeout (s)
+timeout: 10
+
+# min transmission
+min_transmission: 0.1
+
+# Beamline Config. a mapping from beamline to:
+# - a list of branch names
+# - a mapping of branch names to final position
+beamlines:
+  XPP:
+    L0: 800
+    L2: ~
+  XCS:
+    - L3
+  TMO:
+    - K4
+
+# Sources. Branches that have a source
+sources:
+  - K0
+  - L0

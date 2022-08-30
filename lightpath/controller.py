@@ -26,7 +26,8 @@ from happi import Client, SearchResult
 from networkx.exception import NodeNotFound
 from ophyd import Device
 
-from .config import beamlines, sources
+from .config import beamlines
+from .config import sources as default_sources
 from .errors import PathError
 from .mock_devices import Crystal, Valve
 from .path import BeamPath
@@ -61,17 +62,24 @@ class LightController:
     """
     graph: nx.DiGraph
 
-    def __init__(self, client: Client,
-                 endstations: Optional[List[str]] = None):
+    def __init__(
+        self,
+        client: Client,
+        endstations: Optional[List[str]] = None,
+        cfg={}
+    ):
         self.client: Client = client
+        self.cfg = cfg
         # a mapping of endstation name to either a path or initialized BeamPath
         self.beamlines: Dict[str, MaybeBeamPath] = dict()
+        # sources found in facility
         self.sources: Set[str] = set()
 
         # initialize graph -> self.graph
         self.load_facility()
 
-        endstations = endstations or beamlines.keys()
+        endstations = (endstations or cfg.get('beamlines', {}).keys()
+                       or beamlines.keys())
         # Find the requisite beamlines to reach our endstation
         for beamline in endstations:
             self.load_beamline(beamline)
@@ -100,9 +108,11 @@ class LightController:
         # Construct subgraphs and merge
         subgraphs = []
         for branch_name, branch_devs in branch_dict.items():
-            subgraph = self.make_graph(branch_devs,
-                                       sources=sources,
-                                       branch_name=branch_name)
+            subgraph = self.make_graph(
+                branch_devs,
+                sources=self.cfg.get('sources') or default_sources,
+                branch_name=branch_name
+            )
             self.sources.update((n for n in subgraph
                                  if self.is_source_name(n)))
             subgraphs.append(subgraph)

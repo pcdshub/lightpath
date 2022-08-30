@@ -184,11 +184,15 @@ class BeamPath(OphydObject):
     # Subscription Information
     SUB_PTH_CHNG = 'beampath_changed'
     _default_sub = SUB_PTH_CHNG
-    # Transmission setting
-    minimum_transmission = 0.1
 
-    def __init__(self, *devices: OphydObject, name: Optional[str] = None):
+    def __init__(
+        self,
+        *devices: OphydObject,
+        minimum_transmission: float = 0.1,
+        name: Optional[str] = None,
+    ):
         super().__init__(name=name)
+        self.minimum_transmission = minimum_transmission
         self.devices = devices
         self._has_subscribed = False
         logger.debug("Configuring path %s with %s devices",

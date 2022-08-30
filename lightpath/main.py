@@ -5,6 +5,7 @@ from pathlib import Path
 import coloredlogs
 import happi
 import pydm
+import yaml
 
 import lightpath
 from lightpath.ui import LightApp
@@ -25,10 +26,12 @@ def create_arg_parser():
                         help='Experimental endstation(s) to show in Lightpath')
     parser.add_argument('--debug', dest='debug', action='store_true',
                         help='Show the DEBUG logging stream')
+    parser.add_argument('--cfg', required=False, default=None,
+                        help='Configuration yaml file')
     return parser
 
 
-def main(db, hutches):
+def main(db, hutches, cfg):
     """
     Open the lightpath user interface for a configuration file
 
@@ -37,19 +40,32 @@ def main(db, hutches):
     db: str
         Path to happi JSON database
     """
-
-    from ophyd.signal import EpicsSignalBase
-    EpicsSignalBase.set_defaults(timeout=10.0, connection_timeout=10.0)
-
-    if db is None:
-        client = happi.Client.from_config()
+    if cfg:
+        logger.info(f'reading config from: {cfg}...')
+        with open(cfg, 'r') as f:
+            conf = yaml.safe_load(f)
+        print(conf)
     else:
-        client = happi.Client(path=db)
+        conf = {}
+
+    timeout = conf.get('timeout', 10)
+    from ophyd.signal import EpicsSignalBase
+    EpicsSignalBase.set_defaults(timeout=timeout,
+                                 connection_timeout=timeout)
+
+    db_path = db or conf.get('db')
+    if db_path:
+        client = happi.Client(path=db_path)
+    else:
+        client = happi.Client.from_config()
+
+    hutches = hutches or conf.get('hutches')
+
     logger.info("Launching LCLS Lightpath ...")
     # Create PyDM Application
     app = pydm.PyDMApplication(use_main_window=False)
     # Create Lightpath UI from provided database
-    lc = lightpath.LightController(client, endstations=hutches)
+    lc = lightpath.LightController(client, endstations=hutches, cfg=conf)
     lp = LightApp(lc)
     # Execute
     lp.show()
@@ -76,4 +92,4 @@ def entrypoint():
     level = 'DEBUG' if args.debug else 'INFO'
     coloredlogs.install(level=level, logger=logger,
                         fmt='[%(asctime)s] - %(levelname)s -  %(message)s')
-    return main(args.db, hutches)
+    return main(args.db, hutches, args.cfg)
