@@ -1,3 +1,8 @@
+"""
+These tests have proven troublesome, but less troublesome if moved to the end
+of the test suite.  If run before the gui tests, segfaults occur.
+"""
+
 import os
 from pathlib import Path
 from typing import Any, Dict, List
