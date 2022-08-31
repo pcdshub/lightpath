@@ -4,12 +4,13 @@ from pathlib import Path
 
 import coloredlogs
 import happi
-import pydm
+from qtpy.QtWidgets import QApplication
 
 import lightpath
 from lightpath.ui import LightApp
 
 logger = logging.getLogger('lightpath')
+qapp = None
 
 
 def create_arg_parser():
@@ -25,6 +26,19 @@ def create_arg_parser():
     parser.add_argument('--debug', dest='debug', action='store_true',
                         help='Show the DEBUG logging stream')
     return parser
+
+
+def get_qapp():
+    """Returns the global QApplication, creating it if necessary."""
+    global qapp
+    if qapp is None:
+        if QApplication.instance() is None:
+            logger.debug("Creating QApplication ...")
+            qapp = QApplication([])
+        else:
+            logger.debug("Using existing QApplication")
+            qapp = QApplication.instance()
+    return qapp
 
 
 def main(db, hutches):
@@ -46,7 +60,7 @@ def main(db, hutches):
         client = happi.Client(path=db)
     logger.info("Launching LCLS Lightpath ...")
     # Create PyDM Application
-    app = pydm.PyDMApplication(use_main_window=False)
+    app = get_qapp()
     # Create Lightpath UI from provided database
     lc = lightpath.LightController(client, endstations=hutches)
     lp = LightApp(lc)
