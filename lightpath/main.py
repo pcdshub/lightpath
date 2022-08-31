@@ -70,6 +70,8 @@ def main(db, hutches, cfg):
     lp.show()
     app.exec_()
 
+    return lp
+
 
 def entrypoint():
     args = create_arg_parser().parse_args()
