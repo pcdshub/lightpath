@@ -125,3 +125,14 @@ def test_mock_device(lcls_ctrl: LightController):
 
     # smoke test device loading
     lcls_ctrl.get_device('sl1k2')
+
+
+def test_cfg_loading(lcls_client, cfg):
+    # load lcls with config modifications
+    lc = LightController(lcls_client, cfg=cfg)
+
+    xcs_path = lc.active_path('XCS')
+
+    # check modifications to default parameters
+    assert set(lc.beamlines.keys()) == set(cfg['hutches'])
+    assert xcs_path.minimum_transmission == 0.5

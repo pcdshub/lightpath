@@ -3,6 +3,7 @@ import os.path
 
 import happi
 import pytest
+import yaml
 
 from lightpath import BeamPath
 from lightpath.controller import LightController
@@ -158,6 +159,14 @@ def lcls_client(monkeypatch):
 
     monkeypatch.setattr(happi.SearchResult, 'get', new_get)
     return client
+
+
+@pytest.fixture(scope='function')
+def cfg():
+    cfg_path = os.path.join(os.path.dirname(__file__), 'conf.yml')
+    with open(cfg_path, 'r') as f:
+        cfg = yaml.safe_load(f)
+    return cfg
 
 
 def simulated_lcls():

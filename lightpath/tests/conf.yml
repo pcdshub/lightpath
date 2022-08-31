@@ -11,15 +11,15 @@ hutches:
 timeout: 10
 
 # min transmission
-min_transmission: 0.1
+min_trans: 0.5
 
 # Beamline Config. a mapping from beamline to:
 # - a list of branch names
 # - a mapping of branch names to final position
 beamlines:
   XPP:
-    L0: 800
-    L2: ~
+    L0: 700
+    L2: null
   XCS:
     - L3
   TMO:
