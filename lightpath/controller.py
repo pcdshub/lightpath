@@ -69,7 +69,14 @@ class LightController:
         cfg={}
     ):
         self.client: Client = client
-        self.cfg = cfg
+        self.cfg = {
+            'beamlines': beamlines,
+            'sources': default_sources,
+            'min_trans': 0.1
+        }
+        # fill stored config if values missing
+        self.cfg.update(cfg)
+
         # a mapping of endstation name to either a path or initialized BeamPath
         self.beamlines: Dict[str, MaybeBeamPath] = dict()
         # sources found in facility
@@ -78,8 +85,7 @@ class LightController:
         # initialize graph -> self.graph
         self.load_facility()
 
-        endstations = (endstations or cfg.get('beamlines', {}).keys()
-                       or beamlines.keys())
+        endstations = (endstations or self.cfg.get('beamlines', {}).keys())
         # Find the requisite beamlines to reach our endstation
         for beamline in endstations:
             self.load_beamline(beamline)
@@ -110,7 +116,7 @@ class LightController:
         for branch_name, branch_devs in branch_dict.items():
             subgraph = self.make_graph(
                 branch_devs,
-                sources=self.cfg.get('sources') or default_sources,
+                sources=self.cfg.get('sources'),
                 branch_name=branch_name
             )
             self.sources.update((n for n in subgraph
@@ -181,14 +187,18 @@ class LightController:
             return paths
 
         # create the BeamPaths if they have not been already
-        end_branches = beamlines[endstation]
+        end_branches = self.cfg['beamlines'][endstation]
         filled_paths = []
         for path in paths:
             subgraph = self.graph.subgraph(path)
             devices = [self.get_device(dev_name)
                        for dev_name, data in subgraph.nodes.data()
                        if data['md'].res is not None]
-            bp = BeamPath(*devices, name=endstation)
+            bp = BeamPath(
+                *devices,
+                name=endstation,
+                minimum_transmission=self.cfg.get('min_trans')
+            )
 
             if isinstance(end_branches, dict):
                 # access the last z for this branch
@@ -426,7 +436,13 @@ class LightController:
         for subg in subgraphs:
             devs = [data['md'].dev for _, data in subg.nodes.data()
                     if data['md'].dev is not None]
-            beampaths.append(BeamPath(*devs, name=f'{device.md.name}_path'))
+            beampaths.append(
+                BeamPath(
+                    *devs,
+                    name=f'{device.md.name}_path',
+                    minimum_transmission=self.cfg.get('min_trans')
+                )
+            )
 
         return beampaths
 

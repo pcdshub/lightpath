@@ -44,11 +44,10 @@ def main(db, hutches, cfg):
         logger.info(f'reading config from: {cfg}...')
         with open(cfg, 'r') as f:
             conf = yaml.safe_load(f)
-        print(conf)
     else:
         conf = {}
 
-    timeout = conf.get('timeout', 10)
+    timeout = conf.get('timeout', 10)  # timeout (s)
     from ophyd.signal import EpicsSignalBase
     EpicsSignalBase.set_defaults(timeout=timeout,
                                  connection_timeout=timeout)

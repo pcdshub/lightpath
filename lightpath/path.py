@@ -465,8 +465,12 @@ class BeamPath(OphydObject):
             raise ValueError("Split position {} is not within the range of "
                              "the path.".format(z))
         # Split the paths
-        return (BeamPath(*[d for d in self.devices if d.md.z <= z]),
-                BeamPath(*[d for d in self.devices if d.md.z > z]))
+        return (BeamPath(*[d for d in self.devices if d.md.z <= z],
+                         name=f'{self.name}_pre_{z}',
+                         minimum_transmission=self.minimum_transmission),
+                BeamPath(*[d for d in self.devices if d.md.z > z],
+                         name=f'{self.name}_pre_{z}',
+                         minimum_transmission=self.minimum_transmission))
 
     @classmethod
     def from_join(cls, *beampaths: BeamPath, name: str = None) -> BeamPath:
