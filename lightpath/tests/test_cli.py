@@ -1,14 +1,10 @@
-"""
-These tests have proven troublesome, but less troublesome if moved to the end
-of the test suite.  If run before the gui tests, segfaults occur.
-"""
-
 import os
 from pathlib import Path
 from typing import Any, Dict, List
 
 import pydm
 import pytest
+from qtpy.QtWidgets import QApplication
 
 from lightpath.main import entrypoint
 from lightpath.ui import LightApp
@@ -22,7 +18,7 @@ def no_gui_launch(monkeypatch):
     def no_op(*args, **kwargs):
         pass
 
-    monkeypatch.setattr(pydm.PyDMApplication, 'exec_', no_op)
+    monkeypatch.setattr(QApplication, 'exec_', no_op)
     monkeypatch.setattr(pydm.Display, 'show', no_op)
 
 
