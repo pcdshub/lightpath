@@ -1,6 +1,3 @@
-# database file
-db: '/cds/home/r/roberttk/devrepos/lightpath/lightpath/tests/path.json'
-
 # Experimental endstations to load
 hutches:
   - XCS
@@ -24,6 +21,8 @@ beamlines:
     - L3
   TMO:
     - K4
+  CRIX:
+    - K1
 
 # Sources. Branches that have a source
 sources:
