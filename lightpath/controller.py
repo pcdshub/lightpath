@@ -66,15 +66,16 @@ class LightController:
         self,
         client: Client,
         endstations: Optional[List[str]] = None,
-        cfg={}
+        cfg: Dict[str, Any] = {}
     ):
         self.client: Client = client
         self.cfg = {
             'beamlines': beamlines,
+            'hutches': endstations,
             'sources': default_sources,
             'min_trans': 0.1
         }
-        # fill stored config if values missing
+        # update default config with provided cfg
         self.cfg.update(cfg)
 
         # a mapping of endstation name to either a path or initialized BeamPath
@@ -85,9 +86,10 @@ class LightController:
         # initialize graph -> self.graph
         self.load_facility()
 
-        endstations = (endstations or self.cfg.get('beamlines', {}).keys())
+        dests = (self.cfg.get('hutches')
+                 or self.cfg.get('beamlines', {}).keys())
         # Find the requisite beamlines to reach our endstation
-        for beamline in endstations:
+        for beamline in dests:
             self.load_beamline(beamline)
 
     def load_facility(self):
