@@ -117,8 +117,8 @@ def find_device_state(device: Device) -> Tuple[DeviceState, LightpathState]:
         for sig in device.lightpath_summary._signals:
             if not sig.connected:
                 # Check if relevant signals are connected
-                logger.warning(f"Unable to connect to device: {device}, "
-                               f"signal: {sig.name}")
+                logger.debug(f"Unable to connect to device: {device}, "
+                             f"signal: {sig.name}")
                 return DeviceState.Disconnected, None
 
         state = device.get_lightpath_state()
@@ -129,8 +129,8 @@ def find_device_state(device: Device) -> Tuple[DeviceState, LightpathState]:
         # Technically it's possible to still have a timeout error, but
         # it means our previous connection check gave a false positive
         # severity should be a tad higher in this case
-        logger.error("Unable to connect to %r", device)
-        logger.error(exc, exc_info=True)
+        logger.warning("Unable to connect to %r", device)
+        logger.warning(exc, exc_info=True)
         return DeviceState.Disconnected, None
     except Exception:
         logger.exception("Unable to determine device state for %r", device)
