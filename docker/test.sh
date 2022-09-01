@@ -39,3 +39,5 @@ fi
 if [ -f core ]; then
   gdb python core
 fi
+
+/bin/bash --login
