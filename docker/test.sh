@@ -36,8 +36,12 @@ else
   fi
 fi
 
+echo "add-auto-load-safe-path /opt/python/3.9.6/bin/python3.9-gdb.py" >> ~/.gdbinit
+
+export PYTHON_BIN="$(python -c 'import sys; print(sys.executable)')"
+
 if [ -f core ]; then
-  gdb python core
+  gdb "$PYTHON_BIN" core
 fi
 
 /bin/bash --login
