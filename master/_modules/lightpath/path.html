@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>lightpath.path &mdash; LCLS Lightpath 0.6.9+127.gaad07bd documentation</title>
+  <title>lightpath.path &mdash; LCLS Lightpath 0.6.9+144.g2990c2a documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -28,7 +28,7 @@
             <a href="../../index.html" class="icon icon-home"> LCLS Lightpath
           </a>
               <div class="version">
-                0.6.9+127.gaad07bd
+                0.6.9+144.g2990c2a
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -195,14 +195,21 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Gather device information</span>
     <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">device</span><span class="o">.</span><span class="n">lightpath_summary</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span>
+            <span class="c1"># Check if relevant signals are connected</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to connect to device: </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Disconnected</span><span class="p">,</span> <span class="kc">None</span>
+
         <span class="n">state</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">get_lightpath_state</span><span class="p">()</span>
         <span class="n">_in</span><span class="p">,</span> <span class="n">_out</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">inserted</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">removed</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Device </span><span class="si">%s</span><span class="s2"> reporting; IN=</span><span class="si">%s</span><span class="s2">, OUT=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
                      <span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">_in</span><span class="p">,</span> <span class="n">_out</span><span class="p">)</span>
-    <span class="c1"># Check if this was an error with an EPICS connection</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">TimeoutError</span><span class="p">,</span> <span class="n">DisconnectedError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="c1"># Technically it&#39;s possible to still have a timeout error, but</span>
+        <span class="c1"># it means our previous connection check gave a false positive</span>
+        <span class="c1"># severity should be a tad higher in this case</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unable to connect to </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Disconnected</span><span class="p">,</span> <span class="kc">None</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Unable to determine device state for </span><span class="si">%r</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
@@ -256,11 +263,15 @@
     <span class="c1"># Subscription Information</span>
     <span class="n">SUB_PTH_CHNG</span> <span class="o">=</span> <span class="s1">&#39;beampath_changed&#39;</span>
     <span class="n">_default_sub</span> <span class="o">=</span> <span class="n">SUB_PTH_CHNG</span>
-    <span class="c1"># Transmission setting</span>
-    <span class="n">minimum_transmission</span> <span class="o">=</span> <span class="mf">0.1</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">devices</span><span class="p">:</span> <span class="n">OphydObject</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">devices</span><span class="p">:</span> <span class="n">OphydObject</span><span class="p">,</span>
+        <span class="n">minimum_transmission</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minimum_transmission</span> <span class="o">=</span> <span class="n">minimum_transmission</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">devices</span> <span class="o">=</span> <span class="n">devices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_has_subscribed</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Configuring path </span><span class="si">%s</span><span class="s2"> with </span><span class="si">%s</span><span class="s2"> devices&quot;</span><span class="p">,</span>
@@ -533,8 +544,12 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Split position </span><span class="si">{}</span><span class="s2"> is not within the range of &quot;</span>
                              <span class="s2">&quot;the path.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
         <span class="c1"># Split the paths</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">BeamPath</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">devices</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span> <span class="o">&lt;=</span> <span class="n">z</span><span class="p">]),</span>
-                <span class="n">BeamPath</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">devices</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span> <span class="o">&gt;</span> <span class="n">z</span><span class="p">]))</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="n">BeamPath</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">devices</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span> <span class="o">&lt;=</span> <span class="n">z</span><span class="p">],</span>
+                         <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">_pre_</span><span class="si">{</span><span class="n">z</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">minimum_transmission</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">minimum_transmission</span><span class="p">),</span>
+                <span class="n">BeamPath</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">devices</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span> <span class="o">&gt;</span> <span class="n">z</span><span class="p">],</span>
+                         <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">_pre_</span><span class="si">{</span><span class="n">z</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">minimum_transmission</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">minimum_transmission</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="BeamPath.from_join"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.from_join">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_join</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">beampaths</span><span class="p">:</span> <span class="n">BeamPath</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BeamPath</span><span class="p">:</span>
