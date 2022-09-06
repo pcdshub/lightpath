@@ -28,6 +28,15 @@ class SummarySignal(AggregateSignal):
         # an ophyd-compatible datatype.
         return hash(values)
 
+    def subscribe(self, *args, **kwargs):
+        cid = super().subscribe(*args, **kwargs)
+
+        # For some reason meta callbacks need to be run again
+        for sig in self._signals:
+            sig._run_metadata_callbacks()
+
+        return cid
+
 
 class Status:
     """
