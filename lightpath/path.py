@@ -114,14 +114,21 @@ def find_device_state(device: Device) -> Tuple[DeviceState, LightpathState]:
     """
     # Gather device information
     try:
+        if not device.lightpath_summary.connected:
+            # Check if relevant signals are connected
+            logger.debug(f"Unable to connect to device: {device.name}")
+            return DeviceState.Disconnected, None
+
         state = device.get_lightpath_state()
         _in, _out = state.inserted, state.removed
         logger.debug("Device %s reporting; IN=%s, OUT=%s",
                      device.name, _in, _out)
-    # Check if this was an error with an EPICS connection
     except (TimeoutError, DisconnectedError) as exc:
+        # Technically it's possible to still have a timeout error, but
+        # it means our previous connection check gave a false positive
+        # severity should be a tad higher in this case
         logger.warning("Unable to connect to %r", device)
-        logger.debug(exc, exc_info=True)
+        logger.warning(exc, exc_info=True)
         return DeviceState.Disconnected, None
     except Exception:
         logger.exception("Unable to determine device state for %r", device)
@@ -175,11 +182,15 @@ class BeamPath(OphydObject):
     # Subscription Information
     SUB_PTH_CHNG = 'beampath_changed'
     _default_sub = SUB_PTH_CHNG
-    # Transmission setting
-    minimum_transmission = 0.1
 
-    def __init__(self, *devices: OphydObject, name: Optional[str] = None):
+    def __init__(
+        self,
+        *devices: OphydObject,
+        minimum_transmission: float = 0.1,
+        name: Optional[str] = None,
+    ):
         super().__init__(name=name)
+        self.minimum_transmission = minimum_transmission
         self.devices = devices
         self._has_subscribed = False
         logger.debug("Configuring path %s with %s devices",
@@ -452,8 +463,12 @@ class BeamPath(OphydObject):
             raise ValueError("Split position {} is not within the range of "
                              "the path.".format(z))
         # Split the paths
-        return (BeamPath(*[d for d in self.devices if d.md.z <= z]),
-                BeamPath(*[d for d in self.devices if d.md.z > z]))
+        return (BeamPath(*[d for d in self.devices if d.md.z <= z],
+                         name=f'{self.name}_pre_{z}',
+                         minimum_transmission=self.minimum_transmission),
+                BeamPath(*[d for d in self.devices if d.md.z > z],
+                         name=f'{self.name}_pre_{z}',
+                         minimum_transmission=self.minimum_transmission))
 
     @classmethod
     def from_join(cls, *beampaths: BeamPath, name: str = None) -> BeamPath:

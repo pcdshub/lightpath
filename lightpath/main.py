@@ -1,15 +1,18 @@
 import argparse
 import logging
 from pathlib import Path
+from typing import List, Optional, Union, overload
 
 import coloredlogs
 import happi
-import pydm
+import yaml
+from qtpy.QtWidgets import QApplication
 
 import lightpath
 from lightpath.ui import LightApp
 
 logger = logging.getLogger('lightpath')
+qapp = None
 
 
 def create_arg_parser():
@@ -25,35 +28,86 @@ def create_arg_parser():
                         help='Experimental endstation(s) to show in Lightpath')
     parser.add_argument('--debug', dest='debug', action='store_true',
                         help='Show the DEBUG logging stream')
+    parser.add_argument('--cfg', required=False, default=None,
+                        help='Configuration yaml file')
     return parser
 
 
-def main(db, hutches):
+def get_qapp():
+    """Returns the global QApplication, creating it if necessary."""
+    global qapp
+    if qapp is None:
+        if QApplication.instance() is None:
+            logger.debug("Creating QApplication ...")
+            qapp = QApplication([])
+        else:
+            logger.debug("Using existing QApplication")
+            qapp = QApplication.instance()
+    return qapp
+
+
+@overload
+def main(db: Union[str, Path], hutches: List[str]) -> LightApp: ...
+
+
+@overload
+def main(cfg: Union[str, Path]) -> LightApp: ...
+
+
+def main(
+    db: Optional[Union[str, Path]],
+    hutches: Optional[List[str]],
+    cfg: Union[str, Path]
+) -> LightApp:
     """
-    Open the lightpath user interface for a configuration file
+    Open the lightpath user interface by specifying a list of hutches
+    to load or a configuration file.
 
     Parameters
     ----------
-    db: str
+    db : Union[str, Path]
         Path to happi JSON database
+
+    hutches : List[str]
+        List of hutches to load in Lightpath
+
+    cfg : Union[str, Path]
+        Path to lightpath config file
     """
-
-    from ophyd.signal import EpicsSignalBase
-    EpicsSignalBase.set_defaults(timeout=10.0, connection_timeout=10.0)
-
-    if db is None:
-        client = happi.Client.from_config()
+    if cfg:
+        logger.info(f'reading config from: {cfg}...')
+        with open(cfg, 'r') as f:
+            conf = yaml.safe_load(f)
     else:
-        client = happi.Client(path=db)
+        if not db and not hutches:
+            raise ValueError('Need to supply either a config file or '
+                             'a list of hutches and database path.')
+        conf = {}
+
+    timeout = float(conf.get('timeout', 10))  # timeout (s)
+    from ophyd.signal import EpicsSignalBase
+    EpicsSignalBase.set_defaults(timeout=timeout,
+                                 connection_timeout=timeout)
+
+    db_path = db or conf.get('db')
+    if db_path:
+        client = happi.Client(path=db_path)
+    else:
+        client = happi.Client.from_config()
+
+    hutches = hutches or conf.get('hutches')
+
     logger.info("Launching LCLS Lightpath ...")
     # Create PyDM Application
-    app = pydm.PyDMApplication(use_main_window=False)
+    app = get_qapp()
     # Create Lightpath UI from provided database
-    lc = lightpath.LightController(client, endstations=hutches)
+    lc = lightpath.LightController(client, endstations=hutches, cfg=conf)
     lp = LightApp(lc)
     # Execute
     lp.show()
     app.exec_()
+
+    return lp
 
 
 def entrypoint():
@@ -76,4 +130,4 @@ def entrypoint():
     level = 'DEBUG' if args.debug else 'INFO'
     coloredlogs.install(level=level, logger=logger,
                         fmt='[%(asctime)s] - %(levelname)s -  %(message)s')
-    return main(args.db, hutches)
+    return main(args.db, hutches, args.cfg)

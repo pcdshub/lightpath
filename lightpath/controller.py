@@ -26,7 +26,8 @@ from happi import Client, SearchResult
 from networkx.exception import NodeNotFound
 from ophyd import Device
 
-from .config import beamlines, sources
+from .config import beamlines
+from .config import sources as default_sources
 from .errors import PathError
 from .mock_devices import Crystal, Valve
 from .path import BeamPath
@@ -61,19 +62,34 @@ class LightController:
     """
     graph: nx.DiGraph
 
-    def __init__(self, client: Client,
-                 endstations: Optional[List[str]] = None):
+    def __init__(
+        self,
+        client: Client,
+        endstations: Optional[List[str]] = None,
+        cfg: Dict[str, Any] = {}
+    ):
         self.client: Client = client
+        self.cfg = {
+            'beamlines': beamlines,
+            'hutches': endstations,
+            'sources': default_sources,
+            'min_trans': 0.1
+        }
+        # update default config with provided cfg
+        self.cfg.update(cfg)
+
         # a mapping of endstation name to either a path or initialized BeamPath
         self.beamlines: Dict[str, MaybeBeamPath] = dict()
+        # sources found in facility
         self.sources: Set[str] = set()
 
         # initialize graph -> self.graph
         self.load_facility()
 
-        endstations = endstations or beamlines.keys()
+        dests = (self.cfg.get('hutches')
+                 or self.cfg.get('beamlines', {}).keys())
         # Find the requisite beamlines to reach our endstation
-        for beamline in endstations:
+        for beamline in dests:
             self.load_beamline(beamline)
 
     def load_facility(self):
@@ -100,9 +116,11 @@ class LightController:
         # Construct subgraphs and merge
         subgraphs = []
         for branch_name, branch_devs in branch_dict.items():
-            subgraph = self.make_graph(branch_devs,
-                                       sources=sources,
-                                       branch_name=branch_name)
+            subgraph = self.make_graph(
+                branch_devs,
+                sources=self.cfg.get('sources'),
+                branch_name=branch_name
+            )
             self.sources.update((n for n in subgraph
                                  if self.is_source_name(n)))
             subgraphs.append(subgraph)
@@ -171,14 +189,18 @@ class LightController:
             return paths
 
         # create the BeamPaths if they have not been already
-        end_branches = beamlines[endstation]
+        end_branches = self.cfg['beamlines'][endstation]
         filled_paths = []
         for path in paths:
             subgraph = self.graph.subgraph(path)
             devices = [self.get_device(dev_name)
                        for dev_name, data in subgraph.nodes.data()
                        if data['md'].res is not None]
-            bp = BeamPath(*devices, name=endstation)
+            bp = BeamPath(
+                *devices,
+                name=endstation,
+                minimum_transmission=self.cfg.get('min_trans')
+            )
 
             if isinstance(end_branches, dict):
                 # access the last z for this branch
@@ -416,7 +438,13 @@ class LightController:
         for subg in subgraphs:
             devs = [data['md'].dev for _, data in subg.nodes.data()
                     if data['md'].dev is not None]
-            beampaths.append(BeamPath(*devs, name=f'{device.md.name}_path'))
+            beampaths.append(
+                BeamPath(
+                    *devs,
+                    name=f'{device.md.name}_path',
+                    minimum_transmission=self.cfg.get('min_trans')
+                )
+            )
 
         return beampaths
 

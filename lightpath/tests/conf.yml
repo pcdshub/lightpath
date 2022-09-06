@@ -1,0 +1,30 @@
+# Experimental endstations to load
+hutches:
+  - XCS
+  - TMO
+  - XPP
+
+# Epics default timeout (s)
+timeout: 10
+
+# min transmission
+min_trans: 0.5
+
+# Beamline Config. a mapping from beamline to:
+# - a list of branch names
+# - a mapping of branch names to final position
+beamlines:
+  XPP:
+    L0: 700
+    L2: null
+  XCS:
+    - L3
+  TMO:
+    - K4
+  CRIX:
+    - K1
+
+# Sources. Branches that have a source
+sources:
+  - K0
+  - L0

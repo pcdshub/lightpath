@@ -1,8 +1,11 @@
 import logging
 import os.path
+import sys
+from contextlib import contextmanager
 
 import happi
 import pytest
+import yaml
 
 from lightpath import BeamPath
 from lightpath.controller import LightController
@@ -172,3 +175,24 @@ def simulated_lcls():
 def lcls_ctrl(lcls_client: happi.Client):
     print(f'first item: {lcls_client.search()[0]}')
     return LightController(lcls_client)
+
+
+@pytest.fixture(scope='function')
+def cfg():
+    cfg_path = os.path.join(os.path.dirname(__file__), 'conf.yml')
+    with open(cfg_path, 'r') as f:
+        cfg = yaml.safe_load(f)
+
+    return cfg
+
+
+@contextmanager
+def cli_args(args):
+    """
+    Context manager for running a block of code with a specific set of
+    command-line arguments.
+    """
+    prev_args = sys.argv
+    sys.argv = args
+    yield
+    sys.argv = prev_args

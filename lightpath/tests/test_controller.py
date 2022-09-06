@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 import happi
 
 from lightpath import LightController
@@ -125,3 +127,18 @@ def test_mock_device(lcls_ctrl: LightController):
 
     # smoke test device loading
     lcls_ctrl.get_device('sl1k2')
+
+
+def test_cfg_loading(lcls_client: happi.Client, cfg: Dict[str, Any]):
+    # load lcls with config modifications
+    lc = LightController(lcls_client, ['XCS'], cfg=cfg)
+
+    # check modifications to default parameters
+    # only loaded beamlines specified, cfg overrides endstations
+    assert set(lc.beamlines.keys()) == set(cfg['hutches'])
+    assert 'CRIX' not in lc.beamlines.keys()
+
+    # min transission propogates
+    assert lc.active_path('XCS').minimum_transmission == cfg['min_trans']
+    assert lc.active_path('TMO').minimum_transmission == cfg['min_trans']
+    assert lc.active_path('XPP').minimum_transmission == cfg['min_trans']
