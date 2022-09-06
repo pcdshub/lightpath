@@ -114,12 +114,10 @@ def find_device_state(device: Device) -> Tuple[DeviceState, LightpathState]:
     """
     # Gather device information
     try:
-        for sig in device.lightpath_summary._signals:
-            if not sig.connected:
-                # Check if relevant signals are connected
-                logger.debug(f"Unable to connect to device: {device}, "
-                             f"signal: {sig.name}")
-                return DeviceState.Disconnected, None
+        if not device.lightpath_summary.connected:
+            # Check if relevant signals are connected
+            logger.debug(f"Unable to connect to device: {device.name}")
+            return DeviceState.Disconnected, None
 
         state = device.get_lightpath_state()
         _in, _out = state.inserted, state.removed
