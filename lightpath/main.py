@@ -1,6 +1,7 @@
 import argparse
 import logging
 from pathlib import Path
+from typing import List, Optional, Union, overload
 
 import coloredlogs
 import happi
@@ -45,23 +46,45 @@ def get_qapp():
     return qapp
 
 
-def main(db, hutches, cfg):
+@overload
+def main(db: Union[str, Path], hutches: List[str]) -> LightApp: ...
+
+
+@overload
+def main(cfg: Union[str, Path]) -> LightApp: ...
+
+
+def main(
+    db: Optional[Union[str, Path]],
+    hutches: Optional[List[str]],
+    cfg: Union[str, Path]
+) -> LightApp:
     """
-    Open the lightpath user interface for a configuration file
+    Open the lightpath user interface by specifying a list of hutches
+    to load or a configuration file.
 
     Parameters
     ----------
-    db: str
+    db : Union[str, Path]
         Path to happi JSON database
+
+    hutches : List[str]
+        List of hutches to load in Lightpath
+
+    cfg : Union[str, Path]
+        Path to lightpath config file
     """
     if cfg:
         logger.info(f'reading config from: {cfg}...')
         with open(cfg, 'r') as f:
             conf = yaml.safe_load(f)
     else:
+        if not db and not hutches:
+            raise ValueError('Need to supply either a config file or '
+                             'a list of hutches and database path.')
         conf = {}
 
-    timeout = conf.get('timeout', 10)  # timeout (s)
+    timeout = float(conf.get('timeout', 10))  # timeout (s)
     from ophyd.signal import EpicsSignalBase
     EpicsSignalBase.set_defaults(timeout=timeout,
                                  connection_timeout=timeout)
