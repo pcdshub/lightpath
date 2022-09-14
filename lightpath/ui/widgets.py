@@ -5,13 +5,11 @@ import logging
 import os.path
 
 import qtawesome as qta
-from ophyd import Kind
 from pydm import Display
-from qtpy.QtCore import Qt, Signal
-from qtpy.QtGui import QBrush, QColor, QFont
+from qtpy.QtCore import Signal
+from qtpy.QtGui import QBrush, QColor
 from qtpy.QtWidgets import QLabel
-from typhos.utils import clean_name, get_all_signals_from_device, is_signal_ro
-from typhos.widgets import create_signal_widget
+from typhos.utils import clean_name
 
 from lightpath.path import DeviceState, find_device_state
 
@@ -140,45 +138,8 @@ class LightRow(InactiveRow):
             logger.error("Widget is unable to subscribe to device %s",
                          device.name)
 
-        # Add hints for ophyd Device
-        def hinted_filter(walk):
-            return walk.item.kind == Kind.hinted
-        hinted_signals = get_all_signals_from_device(device,
-                                                     filter_by=hinted_filter)
-        if len(hinted_signals) >= self.MAX_HINTS:
-            logger.debug("Device %r has a number of hints exceeding "
-                         "%r, not all will be shown",
-                         device.name, self.MAX_HINTS)
-            hinted_signals = hinted_signals[:self.MAX_HINTS]
-
-        # Add each hint
-        for signal in hinted_signals:
-            try:
-                self.add_signal(signal)
-            except Exception:
-                logger.exception("Unable to add widget for %r",
-                                 signal.name)
-
     def _update_from_device(self, *args, **kwargs):
         self.device_updated.emit()
-
-    def add_signal(self, signal):
-        """Add a signal to the widget display"""
-        # Create control widget
-        widget = create_signal_widget(signal, read_only=is_signal_ro(signal))
-        # Create label widget
-        label = QLabel(self)
-        bold_font = QFont()
-        bold_font.setBold(True)
-        label.setFont(bold_font)
-        # Add the label
-        label.setText(clean_name(signal, strip_parent=self.device.root))
-        # Add to the layout
-        # Annoying count block because insertWidget does not support negative
-        # indexing
-        count = self.command_layout.count()
-        self.command_layout.insertWidget(count - 1, label, 0, Qt.AlignHCenter)
-        self.command_layout.insertWidget(count, widget, 0, Qt.AlignHCenter)
 
     def get_state_color(self) -> QColor:
         """
