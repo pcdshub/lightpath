@@ -79,9 +79,6 @@ def main(
         with open(cfg, 'r') as f:
             conf = yaml.safe_load(f)
     else:
-        if not db and not hutches:
-            raise ValueError('Need to supply either a config file or '
-                             'a list of hutches and database path.')
         conf = {}
 
     timeout = float(conf.get('timeout', 10))  # timeout (s)
