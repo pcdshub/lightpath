@@ -15,7 +15,7 @@ Bugfixes
 
 Maintenance
 -----------
-- removes hinted signal widgets loaded from typhos to improve loadtimes
+- Removes hinted signal widgets loaded from typhos to improve loadtimes
 - allows lightpath cli command to be run without arguments, loading all default hutches
 
 Contributors
