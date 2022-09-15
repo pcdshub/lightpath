@@ -89,7 +89,7 @@ class InactiveRow(Display):
 
     def condense(self):
         """Reduce the size of the widget when the device is hidden"""
-        # Hide and labels
+        # Hide labels
         self.device_information.hide()
         # Resize drawings
         self.out_indicator.hide()
