@@ -23,12 +23,13 @@ def test_widget_updates(lightrow: LightRow, path: BeamPath):
     # inserted device may still permit beam
     ipimb = path.path[5]
     ipimb_row = LightRow(ipimb, path)
+    # Toggle device to trigger callbacks
+    ipimb.insert()
+    ipimb.remove()
     ipimb.insert()
     assert (to_stylesheet_color(state_colors['half_removed'])
             in ipimb_row.state_label.styleSheet())
 
-    # Toggle device to trigger callbacks
-    lightrow.device.insert()
     lightrow.device.remove()
     assert (to_stylesheet_color(state_colors['removed'])
             in lightrow.state_label.styleSheet())
@@ -48,9 +49,3 @@ def test_widget_icon(lightrow: LightRow):
     device._icon = 'definetly not an icon'
     lr = LightRow(device, lightrow.path)
     lr.update_state()
-
-
-def test_widget_hints(lightrow: LightRow):
-    hint_count = len(lightrow.device.hints['fields'])
-    # Check for label and control for each hint plus spacer
-    assert lightrow.command_layout.count() == 2 * hint_count + 1
