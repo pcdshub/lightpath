@@ -15,6 +15,7 @@ master/_sources/upcoming_release_notes/145-enh_lazy_graphs.rst.txt
 master/_sources/upcoming_release_notes/150-gui_icons_and_more.rst.txt
 master/_sources/upcoming_release_notes/153-doc_rework_update.rst.txt
 master/_sources/upcoming_release_notes/155-enh_cfg_disconn_pvs.rst.txt
+master/_sources/upcoming_release_notes/157-perf_no_hinted_signals.rst.txt
 master/_sources/upcoming_release_notes/template-full.rst.txt
 master/_sources/upcoming_release_notes/template-short.rst.txt
 master/_static/_sphinx_javascript_frameworks_compat.js
@@ -72,5 +73,6 @@ master/upcoming_release_notes/145-enh_lazy_graphs.html
 master/upcoming_release_notes/150-gui_icons_and_more.html
 master/upcoming_release_notes/153-doc_rework_update.html
 master/upcoming_release_notes/155-enh_cfg_disconn_pvs.html
+master/upcoming_release_notes/157-perf_no_hinted_signals.html
 master/upcoming_release_notes/template-full.html
 master/upcoming_release_notes/template-short.html
