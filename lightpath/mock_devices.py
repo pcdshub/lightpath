@@ -92,10 +92,13 @@ class BaseValve(Device):
             raise DisconnectedError("Simulated Disconnection")
         inserted = status in (Status.inserted, Status.inconsistent)
         removed = status in (Status.removed, Status.inconsistent)
+        if removed and not inserted:
+            trans = 1
+        else:
+            trans = self.current_transmission.get()
         return LightpathState(
             inserted=inserted, removed=removed,
-            transmission=self.current_transmission.get(),
-            output_branch=self.current_destination.get()
+            output={self.current_destination.get(): trans}
         )
 
     def insert(self, timeout=None, finished_cb=None):
@@ -141,6 +144,17 @@ class Stopper(BaseValve):
     _veto = True
     _icon = 'fa5.times-circle'
 
+    def get_lightpath_state(self):
+        state = super().get_lightpath_state()
+
+        # removed, set transmission -> 1
+        if not state.inserted and state.removed:
+            # should only have one key
+            br = list(state.output.keys())[0]
+            state.output[br] = 1
+            return state
+        return state
+
 
 class Crystal(BaseValve):
     """
@@ -159,11 +173,11 @@ class Crystal(BaseValve):
         state = super().get_lightpath_state()
         if state.inserted:
             br = self._inserted_branch.get()
-            self.current_destination.put(self.output_branches[br])
-            state.output_branch = self.output_branches[br]
+            # self.current_destination.put(self.output_branches[br])
+            state.output = {self.output_branches[br]: 0.8}
 
         elif state.removed:
-            self.current_destination.put(self.output_branches[0])
-            state.output_branch = self.output_branches[0]
+            # self.current_destination.put(self.output_branches[0])
+            state.output = {self.output_branches[0]: 1}
 
         return state
