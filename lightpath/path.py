@@ -18,6 +18,7 @@ from __future__ import annotations
 import enum
 import logging
 import math
+from collections import OrderedDict
 from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional, TextIO, Tuple, Union
@@ -194,6 +195,13 @@ class BeamPath(OphydObject):
         self.branch_list = set()
         logger.debug("Configuring path %s with %s devices",
                      name, len(self.devices))
+
+        # create mapping of device to next device in z-order
+        sorted_devs = sorted(self.devices, key=lambda dev: dev.md.z)
+        self._next_device = OrderedDict({'start': sorted_devs[0]})
+        self._next_device.update({sorted_devs[i].name: sorted_devs[i+1]
+                                  for i in range(len(sorted_devs) - 1)})
+
         # Sort by position downstream to upstream
         try:
             # Check types and positions
@@ -229,20 +237,41 @@ class BeamPath(OphydObject):
     @property
     def path(self) -> List[Device]:
         """ List[Device]: List of devices ordered by coordinates """
-        return sorted(self.devices, key=lambda dev: dev.md.z)
+        return list(self._next_device.values())
 
-    def get_device_output(self, state: LightpathState) -> Tuple[str, float]:
-        # find relevant output entry
-        output_keys = [br for br in state.output.keys()
-                       if br in self.branch_list]
+    def get_device_output(self, dev: Device) -> Tuple[str, float]:
+        """
+        Find relevant output item by attempting to match with the
+        input branch of the next device in this path.
+
+        Parameters
+        ----------
+        dev : Device
+            device in this path to get output from
+        """
+        output = dev.get_lightpath_state().output
+
+        # get next device input branch
+        next_dev = self._next_device.get(dev.name, None)
+        if next_dev is None:
+            # last device has no successor
+            # take output on branch in branch list
+            output_keys = [br for br in output.keys()
+                           if br in self.branch_list]
+        else:
+            # base case, the device has a successor.
+            # match output with input of next device
+            next_in_brs = next_dev.input_branches
+            output_keys = [br for br in output.keys()
+                           if br in next_in_brs]
 
         if len(output_keys) > 1:
             raise PathError('device has reports multiple outputs along '
-                            f'this path: {state.output.keys()}')
+                            f'this path: {output_keys}')
         elif len(output_keys) == 0:
             return '', 0
 
-        return output_keys[0], state.output[output_keys[0]]
+        return output_keys[0], output[output_keys[0]]
 
     @property
     def blocking_devices(self) -> List[Device]:
@@ -269,7 +298,7 @@ class BeamPath(OphydObject):
                 block.append(device)
                 continue
 
-            dev_out = self.get_device_output(curr_status)
+            dev_out = self.get_device_output(device)
             curr_dev_branch, curr_dev_trans = dev_out
             # device output not on path
             if curr_dev_branch == '':
@@ -549,7 +578,7 @@ class BeamPath(OphydObject):
         if not passive:
             logger.debug("Passive devices will be ignored ...")
             for dev in self.devices:
-                _, trans = self.get_device_output(dev.get_lightpath_state())
+                _, trans = self.get_device_output(dev)
                 if trans > self.minimum_transmission:
                     ignore.append(dev)
         # Add ignored devices
