@@ -99,6 +99,27 @@ def test_path_to(lcls_ctrl: LightController):
     mec_path == lcls_ctrl.active_path('MEC').path
 
 
+def test_multi_output(lcls_ctrl: LightController):
+    xcs_lodcm = lcls_ctrl.get_device('xcs_lodcm')
+    assert lcls_ctrl.active_path('XCS').blocking_devices == [xcs_lodcm]
+    # set lodcm to split beam
+    xcs_lodcm._inserted_mode.put(1)
+    xcs_lodcm.insert()
+
+    # no impediments, both receive beam
+    assert not lcls_ctrl.active_path('XCS').blocking_devices
+    assert not lcls_ctrl.active_path('CXI').blocking_devices
+
+    # set to diverge beam fully
+    xcs_lodcm.remove()
+    xcs_lodcm._inserted_mode.put(2)
+    xcs_lodcm.insert()
+
+    # beam goes to xcs only
+    assert not lcls_ctrl.active_path('XCS').blocking_devices
+    assert lcls_ctrl.active_path('CXI').blocking_devices == [xcs_lodcm]
+
+
 def test_walk_facility(lcls_ctrl: LightController):
     # with all removed, expect beam straight through
     walk = lcls_ctrl.walk_facility()
