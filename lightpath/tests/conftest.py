@@ -9,7 +9,8 @@ import yaml
 
 from lightpath import BeamPath
 from lightpath.controller import LightController
-from lightpath.mock_devices import IPIMB, Crystal, Stopper, Valve
+from lightpath.mock_devices import (IPIMB, LODCM, Crystal, Stopper,  # noqa
+                                    Valve)
 
 
 #################

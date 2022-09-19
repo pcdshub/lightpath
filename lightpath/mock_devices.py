@@ -158,7 +158,7 @@ class Stopper(BaseValve):
 
 class Crystal(BaseValve):
     """
-    Generic branching device
+    Generic branching device, allowing more than 2 output branches
     """
     _icon = 'fa5.star'
     _transmission = 0.8
@@ -173,8 +173,40 @@ class Crystal(BaseValve):
         state = super().get_lightpath_state()
         if state.inserted:
             br = self._inserted_branch.get()
-            # self.current_destination.put(self.output_branches[br])
+            self.current_destination.put(self.output_branches[br])
             state.output = {self.output_branches[br]: 0.8}
+
+        elif state.removed:
+            self.current_destination.put(self.output_branches[0])
+            state.output = {self.output_branches[0]: 1}
+
+        return state
+
+
+class LODCM(BaseValve):
+    """
+    LODCM device that can allow beam to two destinations at once.
+    States are:
+
+    - OUT (0): beam passes through, LODCM is removed
+    - IN-1 (1): beam splits between two output branches
+    - IN-2 (2): beam diverted to second output branch
+    """
+
+    # when inserted, which insertion mode??
+    _inserted_mode = Cpt(Signal, value=1)
+
+    def get_lightpath_state(self):
+        state = super().get_lightpath_state()
+        if state.inserted:
+            mode = self._inserted_mode.get()
+            # self.current_destination.put(self.output_branches[br])
+            if mode == 1:
+                state.output = {self.output_branches[0]: 0.5,
+                                self.output_branches[1]: 0.5}
+            elif mode == 2:
+                state.output = {self.output_branches[0]: 0,
+                                self.output_branches[1]: 1}
 
         elif state.removed:
             # self.current_destination.put(self.output_branches[0])
