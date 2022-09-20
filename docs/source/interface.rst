@@ -89,8 +89,8 @@ expected to return a dataclass with the following fields:
 
 * **inserted**: if the device is inserted
 * **removed**: if the device is removed
-* **output_branch**: the name of the branch this device is delivering beam to
-* **transmission**: the transmission of this device
+* **output**: a dictionary mapping an output branch name to the transmission
+  being delivered to that branch
 
 Lightpath also subscribes to a signal called ``lightpath_summary``, which is
 expected to change whenever the lightpath status of the device has changed.
@@ -119,8 +119,7 @@ lightpath interface requirements might look like:
             return LightpathState(
                 inserted=True,
                 removed=True,
-                transmission=1,
-                output_branch=self.output_branches[0]
+                output={self.output_branches[0]: 1}
             )
 
 This would work, strictly speaking, but is far from being optimized and easy to use.
@@ -164,8 +163,7 @@ following:
             return LightpathState(
                 inserted=self._inserted,
                 removed=self._removed,
-                transmission=self._transmission,
-                output_branch=self.output_branches[0]
+                output={self.output_branches[0]: self._transmission}
             )
 
 In this case we are leveraging the ``LightpathMixin`` class, which does most of
