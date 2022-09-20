@@ -206,7 +206,7 @@ class LODCM(BaseValve):
                                 self.output_branches[1]: 0.5}
             elif mode == 2:
                 state.output = {self.output_branches[0]: 0,
-                                self.output_branches[1]: 1}
+                                self.output_branches[1]: 0.5}
 
         elif state.removed:
             # self.current_destination.put(self.output_branches[0])
