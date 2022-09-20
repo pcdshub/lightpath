@@ -320,7 +320,6 @@ class LightController:
             while successors:
                 # get output branches that receive beam
                 out_branches = get_active_outputs(curr_dev)
-                print(curr_dev.name, out_branches)
                 connections = []
                 for succ in successors:
                     succ_dev = self.get_device(succ)
