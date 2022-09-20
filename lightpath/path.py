@@ -32,6 +32,8 @@ from prettytable import PrettyTable
 from .errors import CoordinateError, PathError
 
 logger = logging.getLogger(__name__)
+# non-string sentinel for beginning of path
+NOT_A_DEVICE = 0
 
 
 @dataclass
@@ -198,7 +200,7 @@ class BeamPath(OphydObject):
 
         # create mapping of device to next device in z-order
         sorted_devs = sorted(self.devices, key=lambda dev: dev.md.z)
-        self._next_device = OrderedDict({'start': sorted_devs[0]})
+        self._next_device = OrderedDict({NOT_A_DEVICE: sorted_devs[0]})
         self._next_device.update({sorted_devs[i].name: sorted_devs[i+1]
                                   for i in range(len(sorted_devs) - 1)})
 
