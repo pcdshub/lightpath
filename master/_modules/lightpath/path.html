@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>lightpath.path &mdash; LCLS Lightpath 0.6.9+151.gea93b5e documentation</title>
+  <title>lightpath.path &mdash; LCLS Lightpath 0.6.9+162.gdaec607 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -28,7 +28,7 @@
             <a href="../../index.html" class="icon icon-home"> LCLS Lightpath
           </a>
               <div class="version">
-                0.6.9+151.gea93b5e
+                0.6.9+162.gdaec607
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -99,9 +99,10 @@
 <span class="kn">import</span> <span class="nn">enum</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterable</span>
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">from</span> <span class="nn">ophyd</span> <span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceStatus</span>
 <span class="kn">from</span> <span class="nn">ophyd.ophydobj</span> <span class="kn">import</span> <span class="n">OphydObject</span>
@@ -109,9 +110,11 @@
 <span class="kn">from</span> <span class="nn">ophyd.utils</span> <span class="kn">import</span> <span class="n">DisconnectedError</span>
 <span class="kn">from</span> <span class="nn">prettytable</span> <span class="kn">import</span> <span class="n">PrettyTable</span>
 
-<span class="kn">from</span> <span class="nn">.errors</span> <span class="kn">import</span> <span class="n">CoordinateError</span>
+<span class="kn">from</span> <span class="nn">.errors</span> <span class="kn">import</span> <span class="n">CoordinateError</span><span class="p">,</span> <span class="n">PathError</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="c1"># non-string sentinel for beginning of path</span>
+<span class="n">NOT_A_DEVICE</span> <span class="o">=</span> <span class="mi">0</span>
 
 
 <div class="viewcode-block" id="LightpathState"><a class="viewcode-back" href="../../path.html#lightpath.path.LightpathState">[docs]</a><span class="nd">@dataclass</span>
@@ -126,14 +129,12 @@
 
 <span class="sd">    removed : bool</span>
 
-<span class="sd">    transmission : float</span>
-
-<span class="sd">    output_branch : str</span>
+<span class="sd">    output : Dict[str, float]</span>
+<span class="sd">        mapping from output branch to transmission</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">inserted</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">removed</span><span class="p">:</span> <span class="nb">bool</span>
-    <span class="n">transmission</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">output_branch</span><span class="p">:</span> <span class="nb">str</span></div>
+    <span class="n">output</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span></div>
 
 
 <span class="k">class</span> <span class="nc">DeviceState</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">IntEnum</span><span class="p">):</span>
@@ -274,8 +275,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">minimum_transmission</span> <span class="o">=</span> <span class="n">minimum_transmission</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">devices</span> <span class="o">=</span> <span class="n">devices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_has_subscribed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">branch_list</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Configuring path </span><span class="si">%s</span><span class="s2"> with </span><span class="si">%s</span><span class="s2"> devices&quot;</span><span class="p">,</span>
                      <span class="n">name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">devices</span><span class="p">))</span>
+
+        <span class="c1"># create mapping of device to next device in z-order</span>
+        <span class="n">sorted_devs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">devices</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">dev</span><span class="p">:</span> <span class="n">dev</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_next_device</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">({</span><span class="n">NOT_A_DEVICE</span><span class="p">:</span> <span class="n">sorted_devs</span><span class="p">[</span><span class="mi">0</span><span class="p">]})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_next_device</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">sorted_devs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">sorted_devs</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                                  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sorted_devs</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)})</span>
+
         <span class="c1"># Sort by position downstream to upstream</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># Check types and positions</span>
@@ -288,6 +297,9 @@
                                           <span class="s1">&#39;initialized&#39;</span><span class="p">,</span> <span class="n">dev</span><span class="p">)</span>
                 <span class="c1"># Add as attribute</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dev</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">),</span> <span class="n">dev</span><span class="p">)</span>
+                <span class="c1"># Update branch list</span>
+                <span class="k">for</span> <span class="n">br</span> <span class="ow">in</span> <span class="n">dev</span><span class="o">.</span><span class="n">input_branches</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">branch_list</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">br</span><span class="p">)</span>
 
         <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;One of the devices does not meet the &#39;</span>
@@ -308,14 +320,48 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">path</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Device</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot; List[Device]: List of devices ordered by coordinates &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">devices</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">dev</span><span class="p">:</span> <span class="n">dev</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_next_device</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+<div class="viewcode-block" id="BeamPath.get_device_output"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.get_device_output">[docs]</a>    <span class="k">def</span> <span class="nf">get_device_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dev</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find relevant output item by attempting to match with the</span>
+<span class="sd">        input branch of the next device in this path.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dev : Device</span>
+<span class="sd">            device in this path to get output from</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">dev</span><span class="o">.</span><span class="n">get_lightpath_state</span><span class="p">()</span><span class="o">.</span><span class="n">output</span>
+
+        <span class="c1"># get next device input branch</span>
+        <span class="n">next_dev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_next_device</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dev</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">next_dev</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># last device has no successor</span>
+            <span class="c1"># take output on branch in branch list</span>
+            <span class="n">output_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">br</span> <span class="k">for</span> <span class="n">br</span> <span class="ow">in</span> <span class="n">output</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                           <span class="k">if</span> <span class="n">br</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">branch_list</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># base case, the device has a successor.</span>
+            <span class="c1"># match output with input of next device</span>
+            <span class="n">next_in_brs</span> <span class="o">=</span> <span class="n">next_dev</span><span class="o">.</span><span class="n">input_branches</span>
+            <span class="n">output_keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">br</span> <span class="k">for</span> <span class="n">br</span> <span class="ow">in</span> <span class="n">output</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                           <span class="k">if</span> <span class="n">br</span> <span class="ow">in</span> <span class="n">next_in_brs</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">output_keys</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PathError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Device </span><span class="si">{</span><span class="n">dev</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> has reported multiple &#39;</span>
+                            <span class="sa">f</span><span class="s1">&#39;outputs along this path: </span><span class="si">{</span><span class="n">output_keys</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">output_keys</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">0</span>
+
+        <span class="k">return</span> <span class="n">output_keys</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">output</span><span class="p">[</span><span class="n">output_keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">blocking_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Device</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A list of devices that are currently inserted or are in unknown</span>
 <span class="sd">        positions. This includes devices downstream of the first</span>
-<span class="sd">        :attr:`.impediment`</span>
+<span class="sd">        :attr:`.impediment`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -324,27 +370,33 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Cache important prior devices</span>
         <span class="n">prev_device</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">prev_status</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">prev_dev_branch</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">block</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">current_transmission</span> <span class="o">=</span> <span class="mi">1</span>
-
         <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
             <span class="n">curr_state</span><span class="p">,</span> <span class="n">curr_status</span> <span class="o">=</span> <span class="n">find_device_state</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-
             <span class="c1"># short circuit if statuses are in error</span>
-            <span class="k">if</span> <span class="n">curr_state</span> <span class="ow">in</span> <span class="p">(</span><span class="n">DeviceState</span><span class="o">.</span><span class="n">Error</span><span class="p">,</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Unknown</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">curr_state</span> <span class="ow">in</span> <span class="p">(</span><span class="n">DeviceState</span><span class="o">.</span><span class="n">Error</span><span class="p">,</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Unknown</span><span class="p">,</span>
+                              <span class="n">DeviceState</span><span class="o">.</span><span class="n">Disconnected</span><span class="p">):</span>
                 <span class="n">block</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                <span class="k">continue</span>
 
+            <span class="n">dev_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_device_output</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">curr_dev_branch</span><span class="p">,</span> <span class="n">curr_dev_trans</span> <span class="o">=</span> <span class="n">dev_out</span>
+            <span class="c1"># device output not on path</span>
+            <span class="k">if</span> <span class="n">curr_dev_branch</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                <span class="n">block</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
             <span class="c1"># check to make sure input and output branches match</span>
             <span class="c1"># e.g. mirror not pointing to current device</span>
-            <span class="k">elif</span> <span class="p">(</span><span class="n">prev_device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">prev_status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
-                  <span class="n">prev_status</span><span class="o">.</span><span class="n">output_branch</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">device</span><span class="o">.</span><span class="n">input_branches</span><span class="p">):</span>
-                <span class="n">block</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prev_device</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">prev_device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">prev_dev_branch</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                  <span class="ow">and</span> <span class="n">prev_dev_branch</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">device</span><span class="o">.</span><span class="n">input_branches</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">prev_device</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">block</span><span class="p">:</span>
+                    <span class="n">block</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prev_device</span><span class="p">)</span>
             <span class="c1"># check inserted</span>
             <span class="k">elif</span> <span class="n">curr_state</span> <span class="ow">is</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Inserted</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">curr_status</span><span class="o">.</span><span class="n">transmission</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">curr_dev_trans</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> reports transmission &gt; 1&#39;</span><span class="p">)</span>
-                <span class="n">current_transmission</span> <span class="o">*=</span> <span class="nb">min</span><span class="p">(</span><span class="n">curr_status</span><span class="o">.</span><span class="n">transmission</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">current_transmission</span> <span class="o">*=</span> <span class="nb">min</span><span class="p">(</span><span class="n">curr_dev_trans</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
                 <span class="c1"># Any device seeing current transmission below min would block</span>
                 <span class="k">if</span> <span class="n">current_transmission</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_transmission</span><span class="p">:</span>
                     <span class="n">block</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
@@ -357,8 +409,7 @@
 
             <span class="c1"># stash previous device</span>
             <span class="n">prev_device</span> <span class="o">=</span> <span class="n">device</span>
-            <span class="n">prev_status</span> <span class="o">=</span> <span class="n">curr_status</span>
-
+            <span class="n">prev_dev_branch</span> <span class="o">=</span> <span class="n">curr_dev_branch</span>
         <span class="k">return</span> <span class="n">block</span>
 
     <span class="nd">@property</span>
@@ -609,9 +660,10 @@
         <span class="c1"># Add passive devices to ignored</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">passive</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Passive devices will be ignored ...&quot;</span><span class="p">)</span>
-            <span class="n">ignore</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">devices</span>
-                           <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">get_lightpath_state</span><span class="p">()</span><span class="o">.</span><span class="n">transmission</span> <span class="o">&gt;</span>
-                           <span class="bp">self</span><span class="o">.</span><span class="n">minimum_transmission</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">dev</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">devices</span><span class="p">:</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_device_output</span><span class="p">(</span><span class="n">dev</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">trans</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">minimum_transmission</span><span class="p">:</span>
+                    <span class="n">ignore</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dev</span><span class="p">)</span>
         <span class="c1"># Add ignored devices</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ignore_devices</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
             <span class="n">ignore</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ignore_devices</span><span class="p">)</span>

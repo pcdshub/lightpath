@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Device Interface &mdash; LCLS Lightpath 0.6.9+151.gea93b5e documentation</title>
+  <title>Device Interface &mdash; LCLS Lightpath 0.6.9+162.gdaec607 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +31,7 @@
             <a href="index.html" class="icon icon-home"> LCLS Lightpath
           </a>
               <div class="version">
-                0.6.9+151.gea93b5e
+                0.6.9+162.gdaec607
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -168,8 +168,8 @@ expected to return a dataclass with the following fields:</p>
 <ul class="simple">
 <li><p><strong>inserted</strong>: if the device is inserted</p></li>
 <li><p><strong>removed</strong>: if the device is removed</p></li>
-<li><p><strong>output_branch</strong>: the name of the branch this device is delivering beam to</p></li>
-<li><p><strong>transmission</strong>: the transmission of this device</p></li>
+<li><p><strong>output</strong>: a dictionary mapping an output branch name to the transmission
+being delivered to that branch</p></li>
 </ul>
 <p>Lightpath also subscribes to a signal called <code class="docutils literal notranslate"><span class="pre">lightpath_summary</span></code>, which is
 expected to change whenever the lightpath status of the device has changed.
@@ -194,8 +194,7 @@ lightpath interface requirements might look like:</p>
         <span class="k">return</span> <span class="n">LightpathState</span><span class="p">(</span>
             <span class="n">inserted</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">removed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">transmission</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">output_branch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_branches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">output</span><span class="o">=</span><span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">output_branches</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="mi">1</span><span class="p">}</span>
         <span class="p">)</span>
 </pre></div>
 </div>
@@ -235,8 +234,7 @@ following:</p>
         <span class="k">return</span> <span class="n">LightpathState</span><span class="p">(</span>
             <span class="n">inserted</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_inserted</span><span class="p">,</span>
             <span class="n">removed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_removed</span><span class="p">,</span>
-            <span class="n">transmission</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_transmission</span><span class="p">,</span>
-            <span class="n">output_branch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_branches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">output</span><span class="o">=</span><span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">output_branches</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transmission</span><span class="p">}</span>
         <span class="p">)</span>
 </pre></div>
 </div>

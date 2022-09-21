@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>lightpath.controller &mdash; LCLS Lightpath 0.6.9+151.gea93b5e documentation</title>
+  <title>lightpath.controller &mdash; LCLS Lightpath 0.6.9+162.gdaec607 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -28,7 +28,7 @@
             <a href="../../index.html" class="icon icon-home"> LCLS Lightpath
           </a>
               <div class="version">
-                0.6.9+151.gea93b5e
+                0.6.9+162.gdaec607
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -399,15 +399,20 @@
             <span class="n">curr_dev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_device</span><span class="p">(</span><span class="n">curr</span><span class="p">)</span>
 
             <span class="k">while</span> <span class="n">successors</span><span class="p">:</span>
-                <span class="n">out_branch</span> <span class="o">=</span> <span class="n">curr_dev</span><span class="o">.</span><span class="n">get_lightpath_state</span><span class="p">()</span><span class="o">.</span><span class="n">output_branch</span>
+                <span class="c1"># get output branches that receive beam</span>
+                <span class="n">out_branches</span> <span class="o">=</span> <span class="n">get_active_outputs</span><span class="p">(</span><span class="n">curr_dev</span><span class="p">)</span>
                 <span class="n">connections</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">for</span> <span class="n">succ</span> <span class="ow">in</span> <span class="n">successors</span><span class="p">:</span>
                     <span class="n">succ_dev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_device</span><span class="p">(</span><span class="n">succ</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">succ_dev</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                         <span class="c1"># reached a node without a device, (the end)</span>
                         <span class="k">continue</span>
+
                     <span class="n">in_branches</span> <span class="o">=</span> <span class="n">succ_dev</span><span class="o">.</span><span class="n">input_branches</span>
-                    <span class="k">if</span> <span class="n">out_branch</span> <span class="ow">in</span> <span class="n">in_branches</span><span class="p">:</span>
+
+                    <span class="n">active_links</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">out_branches</span>
+                                    <span class="k">if</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">in_branches</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">active_links</span><span class="p">:</span>
                         <span class="n">connections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">succ</span><span class="p">)</span>
 
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">connections</span><span class="p">:</span>
@@ -698,6 +703,27 @@
                 <span class="n">dev</span> <span class="o">=</span> <span class="n">make_mock_device</span><span class="p">(</span><span class="n">dev_data</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">device_name</span><span class="p">][</span><span class="s1">&#39;md&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dev</span> <span class="o">=</span> <span class="n">dev</span>
                 <span class="k">return</span> <span class="n">dev</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">get_active_outputs</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a list of branch names that are receiving beam.</span>
+<span class="sd">    Alternatively, returns a list of branches this device is delivering</span>
+<span class="sd">    beam to with transmission &gt; 0.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    device : Device</span>
+<span class="sd">        Device to get active output branches for</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    List[str]</span>
+<span class="sd">        List of active branches</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">outputs</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">get_lightpath_state</span><span class="p">()</span><span class="o">.</span><span class="n">output</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="n">br</span> <span class="k">for</span> <span class="n">br</span><span class="p">,</span> <span class="n">trans</span> <span class="ow">in</span> <span class="n">outputs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">trans</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
 
 
 <span class="k">def</span> <span class="nf">make_mock_device</span><span class="p">(</span><span class="n">result</span><span class="p">:</span> <span class="n">SearchResult</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Device</span><span class="p">:</span>
