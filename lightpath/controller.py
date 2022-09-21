@@ -318,15 +318,20 @@ class LightController:
             curr_dev = self.get_device(curr)
 
             while successors:
-                out_branch = curr_dev.get_lightpath_state().output_branch
+                # get output branches that receive beam
+                out_branches = get_active_outputs(curr_dev)
                 connections = []
                 for succ in successors:
                     succ_dev = self.get_device(succ)
                     if succ_dev is None:
                         # reached a node without a device, (the end)
                         continue
+
                     in_branches = succ_dev.input_branches
-                    if out_branch in in_branches:
+
+                    active_links = [b for b in out_branches
+                                    if b in in_branches]
+                    if active_links:
                         connections.append(succ)
 
                 if not connections:
@@ -617,6 +622,27 @@ class LightController:
                 dev = make_mock_device(dev_data.res)
                 self.graph.nodes[device_name]['md'].dev = dev
                 return dev
+
+
+def get_active_outputs(device: Device) -> List[str]:
+    """
+    Returns a list of branch names that are receiving beam.
+    Alternatively, returns a list of branches this device is delivering
+    beam to with transmission > 0.
+
+    Parameters
+    ----------
+    device : Device
+        Device to get active output branches for
+
+    Returns
+    -------
+    List[str]
+        List of active branches
+    """
+    outputs = device.get_lightpath_state().output
+
+    return [br for br, trans in outputs.items() if trans > 0]
 
 
 def make_mock_device(result: SearchResult) -> Device:

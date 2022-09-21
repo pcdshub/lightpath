@@ -1337,7 +1337,7 @@
         "active": true,
         "args": ["{{prefix}}"],
         "creation": "Wed Jun 22 09:53:22 2022",
-        "device_class": "lightpath.tests.conftest.Crystal",
+        "device_class": "lightpath.tests.conftest.LODCM",
         "documentation": null,
         "input_branches": [
             "L0"
@@ -1364,7 +1364,7 @@
         "active": true,
         "args": ["{{prefix}}"],
         "creation": "Wed Jun 22 09:53:22 2022",
-        "device_class": "lightpath.tests.conftest.Crystal",
+        "device_class": "lightpath.tests.conftest.LODCM",
         "documentation": null,
         "input_branches": [
             "L0"

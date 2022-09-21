@@ -18,9 +18,10 @@ from __future__ import annotations
 import enum
 import logging
 import math
+from collections import OrderedDict
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Callable, List, Optional, TextIO, Tuple, Union
+from typing import Callable, Dict, List, Optional, TextIO, Tuple, Union
 
 from ophyd import Device, DeviceStatus
 from ophyd.ophydobj import OphydObject
@@ -28,9 +29,11 @@ from ophyd.status import wait as status_wait
 from ophyd.utils import DisconnectedError
 from prettytable import PrettyTable
 
-from .errors import CoordinateError
+from .errors import CoordinateError, PathError
 
 logger = logging.getLogger(__name__)
+# non-string sentinel for beginning of path
+NOT_A_DEVICE = 0
 
 
 @dataclass
@@ -45,14 +48,12 @@ class LightpathState:
 
     removed : bool
 
-    transmission : float
-
-    output_branch : str
+    output : Dict[str, float]
+        mapping from output branch to transmission
     """
     inserted: bool
     removed: bool
-    transmission: float
-    output_branch: str
+    output: Dict[str, float]
 
 
 class DeviceState(enum.IntEnum):
@@ -193,8 +194,16 @@ class BeamPath(OphydObject):
         self.minimum_transmission = minimum_transmission
         self.devices = devices
         self._has_subscribed = False
+        self.branch_list = set()
         logger.debug("Configuring path %s with %s devices",
                      name, len(self.devices))
+
+        # create mapping of device to next device in z-order
+        sorted_devs = sorted(self.devices, key=lambda dev: dev.md.z)
+        self._next_device = OrderedDict({NOT_A_DEVICE: sorted_devs[0]})
+        self._next_device.update({sorted_devs[i].name: sorted_devs[i+1]
+                                  for i in range(len(sorted_devs) - 1)})
+
         # Sort by position downstream to upstream
         try:
             # Check types and positions
@@ -207,6 +216,9 @@ class BeamPath(OphydObject):
                                           'initialized', dev)
                 # Add as attribute
                 setattr(self, dev.name.replace(' ', '_'), dev)
+                # Update branch list
+                for br in dev.input_branches:
+                    self.branch_list.add(br)
 
         except AttributeError as e:
             raise TypeError('One of the devices does not meet the '
@@ -227,14 +239,48 @@ class BeamPath(OphydObject):
     @property
     def path(self) -> List[Device]:
         """ List[Device]: List of devices ordered by coordinates """
-        return sorted(self.devices, key=lambda dev: dev.md.z)
+        return list(self._next_device.values())
+
+    def get_device_output(self, dev: Device) -> Tuple[str, float]:
+        """
+        Find relevant output item by attempting to match with the
+        input branch of the next device in this path.
+
+        Parameters
+        ----------
+        dev : Device
+            device in this path to get output from
+        """
+        output = dev.get_lightpath_state().output
+
+        # get next device input branch
+        next_dev = self._next_device.get(dev.name, None)
+        if next_dev is None:
+            # last device has no successor
+            # take output on branch in branch list
+            output_keys = [br for br in output.keys()
+                           if br in self.branch_list]
+        else:
+            # base case, the device has a successor.
+            # match output with input of next device
+            next_in_brs = next_dev.input_branches
+            output_keys = [br for br in output.keys()
+                           if br in next_in_brs]
+
+        if len(output_keys) > 1:
+            raise PathError(f'Device {dev.name} has reported multiple '
+                            f'outputs along this path: {output_keys}')
+        elif len(output_keys) == 0:
+            return '', 0
+
+        return output_keys[0], output[output_keys[0]]
 
     @property
     def blocking_devices(self) -> List[Device]:
         """
         A list of devices that are currently inserted or are in unknown
         positions. This includes devices downstream of the first
-        :attr:`.impediment`
+        :attr:`.impediment`.
 
         Returns
         -------
@@ -243,27 +289,33 @@ class BeamPath(OphydObject):
         """
         # Cache important prior devices
         prev_device = None
-        prev_status = None
+        prev_dev_branch = None
         block = list()
         current_transmission = 1
-
         for device in self.path:
             curr_state, curr_status = find_device_state(device)
-
             # short circuit if statuses are in error
-            if curr_state in (DeviceState.Error, DeviceState.Unknown):
+            if curr_state in (DeviceState.Error, DeviceState.Unknown,
+                              DeviceState.Disconnected):
                 block.append(device)
+                continue
 
+            dev_out = self.get_device_output(device)
+            curr_dev_branch, curr_dev_trans = dev_out
+            # device output not on path
+            if curr_dev_branch == '':
+                block.append(device)
             # check to make sure input and output branches match
             # e.g. mirror not pointing to current device
-            elif (prev_device is not None and prev_status is not None and
-                  prev_status.output_branch not in device.input_branches):
-                block.append(prev_device)
+            elif (prev_device is not None and prev_dev_branch is not None
+                  and prev_dev_branch not in device.input_branches):
+                if prev_device not in block:
+                    block.append(prev_device)
             # check inserted
             elif curr_state is DeviceState.Inserted:
-                if curr_status.transmission > 1:
+                if curr_dev_trans > 1:
                     logger.error(f'{device.name} reports transmission > 1')
-                current_transmission *= min(curr_status.transmission, 1)
+                current_transmission *= min(curr_dev_trans, 1)
                 # Any device seeing current transmission below min would block
                 if current_transmission < self.minimum_transmission:
                     block.append(device)
@@ -276,8 +328,7 @@ class BeamPath(OphydObject):
 
             # stash previous device
             prev_device = device
-            prev_status = curr_status
-
+            prev_dev_branch = curr_dev_branch
         return block
 
     @property
@@ -528,9 +579,10 @@ class BeamPath(OphydObject):
         # Add passive devices to ignored
         if not passive:
             logger.debug("Passive devices will be ignored ...")
-            ignore.extend([d for d in self.devices
-                           if d.get_lightpath_state().transmission >
-                           self.minimum_transmission])
+            for dev in self.devices:
+                _, trans = self.get_device_output(dev)
+                if trans > self.minimum_transmission:
+                    ignore.append(dev)
         # Add ignored devices
         if isinstance(ignore_devices, Iterable):
             ignore.extend(ignore_devices)
