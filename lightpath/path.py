@@ -268,7 +268,7 @@ class BeamPath(OphydObject):
                            if br in next_in_brs]
 
         if len(output_keys) > 1:
-            raise PathError('device has reports multiple outputs along '
+            raise PathError('Device {dev.name} has reported multiple outputs along '
                             f'this path: {output_keys}')
         elif len(output_keys) == 0:
             return '', 0
