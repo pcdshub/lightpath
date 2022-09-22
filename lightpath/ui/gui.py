@@ -82,6 +82,8 @@ class LightApp(Display):
         self.upstream_device_combo.activated[str].connect(self.update_upstream)
         self.remove_check.toggled.connect(self.filter)
         self.detail_hide.clicked.connect(self.hide_detailed)
+        self.refresh_button.clicked.connect(self.change_path_display)
+
         # Store LightRow objects to manage subscriptions
         self.rows = list()
         # store device type filter widgets
