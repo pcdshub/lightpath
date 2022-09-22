@@ -11,7 +11,8 @@ import typhos
 from pydm import Display
 from qtpy.QtCore import Qt
 from qtpy.QtCore import Slot as pyqtSlot
-from qtpy.QtWidgets import QCheckBox, QGridLayout, QHBoxLayout
+from qtpy.QtWidgets import (QApplication, QCheckBox, QDialog, QGridLayout,
+                            QHBoxLayout, QLabel, QVBoxLayout)
 from typhos import TyphosDeviceDisplay
 
 from lightpath.path import DeviceState
@@ -46,6 +47,7 @@ class LightApp(Display):
                  parent=None, dark=True):
         super().__init__(parent=parent)
         # Store Lightpath information
+        self.loading_splash = LoadingSplash()
         self.light = controller
         self.path = None
         self.detail_screen = None
@@ -196,6 +198,11 @@ class LightApp(Display):
         """
         Change the display devices based on the state of the control buttons
         """
+        self.loading_splash.move(self.geometry().center()
+                                 - self.loading_splash.rect().center())
+        self.loading_splash.show()
+        self.loading_splash.update_status(f'{self.selected_beamline()} path')
+
         with self._lock:
             logger.debug("Resorting beampath display ...")
             # Remove old detailed screen
@@ -248,6 +255,7 @@ class LightApp(Display):
         # Update device type checkboxes
         self.update_device_types()
         self.setWindowTitle(f'Lightpath - {self.selected_beamline()}')
+        self.loading_splash.hide()
 
     def ui_filename(self):
         """
@@ -411,3 +419,33 @@ class LightApp(Display):
     def closeEvent(self, a0) -> None:
         self._destroy_lightpath_summary_signals()
         return super().closeEvent(a0)
+
+
+class LoadingSplash(QDialog):
+    """ simple loading splash screen """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+
+        self.setStyleSheet("QDialog { border: 2px solid; "
+                           "border-color:#00ffff }")
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        self.status_display = QLabel()
+        tout = typhos.utils.TyphosLoading.LOADING_TIMEOUT_MS
+        # No Timeout!
+        typhos.utils.TyphosLoading.LOADING_TIMEOUT_MS = -1
+        loading = typhos.utils.TyphosLoading(self)
+        typhos.utils.TyphosLoading.LOADING_TIMEOUT_MS = tout
+
+        status_layout = QHBoxLayout()
+        status_layout.addWidget(self.status_display)
+        status_layout.addWidget(loading)
+
+        layout.addLayout(status_layout)
+
+    def update_status(self, msg):
+        self.status_display.setText(f"Loading: {msg}")
+        # self.move()
+        QApplication.instance().processEvents()
