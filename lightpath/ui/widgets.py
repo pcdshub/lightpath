@@ -96,7 +96,8 @@ class InactiveRow(Display):
         self.device_drawing.setFixedHeight(15)
         self.device_drawing.setMaximumWidth(15)
         self.horizontalWidget.layout().setSpacing(1)
-        self.horizontalWidget.setFixedHeight(15)
+        # give pixmap enough room to not clip
+        self.horizontalWidget.setFixedHeight(20)
 
 
 class LightRow(InactiveRow):
@@ -233,6 +234,7 @@ class DeviceWidget(QLabel):
         # Default UI settings for conformity
         self.setMinimumSize(10, 10)
         self.setMaximumSize(50, 50)
+        self.setStyleSheet('padding : 0px')
 
     def setColor(self, color):
         """
