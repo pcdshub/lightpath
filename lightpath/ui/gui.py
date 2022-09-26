@@ -48,7 +48,7 @@ class LightApp(Display):
                  parent=None, dark=True):
         super().__init__(parent=parent)
         # Store Lightpath information
-        self.loading_splash = LoadingSplash()
+        self.loading_splash = LoadingSplash(parent=self)
         self.light = controller
         self.path = None
         self.detail_screen = None
