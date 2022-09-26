@@ -449,5 +449,4 @@ class LoadingSplash(QDialog):
 
     def update_status(self, msg):
         self.status_display.setText(f"Loading: {msg}")
-        # self.move()
         QApplication.instance().processEvents()
