@@ -1,6 +1,7 @@
 """
 Full Application for Lightpath
 """
+import contextlib
 import logging
 import os.path
 import threading
@@ -106,9 +107,10 @@ class LightApp(Display):
 
     def destinations(self):
         """
-        All possible beamline destinations
+        All possible beamline destinations that have an associated path
         """
-        return list(self.light.beamlines.keys())
+        return [line for line in self.light.beamlines.keys()
+                if self.light.beamlines[line]]
 
     def load_device_row(self, device):
         """
@@ -200,12 +202,7 @@ class LightApp(Display):
         """
         Change the display devices based on the state of the control buttons
         """
-        self.loading_splash.move(self.geometry().center()
-                                 - self.loading_splash.rect().center())
-        self.loading_splash.show()
-        self.loading_splash.update_status(f'{self.selected_beamline()} path')
-
-        with self._lock:
+        with self._lock, self.open_splash(f'{self.selected_beamline()} path'):
             logger.debug("Resorting beampath display ...")
             # Remove old detailed screen
             self.hide_detailed()
@@ -257,7 +254,27 @@ class LightApp(Display):
         # Update device type checkboxes
         self.update_device_types()
         self.setWindowTitle(f'Lightpath - {self.selected_beamline()}')
-        self.loading_splash.hide()
+
+    @contextlib.contextmanager
+    def open_splash(self, msg: str):
+        """
+        Context manager for opening the loading splash screen, and
+        closing it always
+
+        Parameters
+        ----------
+        msg : str
+            message to show in the loading screen
+        """
+        try:
+            self.loading_splash.move(self.geometry().center()
+                                     - self.loading_splash.rect().center())
+            self.loading_splash.show()
+            self.loading_splash.update_status(msg)
+            yield
+
+        finally:
+            self.loading_splash.hide()
 
     def ui_filename(self):
         """
