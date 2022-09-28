@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BeamPath &mdash; LCLS Lightpath 0.6.9+162.gdaec607 documentation</title>
+  <title>BeamPath &mdash; LCLS Lightpath 0.6.9+171.g36bac04 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -16,6 +16,7 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -31,7 +32,7 @@
             <a href="index.html" class="icon icon-home"> LCLS Lightpath
           </a>
               <div class="version">
-                0.6.9+162.gdaec607
+                0.6.9+171.g36bac04
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -50,7 +51,34 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="controller.html">LightController</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">BeamPath</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">BeamPath</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#lightpath.path.LightpathState"><code class="docutils literal notranslate"><span class="pre">LightpathState</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.LightpathState.inserted"><code class="docutils literal notranslate"><span class="pre">LightpathState.inserted</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.LightpathState.removed"><code class="docutils literal notranslate"><span class="pre">LightpathState.removed</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.LightpathState.output"><code class="docutils literal notranslate"><span class="pre">LightpathState.output</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#lightpath.path.BeamPath"><code class="docutils literal notranslate"><span class="pre">BeamPath</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.BeamPath.minimum_transmission"><code class="docutils literal notranslate"><span class="pre">BeamPath.minimum_transmission</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.BeamPath.blocking_devices"><code class="docutils literal notranslate"><span class="pre">BeamPath.blocking_devices</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.BeamPath.branching_devices"><code class="docutils literal notranslate"><span class="pre">BeamPath.branching_devices</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.BeamPath.clear"><code class="docutils literal notranslate"><span class="pre">BeamPath.clear()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.BeamPath.clear_device_subs"><code class="docutils literal notranslate"><span class="pre">BeamPath.clear_device_subs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.BeamPath.cleared"><code class="docutils literal notranslate"><span class="pre">BeamPath.cleared</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.BeamPath.from_join"><code class="docutils literal notranslate"><span class="pre">BeamPath.from_join()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.BeamPath.get_device_output"><code class="docutils literal notranslate"><span class="pre">BeamPath.get_device_output()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.BeamPath.impediment"><code class="docutils literal notranslate"><span class="pre">BeamPath.impediment</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.BeamPath.incident_devices"><code class="docutils literal notranslate"><span class="pre">BeamPath.incident_devices</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.BeamPath.join"><code class="docutils literal notranslate"><span class="pre">BeamPath.join()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.BeamPath.path"><code class="docutils literal notranslate"><span class="pre">BeamPath.path</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.BeamPath.range"><code class="docutils literal notranslate"><span class="pre">BeamPath.range</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.BeamPath.show_devices"><code class="docutils literal notranslate"><span class="pre">BeamPath.show_devices()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.BeamPath.split"><code class="docutils literal notranslate"><span class="pre">BeamPath.split()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.path.BeamPath.subscribe"><code class="docutils literal notranslate"><span class="pre">BeamPath.subscribe()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Developer Notes</span></p>
 <ul>

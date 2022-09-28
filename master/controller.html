@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LightController &mdash; LCLS Lightpath 0.6.9+162.gdaec607 documentation</title>
+  <title>LightController &mdash; LCLS Lightpath 0.6.9+171.g36bac04 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -16,6 +16,7 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -31,7 +32,7 @@
             <a href="index.html" class="icon icon-home"> LCLS Lightpath
           </a>
               <div class="version">
-                0.6.9+162.gdaec607
+                0.6.9+171.g36bac04
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -49,7 +50,26 @@
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">LightController</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">LightController</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#lightpath.LightController"><code class="docutils literal notranslate"><span class="pre">LightController</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.LightController.active_path"><code class="docutils literal notranslate"><span class="pre">LightController.active_path()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.LightController.destinations"><code class="docutils literal notranslate"><span class="pre">LightController.destinations</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.LightController.devices"><code class="docutils literal notranslate"><span class="pre">LightController.devices</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.LightController.get_device"><code class="docutils literal notranslate"><span class="pre">LightController.get_device()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.LightController.get_paths"><code class="docutils literal notranslate"><span class="pre">LightController.get_paths()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.LightController.imped_z"><code class="docutils literal notranslate"><span class="pre">LightController.imped_z()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.LightController.incident_devices"><code class="docutils literal notranslate"><span class="pre">LightController.incident_devices</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.LightController.is_source_name"><code class="docutils literal notranslate"><span class="pre">LightController.is_source_name()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.LightController.load_beamline"><code class="docutils literal notranslate"><span class="pre">LightController.load_beamline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.LightController.load_facility"><code class="docutils literal notranslate"><span class="pre">LightController.load_facility()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.LightController.make_graph"><code class="docutils literal notranslate"><span class="pre">LightController.make_graph()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.LightController.path_to"><code class="docutils literal notranslate"><span class="pre">LightController.path_to()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.LightController.paths_to"><code class="docutils literal notranslate"><span class="pre">LightController.paths_to()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lightpath.LightController.walk_facility"><code class="docutils literal notranslate"><span class="pre">LightController.walk_facility()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="path.html">BeamPath</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Developer Notes</span></p>
