@@ -11,7 +11,7 @@ Features
 
 Bugfixes
 --------
-- N/A
+- prevent beamlines with no beampath from destination combo box
 
 Maintenance
 -----------
