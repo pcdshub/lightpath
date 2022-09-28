@@ -8,10 +8,12 @@ import threading
 from functools import partial
 
 import numpy as np
+import qtawesome as qta
 import typhos
 from pydm import Display
 from qtpy.QtCore import Qt
 from qtpy.QtCore import Slot as pyqtSlot
+from qtpy.QtGui import QColor
 from qtpy.QtWidgets import (QApplication, QCheckBox, QDialog, QGridLayout,
                             QHBoxLayout, QLabel, QVBoxLayout)
 from typhos import TyphosDeviceDisplay
@@ -452,11 +454,9 @@ class LoadingSplash(QDialog):
         self.setLayout(layout)
 
         self.status_display = QLabel()
-        tout = typhos.utils.TyphosLoading.LOADING_TIMEOUT_MS
-        # No Timeout!
-        typhos.utils.TyphosLoading.LOADING_TIMEOUT_MS = -1
-        loading = typhos.utils.TyphosLoading(self)
-        typhos.utils.TyphosLoading.LOADING_TIMEOUT_MS = tout
+        loading = QLabel()
+        loading_icon = qta.icon('ri.loader-2-fill', color=QColor(0, 176, 255))
+        loading.setPixmap(loading_icon.pixmap(self.height(), self.height()))
 
         status_layout = QHBoxLayout()
         status_layout.addWidget(self.status_display)
