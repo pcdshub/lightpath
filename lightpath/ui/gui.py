@@ -1,17 +1,21 @@
 """
 Full Application for Lightpath
 """
+import contextlib
 import logging
 import os.path
 import threading
 from functools import partial
 
 import numpy as np
+import qtawesome as qta
 import typhos
 from pydm import Display
 from qtpy.QtCore import Qt
 from qtpy.QtCore import Slot as pyqtSlot
-from qtpy.QtWidgets import QCheckBox, QGridLayout, QHBoxLayout
+from qtpy.QtGui import QColor
+from qtpy.QtWidgets import (QApplication, QCheckBox, QDialog, QGridLayout,
+                            QHBoxLayout, QLabel, QVBoxLayout)
 from typhos import TyphosDeviceDisplay
 
 from lightpath.path import DeviceState
@@ -46,6 +50,7 @@ class LightApp(Display):
                  parent=None, dark=True):
         super().__init__(parent=parent)
         # Store Lightpath information
+        self.loading_splash = LoadingSplash(parent=self)
         self.light = controller
         self.path = None
         self.detail_screen = None
@@ -80,6 +85,8 @@ class LightApp(Display):
         self.upstream_device_combo.activated[str].connect(self.update_upstream)
         self.remove_check.toggled.connect(self.filter)
         self.detail_hide.clicked.connect(self.hide_detailed)
+        self.refresh_button.clicked.connect(self.change_path_display)
+
         # Store LightRow objects to manage subscriptions
         self.rows = list()
         # store device type filter widgets
@@ -102,9 +109,10 @@ class LightApp(Display):
 
     def destinations(self):
         """
-        All possible beamline destinations
+        All possible beamline destinations that have an associated path
         """
-        return list(self.light.beamlines.keys())
+        return [line for line in self.light.beamlines.keys()
+                if self.light.beamlines[line]]
 
     def load_device_row(self, device):
         """
@@ -196,7 +204,7 @@ class LightApp(Display):
         """
         Change the display devices based on the state of the control buttons
         """
-        with self._lock:
+        with self._lock, self.open_splash(f'{self.selected_beamline()} path'):
             logger.debug("Resorting beampath display ...")
             # Remove old detailed screen
             self.hide_detailed()
@@ -248,6 +256,27 @@ class LightApp(Display):
         # Update device type checkboxes
         self.update_device_types()
         self.setWindowTitle(f'Lightpath - {self.selected_beamline()}')
+
+    @contextlib.contextmanager
+    def open_splash(self, msg: str):
+        """
+        Context manager for opening the loading splash screen, and
+        closing it always
+
+        Parameters
+        ----------
+        msg : str
+            message to show in the loading screen
+        """
+        try:
+            self.loading_splash.move(self.geometry().center()
+                                     - self.loading_splash.rect().center())
+            self.loading_splash.show()
+            self.loading_splash.update_status(msg)
+            yield
+
+        finally:
+            self.loading_splash.hide()
 
     def ui_filename(self):
         """
@@ -411,3 +440,30 @@ class LightApp(Display):
     def closeEvent(self, a0) -> None:
         self._destroy_lightpath_summary_signals()
         return super().closeEvent(a0)
+
+
+class LoadingSplash(QDialog):
+    """ simple loading splash screen """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+
+        self.setStyleSheet("QDialog { border: 2px solid; "
+                           "border-color:#00ffff }")
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        self.status_display = QLabel()
+        loading = QLabel()
+        loading_icon = qta.icon('ri.loader-2-fill', color=QColor(0, 176, 255))
+        loading.setPixmap(loading_icon.pixmap(self.height(), self.height()))
+
+        status_layout = QHBoxLayout()
+        status_layout.addWidget(self.status_display)
+        status_layout.addWidget(loading)
+
+        layout.addLayout(status_layout)
+
+    def update_status(self, msg):
+        self.status_display.setText(f"Loading: {msg}")
+        QApplication.instance().processEvents()
