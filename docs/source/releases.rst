@@ -6,9 +6,6 @@ v1.0.0 (2022-09-28)
 
 API Changes
 -----------
-- LightpathState combines transmission and output_branch into a single
-  field called output, a mapping from output_branch to transmission on
-  that branch
 - Switches assumed device interface to expect a single get_lightpath_state
   function, which returns a LightpathState dataclass
 - Removes SUB_STATE in favor of subscribing to a single ``lightpath_summary``
@@ -56,8 +53,6 @@ Bugfixes
 Maintenance
 -----------
 - GUI now subscribes to lightpath_summary signals instead of the device
-- Remove unneeded calls to ``lightpath_summary.get``, previously used
-  to initialize ``lightpath_summary``
 - Properly unsubscribes from signals on GUI shutdown
 - Fixes some clipping issues with the device icons
 - Reworks documentation to reflect recent changes to lightpath
