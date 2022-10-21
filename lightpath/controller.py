@@ -144,7 +144,7 @@ class LightController:
             Name of endstation to load
         """
         try:
-            end_branches = beamlines[endstation]
+            end_branches = self.cfg['beamlines'][endstation]
         except KeyError:
             logger.warning("Unable to find %s as a configured endstation, "
                            "assuming this is an invalid path", endstation)
@@ -183,6 +183,7 @@ class LightController:
         List[BeamPath]
             a list of BeamPath's to the requested endstation
         """
+        # if path exists, return it
         paths = self.beamlines[endstation]
 
         if all([isinstance(path, BeamPath) for path in paths]):
