@@ -105,11 +105,18 @@ class LightController:
         """
         results = self.client.search_range(key='z', start=0.0, end=math.inf,
                                            active=True, lightpath=True)
+        if len(results) < 1:
+            raise ValueError('No lightpath-active devices found')
         # gather devices by branch
         branch_dict = {}
         for res in results:
             for branch_set in (res.metadata.get('input_branches', []),
                                res.metadata.get('output_branches', [])):
+                if branch_set is None:
+                    raise ValueError(
+                        f'device {res.item.name} has no branch information, '
+                        'check to make sure your happi database is '
+                        'correctly implementing its container.')
                 for branch in branch_set:
                     branch_dict.setdefault(branch, set()).add(res)
 
