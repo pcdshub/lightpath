@@ -4,6 +4,7 @@ import happi
 import pytest
 
 from lightpath import LightController
+from lightpath.errors import PathError
 
 
 def test_controller_paths(lcls_client: happi.Client):
@@ -170,5 +171,6 @@ def test_cfg_loading(lcls_client: happi.Client, cfg: Dict[str, Any]):
         'beamlines': {'NOT': ['NO_BR']},
         'hutches': ['NOT']
     }
-    with pytest.raises(ValueError):
-        _ = LightController(lcls_client, cfg=bad_cfg)
+    with pytest.raises(PathError):
+        bad_lc = LightController(lcls_client, cfg=bad_cfg)
+        bad_lc.active_path('NOT')

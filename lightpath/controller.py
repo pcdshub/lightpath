@@ -265,6 +265,9 @@ class LightController:
             the active path
         """
         paths = self.get_paths(dest)
+        if len(paths) == 0:
+            raise PathError('No paths in facility to the '
+                            f'desired endstation: {dest}')
         if len(paths) == 1:
             return paths[0]
 
