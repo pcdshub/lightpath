@@ -69,14 +69,18 @@ class LightController:
         cfg: Dict[str, Any] = {}
     ):
         self.client: Client = client
-        self.cfg = {
+        config = {
             'beamlines': beamlines,
             'hutches': endstations,
             'sources': default_sources,
             'min_trans': 0.1
         }
         # update default config with provided cfg
-        self.cfg.update(cfg)
+        config.update(cfg)
+        self.beamline_config = config['beamlines']
+        self.hutches = config['hutches']
+        self.default_sources = config['sources']
+        self.min_trans = config['min_trans']
 
         # a mapping of endstation name to either a path or initialized BeamPath
         self.beamlines: Dict[str, MaybeBeamPath] = dict()
@@ -86,8 +90,7 @@ class LightController:
         # initialize graph -> self.graph
         self.load_facility()
 
-        dests = (self.cfg.get('hutches')
-                 or self.cfg.get('beamlines', {}).keys())
+        dests = (self.hutches or (self.beamline_config or {}).keys())
         # Find the requisite beamlines to reach our endstation
         for beamline in dests:
             self.load_beamline(beamline)
@@ -125,7 +128,7 @@ class LightController:
         for branch_name, branch_devs in branch_dict.items():
             subgraph = self.make_graph(
                 branch_devs,
-                sources=self.cfg.get('sources'),
+                sources=self.default_sources,
                 branch_name=branch_name
             )
             self.sources.update((n for n in subgraph
@@ -151,7 +154,7 @@ class LightController:
             Name of endstation to load
         """
         try:
-            end_branches = self.cfg['beamlines'][endstation]
+            end_branches = self.beamline_config[endstation]
         except KeyError:
             logger.warning("Unable to find %s as a configured endstation, "
                            "assuming this is an invalid path", endstation)
@@ -197,7 +200,7 @@ class LightController:
             return paths
 
         # create the BeamPaths if they have not been already
-        end_branches = self.cfg['beamlines'][endstation]
+        end_branches = self.beamline_config[endstation]
         filled_paths = []
         for path in paths:
             subgraph = self.graph.subgraph(path)
@@ -207,7 +210,7 @@ class LightController:
             bp = BeamPath(
                 *devices,
                 name=endstation,
-                minimum_transmission=self.cfg.get('min_trans')
+                minimum_transmission=self.min_trans
             )
 
             if isinstance(end_branches, dict):
@@ -458,7 +461,7 @@ class LightController:
                 BeamPath(
                     *devs,
                     name=f'{device.md.name}_path',
-                    minimum_transmission=self.cfg.get('min_trans')
+                    minimum_transmission=self.min_trans
                 )
             )
 
