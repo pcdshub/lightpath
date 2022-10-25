@@ -1,6 +1,19 @@
 Release History
 ###############
 
+v1.0.1 (2022-10-25)
+===================
+
+Bugfixes
+--------
+- ``LightController.load_beamlines`` now properly references the provided
+  configuration if provided, rather than the default ``beamlines`` config
+
+Contributors
+------------
+- tangkong
+
+
 v1.0.0 (2022-09-28)
 ===================
 
