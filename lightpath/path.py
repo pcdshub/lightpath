@@ -193,6 +193,9 @@ class BeamPath(OphydObject):
         super().__init__(name=name)
         self.minimum_transmission = minimum_transmission
         self.devices = devices
+        if len(self.devices) < 1:
+            raise ValueError('BeamPath must have at least one device')
+
         self._has_subscribed = False
         self.branch_list = set()
         logger.debug("Configuring path %s with %s devices",

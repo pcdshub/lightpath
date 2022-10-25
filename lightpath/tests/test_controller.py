@@ -1,8 +1,10 @@
 from typing import Any, Dict
 
 import happi
+import pytest
 
 from lightpath import LightController
+from lightpath.errors import PathError
 
 
 def test_controller_paths(lcls_client: happi.Client):
@@ -163,3 +165,12 @@ def test_cfg_loading(lcls_client: happi.Client, cfg: Dict[str, Any]):
     assert lc.active_path('XCS').minimum_transmission == cfg['min_trans']
     assert lc.active_path('TMO').minimum_transmission == cfg['min_trans']
     assert lc.active_path('XPP').minimum_transmission == cfg['min_trans']
+
+    # test cfg settings that don't have matching devices
+    bad_cfg = {
+        'beamlines': {'NOT': ['NO_BR']},
+        'hutches': ['NOT']
+    }
+    with pytest.raises(PathError):
+        bad_lc = LightController(lcls_client, cfg=bad_cfg)
+        bad_lc.active_path('NOT')
