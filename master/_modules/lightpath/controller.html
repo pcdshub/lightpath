@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>lightpath.controller &mdash; LCLS Lightpath 0.6.9+173.g09be87d documentation</title>
+  <title>lightpath.controller &mdash; LCLS Lightpath 1.0.0+7.g79b27eb documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -29,7 +29,7 @@
             <a href="../../index.html" class="icon icon-home"> LCLS Lightpath
           </a>
               <div class="version">
-                0.6.9+173.g09be87d
+                1.0.0+7.g79b27eb
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -151,14 +151,18 @@
         <span class="n">cfg</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">:</span> <span class="n">Client</span> <span class="o">=</span> <span class="n">client</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;beamlines&#39;</span><span class="p">:</span> <span class="n">beamlines</span><span class="p">,</span>
             <span class="s1">&#39;hutches&#39;</span><span class="p">:</span> <span class="n">endstations</span><span class="p">,</span>
             <span class="s1">&#39;sources&#39;</span><span class="p">:</span> <span class="n">default_sources</span><span class="p">,</span>
             <span class="s1">&#39;min_trans&#39;</span><span class="p">:</span> <span class="mf">0.1</span>
         <span class="p">}</span>
         <span class="c1"># update default config with provided cfg</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beamline_config</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;beamlines&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hutches</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;hutches&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_sources</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;sources&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_trans</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;min_trans&#39;</span><span class="p">]</span>
 
         <span class="c1"># a mapping of endstation name to either a path or initialized BeamPath</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">beamlines</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">MaybeBeamPath</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -168,8 +172,7 @@
         <span class="c1"># initialize graph -&gt; self.graph</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">load_facility</span><span class="p">()</span>
 
-        <span class="n">dests</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;hutches&#39;</span><span class="p">)</span>
-                 <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;beamlines&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">dests</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hutches</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">beamline_config</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="c1"># Find the requisite beamlines to reach our endstation</span>
         <span class="k">for</span> <span class="n">beamline</span> <span class="ow">in</span> <span class="n">dests</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">load_beamline</span><span class="p">(</span><span class="n">beamline</span><span class="p">)</span>
@@ -187,11 +190,18 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">search_range</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">math</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
                                            <span class="n">active</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">lightpath</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No lightpath-active devices found&#39;</span><span class="p">)</span>
         <span class="c1"># gather devices by branch</span>
         <span class="n">branch_dict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">branch_set</span> <span class="ow">in</span> <span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;input_branches&#39;</span><span class="p">,</span> <span class="p">[]),</span>
                                <span class="n">res</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;output_branches&#39;</span><span class="p">,</span> <span class="p">[])):</span>
+                <span class="k">if</span> <span class="n">branch_set</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;device </span><span class="si">{</span><span class="n">res</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> has no branch information, &#39;</span>
+                        <span class="s1">&#39;check to make sure your happi database is &#39;</span>
+                        <span class="s1">&#39;correctly implementing its container.&#39;</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">branch</span> <span class="ow">in</span> <span class="n">branch_set</span><span class="p">:</span>
                     <span class="n">branch_dict</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">branch</span><span class="p">,</span> <span class="nb">set</span><span class="p">())</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
 
@@ -200,7 +210,7 @@
         <span class="k">for</span> <span class="n">branch_name</span><span class="p">,</span> <span class="n">branch_devs</span> <span class="ow">in</span> <span class="n">branch_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">subgraph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_graph</span><span class="p">(</span>
                 <span class="n">branch_devs</span><span class="p">,</span>
-                <span class="n">sources</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sources&#39;</span><span class="p">),</span>
+                <span class="n">sources</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">default_sources</span><span class="p">,</span>
                 <span class="n">branch_name</span><span class="o">=</span><span class="n">branch_name</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="o">.</span><span class="n">update</span><span class="p">((</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">subgraph</span>
@@ -226,7 +236,7 @@
 <span class="sd">            Name of endstation to load</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">end_branches</span> <span class="o">=</span> <span class="n">beamlines</span><span class="p">[</span><span class="n">endstation</span><span class="p">]</span>
+            <span class="n">end_branches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">beamline_config</span><span class="p">[</span><span class="n">endstation</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unable to find </span><span class="si">%s</span><span class="s2"> as a configured endstation, &quot;</span>
                            <span class="s2">&quot;assuming this is an invalid path&quot;</span><span class="p">,</span> <span class="n">endstation</span><span class="p">)</span>
@@ -265,13 +275,14 @@
 <span class="sd">        List[BeamPath]</span>
 <span class="sd">            a list of BeamPath&#39;s to the requested endstation</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># if path exists, return it</span>
         <span class="n">paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">beamlines</span><span class="p">[</span><span class="n">endstation</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">BeamPath</span><span class="p">)</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">]):</span>
             <span class="k">return</span> <span class="n">paths</span>
 
         <span class="c1"># create the BeamPaths if they have not been already</span>
-        <span class="n">end_branches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;beamlines&#39;</span><span class="p">][</span><span class="n">endstation</span><span class="p">]</span>
+        <span class="n">end_branches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">beamline_config</span><span class="p">[</span><span class="n">endstation</span><span class="p">]</span>
         <span class="n">filled_paths</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
             <span class="n">subgraph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -281,7 +292,7 @@
             <span class="n">bp</span> <span class="o">=</span> <span class="n">BeamPath</span><span class="p">(</span>
                 <span class="o">*</span><span class="n">devices</span><span class="p">,</span>
                 <span class="n">name</span><span class="o">=</span><span class="n">endstation</span><span class="p">,</span>
-                <span class="n">minimum_transmission</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;min_trans&#39;</span><span class="p">)</span>
+                <span class="n">minimum_transmission</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_trans</span>
             <span class="p">)</span>
 
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">end_branches</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
@@ -339,6 +350,9 @@
 <span class="sd">            the active path</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_paths</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PathError</span><span class="p">(</span><span class="s1">&#39;No paths in facility to the &#39;</span>
+                            <span class="sa">f</span><span class="s1">&#39;desired endstation: </span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">paths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -529,7 +543,7 @@
                 <span class="n">BeamPath</span><span class="p">(</span>
                     <span class="o">*</span><span class="n">devs</span><span class="p">,</span>
                     <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">_path&#39;</span><span class="p">,</span>
-                    <span class="n">minimum_transmission</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;min_trans&#39;</span><span class="p">)</span>
+                    <span class="n">minimum_transmission</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_trans</span>
                 <span class="p">)</span>
             <span class="p">)</span>
 
