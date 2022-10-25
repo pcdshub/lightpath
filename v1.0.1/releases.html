@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Release History &mdash; LCLS Lightpath 1.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> LCLS Lightpath
+          </a>
+              <div class="version">
+                1.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Controlling the beamline</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interface.html">Device Interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command Line Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="controller.html">LightController</a></li>
+<li class="toctree-l1"><a class="reference internal" href="path.html">BeamPath</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="upcoming_changes.html">Upcoming Changes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">LCLS Lightpath</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Release History</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/releases.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="release-history">
+<h1>Release History<a class="headerlink" href="#release-history" title="Permalink to this heading"></a></h1>
+<section id="v1-0-1-2022-10-25">
+<h2>v1.0.1 (2022-10-25)<a class="headerlink" href="#v1-0-1-2022-10-25" title="Permalink to this heading"></a></h2>
+<section id="bugfixes">
+<h3>Bugfixes<a class="headerlink" href="#bugfixes" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">LightController.load_beamlines</span></code> now properly references the provided
+configuration if provided, rather than the default <code class="docutils literal notranslate"><span class="pre">beamlines</span></code> config</p></li>
+</ul>
+</section>
+<section id="contributors">
+<h3>Contributors<a class="headerlink" href="#contributors" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>tangkong</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-0-0-2022-09-28">
+<h2>v1.0.0 (2022-09-28)<a class="headerlink" href="#v1-0-0-2022-09-28" title="Permalink to this heading"></a></h2>
+<section id="api-changes">
+<h3>API Changes<a class="headerlink" href="#api-changes" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>Switches assumed device interface to expect a single get_lightpath_state
+function, which returns a LightpathState dataclass</p></li>
+<li><p>Removes SUB_STATE in favor of subscribing to a single <code class="docutils literal notranslate"><span class="pre">lightpath_summary</span></code>
+signal, which aggregates relevant device signals</p></li>
+<li><p>A short summary of added methods</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">BeamPath</span></code>: adds <code class="docutils literal notranslate"><span class="pre">load_facility</span></code>, <code class="docutils literal notranslate"><span class="pre">walk_facility</span></code>, <code class="docutils literal notranslate"><span class="pre">make_graph</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">LightController</span></code>: renames <code class="docutils literal notranslate"><span class="pre">branches</span></code> to <code class="docutils literal notranslate"><span class="pre">branching_devices</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="features">
+<h3>Features<a class="headerlink" href="#features" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>Adds support for multiple, simultaneous outputs on a device</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BeamPath</span></code> now sorts devices at init and saves them in an OrderedDict
+for easy lookup of next device</p></li>
+<li><p>Adds lodcm mock classes for testing</p></li>
+<li><p>Add the option to specify an end-z in the beamlines config, for endstations
+that exist in the middle of a branch.</p></li>
+<li><p>Adds ability to start lightpath with a config file</p></li>
+<li><p>Checks for signal connection status before get_lightpath_state, preventing
+lengthy timeouts</p></li>
+<li><p>Adds a refresh button and loading splash screen</p></li>
+<li><p>Represents the facility as a directed graph, with devices as nodes</p></li>
+<li><p>Uses path-finding algorithms to find routes to beamlines</p></li>
+<li><p>Adds methods to handle multiple possible paths to a single destination</p></li>
+<li><p>Defers device instantiation until needed by BeamPath objects, loading
+facility graph with only happi database information</p></li>
+<li><p>Create a mock device if device in happi cannot be created</p></li>
+<li><p>Sets title of window based on current path</p></li>
+<li><p>Dynamically populates device_type filters with module names of devices
+currently in path</p></li>
+<li><p>Adds cumulative transmission along path as a blocking criteria</p></li>
+<li><p>Updates device icon color logic to consider both device and path state</p></li>
+</ul>
+</section>
+<section id="id1">
+<h3>Bugfixes<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>Fixes behavior of upstream filter checkbox by converting it to a combo
+box that allows users to select a device to filter devices upstream of
+This now works with the current facility representation</p></li>
+<li><p>Disables happi caching to prevent devices from persisting across tests</p></li>
+<li><p>Extends the default EpicsSignal timeout to allow devices to connect</p></li>
+<li><p>Prevent beamlines with no beampath from destination combo box</p></li>
+<li><p>Removes endstation sorting to allow lazy BeamPath loading</p></li>
+<li><p>Fixes various font-awesome deprecation warnings</p></li>
+</ul>
+</section>
+<section id="maintenance">
+<h3>Maintenance<a class="headerlink" href="#maintenance" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>GUI now subscribes to lightpath_summary signals instead of the device</p></li>
+<li><p>Properly unsubscribes from signals on GUI shutdown</p></li>
+<li><p>Fixes some clipping issues with the device icons</p></li>
+<li><p>Reworks documentation to reflect recent changes to lightpath</p></li>
+<li><p>Removes hinted signal widgets loaded from typhos to reduce GUI load times</p></li>
+<li><p>Allows lightpath cli command to be run without arguments, loading all
+default hutches</p></li>
+<li><p>Adds pre-release note framework</p></li>
+<li><p>Updates tests to test new API</p></li>
+<li><p>Updates test database to more accurately simulate LCLS facility complexity</p></li>
+<li><p>Updates documentation with updated API and some tutorial information</p></li>
+<li><p>Adds type hinting throughout package</p></li>
+<li><p>Moves simulated out of the test suite for reuse elsewhere</p></li>
+<li><p>Make the simulated lcls facility import-able</p></li>
+<li><p>Adds tests for cumulative transmission and updated icon coloring</p></li>
+<li><p>Make <code class="docutils literal notranslate"><span class="pre">test_show_devices</span></code> use regex instead of hard-coded output</p></li>
+</ul>
+</section>
+<section id="id2">
+<h3>Contributors<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>tangkong</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, SLAC National Accelerator Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
