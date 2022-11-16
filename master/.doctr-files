@@ -10,6 +10,7 @@ master/_sources/path.rst.txt
 master/_sources/releases.rst.txt
 master/_sources/tutorial.rst.txt
 master/_sources/upcoming_changes.rst.txt
+master/_sources/upcoming_release_notes/170-maint_auto_fix_precommit.rst.txt
 master/_sources/upcoming_release_notes/template-full.rst.txt
 master/_sources/upcoming_release_notes/template-short.rst.txt
 master/_static/_sphinx_javascript_frameworks_compat.js
@@ -63,5 +64,6 @@ master/search.html
 master/searchindex.js
 master/tutorial.html
 master/upcoming_changes.html
+master/upcoming_release_notes/170-maint_auto_fix_precommit.html
 master/upcoming_release_notes/template-full.html
 master/upcoming_release_notes/template-short.html
