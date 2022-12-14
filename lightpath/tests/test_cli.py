@@ -27,12 +27,6 @@ def no_gui_launch(monkeypatch):
     monkeypatch.setattr(ophyd.signal.EpicsSignalBase, 'set_defaults', no_op)
 
 
-def ophyd_cleanup():
-    dispatcher = ophyd.cl.get_dispatcher()
-    if dispatcher is not None:
-        dispatcher.stop()
-
-
 @pytest.fixture(scope='session')
 def sim_cfg_path(tmp_path_factory):
     cfg_path = os.path.join(os.path.dirname(__file__), 'conf.yml')
@@ -64,17 +58,9 @@ def launch_cli(qtbot, no_gui_launch, sim_cfg_path: Path):
     return starter
 
 
-def test_cli_no_arg_smoke(launch_cli):
-    # smoke test
-    launch_cli(['lightpath'])
-    ophyd_cleanup()
-
-
 def test_cli_no_args_smoke(launch_cli):
     launch_cli(['lightpath', '--sim'])
-    ophyd_cleanup()
 
 
 def test_cli_hutch_cfg_smoke(launch_cli, cfg: Dict[str, Any]):
     launch_cli(['lightpath', '--hutches', 'XCS', '--cfg'])
-    ophyd_cleanup()
