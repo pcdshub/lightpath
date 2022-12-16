@@ -102,9 +102,8 @@ def main(
     lp = LightApp(lc)
     # Execute
     lp.show()
-    app.exec_()
-
-    return lp
+    exit_code = app.exec_()
+    return exit_code
 
 
 def entrypoint():
@@ -127,4 +126,4 @@ def entrypoint():
     level = 'DEBUG' if args.debug else 'INFO'
     coloredlogs.install(level=level, logger=logger,
                         fmt='[%(asctime)s] - %(levelname)s -  %(message)s')
-    main(args.db, hutches, args.cfg)
+    return main(args.db, hutches, args.cfg)
