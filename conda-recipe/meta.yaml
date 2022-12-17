@@ -21,7 +21,6 @@ requirements:
     - happi >=1.6.0
     - numpy
     - ophyd
-    - pcdsdevices >=3.4.0
     - prettytable
     - pydm
     - pyqt >=5,<5.15

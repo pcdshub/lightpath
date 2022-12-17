@@ -2,7 +2,6 @@ coloredlogs
 happi>=1.6.0
 numpy
 ophyd
-pcdsdevices>=3.4.0
 prettytable
 pydm
 PyQt5<5.15.0

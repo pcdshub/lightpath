@@ -102,9 +102,8 @@ def main(
     lp = LightApp(lc)
     # Execute
     lp.show()
-    app.exec_()
-
-    return lp
+    exit_code = app.exec_()
+    return exit_code
 
 
 def entrypoint():

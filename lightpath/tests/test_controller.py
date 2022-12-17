@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, Dict
 
 import happi
@@ -174,3 +175,15 @@ def test_cfg_loading(lcls_client: happi.Client, cfg: Dict[str, Any]):
     with pytest.raises(PathError):
         bad_lc = LightController(lcls_client, cfg=bad_cfg)
         bad_lc.active_path('NOT')
+
+
+def test_sim_ctrl():
+    # make sure sim beamline loads
+    sim_db_path = Path(__file__).parent / 'path.json'
+    sim_client = happi.Client(path=sim_db_path)
+
+    lc = LightController(sim_client)
+
+    assert len(lc.beamlines.keys()) == 9
+    assert len(lc.active_path('XCS').devices) == 13
+    assert lc.get_device('sl2k0')

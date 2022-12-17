@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List
 
+import ophyd
 import pydm
 import pytest
 from qtpy.QtWidgets import QApplication
@@ -19,7 +20,11 @@ def no_gui_launch(monkeypatch):
         pass
 
     monkeypatch.setattr(QApplication, 'exec_', no_op)
+    monkeypatch.setattr(QApplication, 'exit', no_op)
     monkeypatch.setattr(pydm.Display, 'show', no_op)
+
+    # also prevent changing of tiemout
+    monkeypatch.setattr(ophyd.signal.EpicsSignalBase, 'set_defaults', no_op)
 
 
 @pytest.fixture(scope='session')
@@ -41,42 +46,21 @@ def sim_cfg_path(tmp_path_factory):
 
 @pytest.fixture(scope='function')
 def launch_cli(qtbot, no_gui_launch, sim_cfg_path: Path):
+
     def starter(args: List[str]) -> LightApp:
         """ Launches the gui with the given args, filling cfg if needed """
         if '--cfg' in args:
             args.append(str(sim_cfg_path))
 
         with cli_args(args):
-            lp = entrypoint()
-        qtbot.addWidget(lp)
-        return lp
+            entrypoint()
 
     return starter
 
 
-def test_cli_cfg(launch_cli, cfg: Dict[str, Any]):
-    # smoke test
-    lp = launch_cli(['lightpath', '--cfg'])
-
-    lines = set([lp.destination_combo.itemText(i)
-                 for i in range(lp.destination_combo.count())])
-    assert lines == set(cfg['hutches'])
-    lp.close()
+def test_cli_no_args_smoke(launch_cli):
+    launch_cli(['lightpath', '--sim'])
 
 
-def test_cli_no_args(launch_cli):
-    lp = launch_cli(['lightpath', '--sim'])
-
-    assert lp.destination_combo.count() == 9
-
-    lp.close()
-
-
-def test_cli_hutch_cfg(launch_cli, cfg: Dict[str, Any]):
-    lp = launch_cli(['lightpath', '--hutches', 'XCS', '--cfg'])
-
-    # cfg overrides hutches setting
-    assert lp.destination_combo.count() == len(cfg['hutches'])
-    assert lp.path.minimum_transmission == cfg['min_trans']
-
-    lp.close()
+def test_cli_hutch_cfg_smoke(launch_cli, cfg: Dict[str, Any]):
+    launch_cli(['lightpath', '--hutches', 'XCS', '--cfg'])
