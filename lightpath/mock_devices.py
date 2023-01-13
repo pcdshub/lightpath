@@ -1,9 +1,9 @@
 import contextlib
 import dataclasses
+from collections.abc import Generator
 from threading import RLock
 from types import SimpleNamespace
 from typing import Optional, Union
-from collections.abc import Generator
 
 import numpy.typing as npt
 import ophyd
