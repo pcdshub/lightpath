@@ -132,7 +132,7 @@ class LightController:
                 branch_name=branch_name
             )
             self.sources.update(n for n in subgraph
-                                 if self.is_source_name(n))
+                                if self.is_source_name(n))
             subgraphs.append(subgraph)
 
         self.graph = nx.compose_all(subgraphs)

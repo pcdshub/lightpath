@@ -657,8 +657,8 @@ class BeamPath(OphydObject):
             self._has_subscribed = False
 
     def _repr_info(self):
-        yield('range',   self.range)
-        yield('devices', len(self.devices))
+        yield 'range', self.range
+        yield 'devices', len(self.devices)
 
     __hash = object.__hash__
 

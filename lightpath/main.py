@@ -47,11 +47,13 @@ def get_qapp():
 
 
 @overload
-def main(db: Union[str, Path], hutches: list[str]) -> LightApp: ...
+def main(db: Union[str, Path], hutches: list[str]) -> LightApp:
+    ...
 
 
 @overload
-def main(cfg: Union[str, Path]) -> LightApp: ...
+def main(cfg: Union[str, Path]) -> LightApp:
+    ...
 
 
 def main(
