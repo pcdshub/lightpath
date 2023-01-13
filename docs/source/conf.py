@@ -12,10 +12,8 @@
 # serve to show the default.
 
 import os
-import shlex
 import sys
 
-import sphinx_rtd_theme
 
 module_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
 sys.path.insert(0, module_path)

@@ -2,7 +2,7 @@ import contextlib
 import dataclasses
 from threading import RLock
 from types import SimpleNamespace
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 from collections.abc import Generator
 
 import numpy.typing as npt

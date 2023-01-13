@@ -1,7 +1,7 @@
 import argparse
 import logging
 from pathlib import Path
-from typing import List, Optional, Union, overload
+from typing import Optional, Union, overload
 
 import coloredlogs
 import happi

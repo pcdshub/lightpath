@@ -21,7 +21,7 @@ import math
 from collections import OrderedDict
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional, TextIO, Tuple, Union
+from typing import Callable, TextIO
 
 from ophyd import Device, DeviceStatus
 from ophyd.ophydobj import OphydObject
