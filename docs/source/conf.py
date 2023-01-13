@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # LCLS Lightpath documentation build configuration file, created by
 # sphinx-quickstart on Mon Jan  9 22:14:23 2017.

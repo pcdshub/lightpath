@@ -47,7 +47,7 @@ def get_qapp():
 
 
 @overload
-def main(db: Union[str, Path], hutches: List[str]) -> LightApp: ...
+def main(db: Union[str, Path], hutches: list[str]) -> LightApp: ...
 
 
 @overload
@@ -56,7 +56,7 @@ def main(cfg: Union[str, Path]) -> LightApp: ...
 
 def main(
     db: Optional[Union[str, Path]],
-    hutches: Optional[List[str]],
+    hutches: Optional[list[str]],
     cfg: Union[str, Path]
 ) -> LightApp:
     """
@@ -76,7 +76,7 @@ def main(
     """
     if cfg:
         logger.info(f'reading config from: {cfg}...')
-        with open(cfg, 'r') as f:
+        with open(cfg) as f:
             conf = yaml.safe_load(f)
     else:
         conf = {}
