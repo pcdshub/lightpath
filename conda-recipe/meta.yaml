@@ -1,7 +1,8 @@
-{{ "{%" }} set package_name = "{{ cookiecutter.repo_name }}" {{ "%}" }}
-{{ "{%" }} set import_name = "{{ cookiecutter.import_name }}" {{ "%}" }}
-{%- raw %}
-{% set version = load_file_regex(load_file=os.path.join(import_name, "_version.py"), regex_pattern=".*version = '(\S+)'").group(1) %}
+{% set package_name = "lightpath" %}
+{% set import_name = "lightpath" %}
+{% set version =
+load_file_regex(load_file=os.path.join(import_name, "_version.py"),
+regex_pattern=".*version = '(\S+)'").group(1) %}
 
 package:
   name: {{ package_name }}
