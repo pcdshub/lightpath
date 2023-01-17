@@ -30,7 +30,7 @@ lightpath = "lightpath.happi.containers"
 
 [tool.setuptools.packages.find]
 where = [ ".",]
-include = [ "lightpath",]
+include = [ "lightpath*",]
 namespaces = false
 
 [tool.setuptools.dynamic.readme]
