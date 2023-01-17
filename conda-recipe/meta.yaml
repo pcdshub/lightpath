@@ -19,7 +19,8 @@ build:
 requirements:
   build:
     - python >=3.6
-    - setuptools
+    - pip
+    - setuptools_scm
   run:
     - python >=3.6
     - coloredlogs
