@@ -61,7 +61,7 @@ class InactiveRow(Display):
         self.last_state = DeviceState.Disconnected
         # Create labels
         self.name_label.setText(clean_name(device, strip_parent=False))
-        self.prefix_label.setText('({})'.format(device.prefix))
+        self.prefix_label.setText(f'({device.prefix})')
         # By default we mark the device as Disconnected
         self.state_label.setText('Disconnected')
         self.state_label.setStyleSheet("QLabel {color : rgb(255,0,255)}")

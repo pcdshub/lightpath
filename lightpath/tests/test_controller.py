@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import happi
 import pytest
@@ -141,7 +141,7 @@ def test_walk_facility(lcls_ctrl: LightController):
     # These beam paths do not represent impediments or destinations.
     # simply represents where device configurations point
     incidents = [d.name for d in lcls_ctrl.incident_devices]
-    assert set(incidents) == set(['mr1l0', 'mr1k1'])
+    assert set(incidents) == {'mr1l0', 'mr1k1'}
     assert len(lcls_ctrl.destinations) == 0
 
 
@@ -153,7 +153,7 @@ def test_mock_device(lcls_ctrl: LightController):
     lcls_ctrl.get_device('sl1k2')
 
 
-def test_cfg_loading(lcls_client: happi.Client, cfg: Dict[str, Any]):
+def test_cfg_loading(lcls_client: happi.Client, cfg: dict[str, Any]):
     # load lcls with config modifications
     lc = LightController(lcls_client, ['XCS'], cfg=cfg)
 

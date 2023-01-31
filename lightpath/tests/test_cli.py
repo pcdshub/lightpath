@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import ophyd
 import pydm
@@ -33,7 +33,7 @@ def sim_cfg_path(tmp_path_factory):
 
     db_line = f'\ndb: {os.path.join(os.path.dirname(__file__), "path.json")}\n'
     # add sim db path to cfg file
-    with open(cfg_path, 'r') as f_in:
+    with open(cfg_path) as f_in:
         orig_conf = f_in.readlines()
         orig_conf.append(db_line)
 
@@ -47,7 +47,7 @@ def sim_cfg_path(tmp_path_factory):
 @pytest.fixture(scope='function')
 def launch_cli(qtbot, no_gui_launch, sim_cfg_path: Path):
 
-    def starter(args: List[str]) -> LightApp:
+    def starter(args: list[str]) -> LightApp:
         """ Launches the gui with the given args, filling cfg if needed """
         if '--cfg' in args:
             args.append(str(sim_cfg_path))
@@ -62,5 +62,5 @@ def test_cli_no_args_smoke(launch_cli):
     launch_cli(['lightpath', '--sim'])
 
 
-def test_cli_hutch_cfg_smoke(launch_cli, cfg: Dict[str, Any]):
+def test_cli_hutch_cfg_smoke(launch_cli, cfg: dict[str, Any]):
     launch_cli(['lightpath', '--hutches', 'XCS', '--cfg'])

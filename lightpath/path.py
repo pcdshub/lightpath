@@ -21,7 +21,7 @@ import math
 from collections import OrderedDict
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional, TextIO, Tuple, Union
+from typing import Callable, TextIO
 
 from ophyd import Device, DeviceStatus
 from ophyd.ophydobj import OphydObject
@@ -53,7 +53,7 @@ class LightpathState:
     """
     inserted: bool
     removed: bool
-    output: Dict[str, float]
+    output: dict[str, float]
 
 
 class DeviceState(enum.IntEnum):
@@ -95,7 +95,7 @@ class DeviceState(enum.IntEnum):
     Error = 5
 
 
-def find_device_state(device: Device) -> Tuple[DeviceState, LightpathState]:
+def find_device_state(device: Device) -> tuple[DeviceState, LightpathState]:
     """
     Report the state of a device
 
@@ -188,7 +188,7 @@ class BeamPath(OphydObject):
         self,
         *devices: OphydObject,
         minimum_transmission: float = 0.1,
-        name: Optional[str] = None,
+        name: str | None = None,
     ):
         super().__init__(name=name)
         self.minimum_transmission = minimum_transmission
@@ -229,22 +229,22 @@ class BeamPath(OphydObject):
                             'attribute {}'.format(e))
 
     @property
-    def branching_devices(self) -> List[Device]:
+    def branching_devices(self) -> list[Device]:
         """ List[Device]: Branching devices along the path """
         return [d for d in self.devices
                 if len(getattr(d, 'output_branches', ['1'])) > 1]
 
     @property
-    def range(self) -> Tuple[float, float]:
+    def range(self) -> tuple[float, float]:
         """ Tuple[float, float]: Starting z position of beamline """
         return self.path[0].md.z, self.path[-1].md.z
 
     @property
-    def path(self) -> List[Device]:
+    def path(self) -> list[Device]:
         """ List[Device]: List of devices ordered by coordinates """
         return list(self._next_device.values())
 
-    def get_device_output(self, dev: Device) -> Tuple[str, float]:
+    def get_device_output(self, dev: Device) -> tuple[str, float]:
         """
         Find relevant output item by attempting to match with the
         input branch of the next device in this path.
@@ -279,7 +279,7 @@ class BeamPath(OphydObject):
         return output_keys[0], output[output_keys[0]]
 
     @property
-    def blocking_devices(self) -> List[Device]:
+    def blocking_devices(self) -> list[Device]:
         """
         A list of devices that are currently inserted or are in unknown
         positions. This includes devices downstream of the first
@@ -335,7 +335,7 @@ class BeamPath(OphydObject):
         return block
 
     @property
-    def incident_devices(self) -> List[Device]:
+    def incident_devices(self) -> list[Device]:
         """
         A list of devices the beam is currently incident on. This includes the
         current :attr:`.impediment` and any upstream devices that may be
@@ -408,10 +408,10 @@ class BeamPath(OphydObject):
     def clear(
         self,
         wait: bool = False,
-        timeout: Optional[float] = None,
-        ignore: Optional[List[Device]] = None,
+        timeout: float | None = None,
+        ignore: list[Device] | None = None,
         passive: bool = False,
-    ) -> List[DeviceStatus]:
+    ) -> list[DeviceStatus]:
         """
         Clear the beampath of all obstructions
 
@@ -483,9 +483,9 @@ class BeamPath(OphydObject):
 
     def split(
         self,
-        z: Optional[float] = None,
-        device: Optional[Device] = None
-    ) -> Tuple[BeamPath, BeamPath]:
+        z: float | None = None,
+        device: Device | None = None
+    ) -> tuple[BeamPath, BeamPath]:
         """
         Split the beampath producing two new BeamPath objects either by a
         specific position or a devices location
@@ -558,9 +558,9 @@ class BeamPath(OphydObject):
 
     def _ignore(
         self,
-        ignore_devices: Optional[Union[Device, List[Device]]] = None,
+        ignore_devices: Device | list[Device] | None = None,
         passive: bool = False
-    ) -> Tuple[List[Device], List[Device]]:
+    ) -> tuple[list[Device], list[Device]]:
         """
         Assemble list of available devices with some exclusions
 
@@ -615,7 +615,7 @@ class BeamPath(OphydObject):
     def subscribe(
         self,
         cb: Callable,
-        event_type: Optional[str] = None,
+        event_type: str | None = None,
         run: bool = True
     ):
         """
@@ -657,8 +657,8 @@ class BeamPath(OphydObject):
             self._has_subscribed = False
 
     def _repr_info(self):
-        yield('range',   self.range)
-        yield('devices', len(self.devices))
+        yield 'range', self.range
+        yield 'devices', len(self.devices)
 
     __hash = object.__hash__
 

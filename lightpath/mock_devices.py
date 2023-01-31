@@ -1,8 +1,9 @@
 import contextlib
 import dataclasses
+from collections.abc import Generator
 from threading import RLock
 from types import SimpleNamespace
-from typing import Dict, Generator, Optional, Union
+from typing import Optional, Union
 
 import numpy.typing as npt
 import ophyd
@@ -63,7 +64,7 @@ class AggregateSignal(Signal):
 
     _update_only_on_change: bool = True
     _has_subscribed: bool
-    _signals: Dict[Signal, _AggregateSignalState]
+    _signals: dict[Signal, _AggregateSignalState]
 
     def __init__(self, *, name, value=None, **kwargs):
         super().__init__(name=name, value=value, **kwargs)
@@ -226,7 +227,7 @@ class AggregateSignal(Signal):
         return all(signal.connected for signal in self._signals)
 
     @contextlib.contextmanager
-    def _check_connectivity(self) -> Generator[Dict[str, bool], None, None]:
+    def _check_connectivity(self) -> Generator[dict[str, bool], None, None]:
         """
         Context manager for checking connectivity.
 

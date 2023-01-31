@@ -1,0 +1,43 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [ "setuptools>=45", "setuptools_scm[toml]>=6.2",]
+
+[project]
+classifiers = [ "Development Status :: 2 - Pre-Alpha", "Natural Language :: English", "Programming Language :: Python :: 3",]
+description = "{{ cookiecutter.description }}"
+dynamic = [ "version", "readme", "dependencies", "optional-dependencies", "optional-dependencies",]
+keywords = []
+name = "lightpath"
+requires-python = ">=3.9"
+[[project.authors]]
+name = "SLAC National Accelerator Laboratory"
+
+[options]
+zip_safe = false
+include_package_data = true
+
+[project.license]
+file = "LICENSE.md"
+
+[project.scripts]
+lightpath = "lightpath.main:entrypoint"
+
+[tool.setuptools_scm]
+write_to = "lightpath/_version.py"
+
+[project.entry-points."happi.containers"]
+lightpath = "lightpath.happi.containers"
+
+[tool.setuptools.packages.find]
+where = [ ".",]
+include = [ "lightpath*",]
+namespaces = false
+
+[tool.setuptools.dynamic.readme]
+file = "README.rst"
+
+[tool.setuptools.dynamic.dependencies]
+file = [ "requirements.txt",]
+
+[tool.setuptools.dynamic.optional-dependencies.test]
+file = "dev-requirements.txt"

@@ -78,8 +78,7 @@ class LightApp(Display):
             self.destination_combo.addItem(line)
 
         # Connect signals to slots
-        self.destination_combo.currentIndexChanged.connect(
-                                            self.change_path_display)
+        self.destination_combo.currentIndexChanged.connect(self.change_path_display)
         self.device_combo.activated[str].connect(self.focus_on_device)
         self.impediment_button.pressed.connect(self.focus_on_device)
         self.upstream_device_combo.activated[str].connect(self.update_upstream)
@@ -239,11 +238,12 @@ class LightApp(Display):
                 self.overview.layout().addWidget(row[1])
                 # Connect condensed widget to focus_on_device
                 row[1].device_drawing.clicked.connect(
-                        partial(self.focus_on_device,
-                                name=row[1].device.name))
+                    partial(self.focus_on_device, name=row[1].device.name)
+                )
                 # Connect large widget to show Typhos screen
                 row[0].device_drawing.clicked.connect(
-                        partial(self.show_detailed, row[0].device))
+                    partial(self.show_detailed, row[0].device)
+                )
                 # Add device to combo
                 self.device_combo.addItem(row[0].device.name)
                 self.upstream_device_combo.addItem(row[0].device.name)
@@ -291,7 +291,7 @@ class LightApp(Display):
         return os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             self.ui_filename())
 
-    def update_path(self, *args,  **kwargs):
+    def update_path(self, *args, **kwargs):
         """
         Update the PyDMRectangles to show devices as in the beam or not
         """

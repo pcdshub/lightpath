@@ -32,7 +32,7 @@ def set_level(pytestconfig):
 
     # Report invalid logging level
     if not isinstance(log_level, int):
-        raise ValueError("Invalid log level : {}".format(log_level))
+        raise ValueError(f"Invalid log level : {log_level}")
 
     # Create basic configuration
     logging.basicConfig(level=log_level,
@@ -181,7 +181,7 @@ def lcls_ctrl(lcls_client: happi.Client):
 @pytest.fixture(scope='function')
 def cfg():
     cfg_path = os.path.join(os.path.dirname(__file__), 'conf.yml')
-    with open(cfg_path, 'r') as f:
+    with open(cfg_path) as f:
         cfg = yaml.safe_load(f)
 
     return cfg
