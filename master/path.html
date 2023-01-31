@@ -1,20 +1,18 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BeamPath &mdash; LCLS Lightpath 1.0.1+11.gd916a21 documentation</title>
+  <title>BeamPath &mdash; LCLS Lightpath 1.0.2.dev55+g51f1bbf documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -29,14 +27,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> LCLS Lightpath
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            LCLS Lightpath
           </a>
               <div class="version">
-                1.0.1+11.gd916a21
+                1.0.2.dev55+g51f1bbf
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -98,7 +100,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">BeamPath</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/path.rst.txt" rel="nofollow"> View page source</a>
@@ -125,14 +127,14 @@ might not return an accurate representation of reality if an upstream device is
 secretly affecting the beam.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="lightpath.path.LightpathState">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightpath.path.</span></span><span class="sig-name descname"><span class="pre">LightpathState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inserted</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">removed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lightpath/path.html#LightpathState"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.path.LightpathState" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightpath.path.</span></span><span class="sig-name descname"><span class="pre">LightpathState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inserted</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">removed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lightpath/path.html#LightpathState"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.path.LightpathState" title="Permalink to this definition"></a></dt>
 <dd><p>The lightpath-relevant state of a device. Devices must return an
 instance of this dataclass via the <code class="docutils literal notranslate"><span class="pre">get_lightpath_state()</span></code> method.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lightpath.path.LightpathState.inserted">
 <span class="sig-name descname"><span class="pre">inserted</span></span><a class="headerlink" href="#lightpath.path.LightpathState.inserted" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -142,7 +144,7 @@ instance of this dataclass via the <code class="docutils literal notranslate"><s
 <dt class="sig sig-object py" id="lightpath.path.LightpathState.removed">
 <span class="sig-name descname"><span class="pre">removed</span></span><a class="headerlink" href="#lightpath.path.LightpathState.removed" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -153,7 +155,7 @@ instance of this dataclass via the <code class="docutils literal notranslate"><s
 <span class="sig-name descname"><span class="pre">output</span></span><a class="headerlink" href="#lightpath.path.LightpathState.output" title="Permalink to this definition"></a></dt>
 <dd><p>mapping from output branch to transmission</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Dict[str, float]</p>
 </dd>
 </dl>
@@ -163,18 +165,18 @@ instance of this dataclass via the <code class="docutils literal notranslate"><s
 
 <dl class="py class">
 <dt class="sig sig-object py" id="lightpath.path.BeamPath">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightpath.path.</span></span><span class="sig-name descname"><span class="pre">BeamPath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">devices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OphydObject</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimum_transmission</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lightpath/path.html#BeamPath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.path.BeamPath" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightpath.path.</span></span><span class="sig-name descname"><span class="pre">BeamPath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">devices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OphydObject</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minimum_transmission</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lightpath/path.html#BeamPath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.path.BeamPath" title="Permalink to this definition"></a></dt>
 <dd><p>Represents a straight line of devices along the beamline</p>
 <p>The devices given must be a continuous set all along the same beamline, or,
 multiple beamlines with appropriate reflecting devices in between.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>devices</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">LightDevice</span></code>) – Arguments are interpreted as LightDevices along a common beamline.</p></li>
 <li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the BeamPath</p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>TypeError:</strong> – If a non-LightDevice object is supplied</p></li>
 <li><p><strong>CoordinateError:</strong> – If a coordinate is not properly specified</p></li>
@@ -187,7 +189,7 @@ multiple beamlines with appropriate reflecting devices in between.</p>
 <span class="sig-name descname"><span class="pre">minimum_transmission</span></span><a class="headerlink" href="#lightpath.path.BeamPath.minimum_transmission" title="Permalink to this definition"></a></dt>
 <dd><p>Minimum amount of transmission considered for beam presence</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
@@ -195,15 +197,15 @@ multiple beamlines with appropriate reflecting devices in between.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="lightpath.path.BeamPath.blocking_devices">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">blocking_devices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Device</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#lightpath.path.BeamPath.blocking_devices" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">blocking_devices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">ophyd.device.Device</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#lightpath.path.BeamPath.blocking_devices" title="Permalink to this definition"></a></dt>
 <dd><p>A list of devices that are currently inserted or are in unknown
 positions. This includes devices downstream of the first
 <a class="reference internal" href="#lightpath.path.BeamPath.impediment" title="lightpath.path.BeamPath.impediment"><code class="xref py py-attr docutils literal notranslate"><span class="pre">impediment</span></code></a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list of blocking devices</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>List[Device]</p>
 </dd>
 </dl>
@@ -211,10 +213,10 @@ positions. This includes devices downstream of the first
 
 <dl class="py property">
 <dt class="sig sig-object py" id="lightpath.path.BeamPath.branching_devices">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">branching_devices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Device</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#lightpath.path.BeamPath.branching_devices" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">branching_devices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">ophyd.device.Device</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#lightpath.path.BeamPath.branching_devices" title="Permalink to this definition"></a></dt>
 <dd><p>Branching devices along the path</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>List[Device]</p>
 </dd>
 </dl>
@@ -222,10 +224,10 @@ positions. This includes devices downstream of the first
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lightpath.path.BeamPath.clear">
-<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Device</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">DeviceStatus</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lightpath/path.html#BeamPath.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.path.BeamPath.clear" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Device</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">DeviceStatus</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lightpath/path.html#BeamPath.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.path.BeamPath.clear" title="Permalink to this definition"></a></dt>
 <dd><p>Clear the beampath of all obstructions</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>wait</strong> (<em>bool</em><em>, </em><em>optional</em>) – Wait for all devices to complete their motion</p></li>
 <li><p><strong>timeout</strong> (<em>float</em><em>, </em><em>optional</em>) – Duration to wait for device movements</p></li>
@@ -234,11 +236,11 @@ positions. This includes devices downstream of the first
 below <code class="xref py py-attr docutils literal notranslate"><span class="pre">minimum_threshold</span></code> are ignored</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>statuses</strong> – Returns list of status objects returned by
 <code class="xref py py-meth docutils literal notranslate"><span class="pre">LightInterface.remove()</span></code></p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>List[ophyd.DeviceStatus]</p>
 </dd>
 </dl>
@@ -258,10 +260,10 @@ callback from the BeamPath object itself.</p>
 <dd><p>Whether beamline is clear of any devices that are below the
 <a class="reference internal" href="#lightpath.path.BeamPath.minimum_transmission" title="lightpath.path.BeamPath.minimum_transmission"><code class="xref py py-attr docutils literal notranslate"><span class="pre">minimum_transmission</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>whether beamline is clear of impediments</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>bool</p>
 </dd>
 </dl>
@@ -269,23 +271,23 @@ callback from the BeamPath object itself.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lightpath.path.BeamPath.from_join">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_join</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">beampaths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><span class="pre">BeamPath</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><span class="pre">BeamPath</span></a></span></span><a class="reference internal" href="_modules/lightpath/path.html#BeamPath.from_join"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.path.BeamPath.from_join" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_join</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">beampaths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><span class="pre">BeamPath</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><span class="pre">BeamPath</span></a></span></span><a class="reference internal" href="_modules/lightpath/path.html#BeamPath.from_join"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.path.BeamPath.from_join" title="Permalink to this definition"></a></dt>
 <dd><p>Join other beampaths with the current one</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>beampaths</strong> (<em>arguments</em>) – A list of beampaths to join into a complete path, order is
 irrelavant</p></li>
 <li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – New name for created beampath</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>BeamPath</strong> – A new object with all of the path devices</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BeamPath</span></code></a></p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>TypeError:</strong> – Raised if a non-BeamPath object is supplied</p>
 </dd>
 </dl>
@@ -293,11 +295,11 @@ irrelavant</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lightpath.path.BeamPath.get_device_output">
-<span class="sig-name descname"><span class="pre">get_device_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dev</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Device</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lightpath/path.html#BeamPath.get_device_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.path.BeamPath.get_device_output" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_device_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dev</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Device</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lightpath/path.html#BeamPath.get_device_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.path.BeamPath.get_device_output" title="Permalink to this definition"></a></dt>
 <dd><p>Find relevant output item by attempting to match with the
 input branch of the next device in this path.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>dev</strong> (<em>Device</em>) – device in this path to get output from</p>
 </dd>
 </dl>
@@ -308,7 +310,7 @@ input branch of the next device in this path.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">impediment</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Device</span></em><a class="headerlink" href="#lightpath.path.BeamPath.impediment" title="Permalink to this definition"></a></dt>
 <dd><p>First blocking device along the path</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Device</p>
 </dd>
 </dl>
@@ -316,15 +318,15 @@ input branch of the next device in this path.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="lightpath.path.BeamPath.incident_devices">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">incident_devices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Device</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#lightpath.path.BeamPath.incident_devices" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">incident_devices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">ophyd.device.Device</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#lightpath.path.BeamPath.incident_devices" title="Permalink to this definition"></a></dt>
 <dd><p>A list of devices the beam is currently incident on. This includes the
 current <a class="reference internal" href="#lightpath.path.BeamPath.impediment" title="lightpath.path.BeamPath.impediment"><code class="xref py py-attr docutils literal notranslate"><span class="pre">impediment</span></code></a> and any upstream devices that may be
 inserted but have more transmission than <a class="reference internal" href="#lightpath.path.BeamPath.minimum_transmission" title="lightpath.path.BeamPath.minimum_transmission"><code class="xref py py-attr docutils literal notranslate"><span class="pre">minimum_transmission</span></code></a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>List of incident devices</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>List[Device]</p>
 </dd>
 </dl>
@@ -335,17 +337,17 @@ inserted but have more transmission than <a class="reference internal" href="#li
 <span class="sig-name descname"><span class="pre">join</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">beampaths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><span class="pre">BeamPath</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><span class="pre">BeamPath</span></a></span></span><a class="reference internal" href="_modules/lightpath/path.html#BeamPath.join"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.path.BeamPath.join" title="Permalink to this definition"></a></dt>
 <dd><p>Join multiple beampaths with the current one</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>beampaths</strong> (<em>arguments</em>) – A list of beampaths to join into a complete path, order is
 irrelavant</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>BeamPath</strong> – A new object with all of the path devices</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BeamPath</span></code></a></p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>TypeError:</strong> – Raised if a non-BeamPath object is supplied</p>
 </dd>
 </dl>
@@ -353,10 +355,10 @@ irrelavant</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="lightpath.path.BeamPath.path">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Device</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#lightpath.path.BeamPath.path" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">ophyd.device.Device</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#lightpath.path.BeamPath.path" title="Permalink to this definition"></a></dt>
 <dd><p>List of devices ordered by coordinates</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>List[Device]</p>
 </dd>
 </dl>
@@ -364,10 +366,10 @@ irrelavant</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="lightpath.path.BeamPath.range">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">range</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#lightpath.path.BeamPath.range" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">range</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#lightpath.path.BeamPath.range" title="Permalink to this definition"></a></dt>
 <dd><p>Starting z position of beamline</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Tuple[float, float]</p>
 </dd>
 </dl>
@@ -375,10 +377,10 @@ irrelavant</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lightpath.path.BeamPath.show_devices">
-<span class="sig-name descname"><span class="pre">show_devices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">TextIO</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lightpath/path.html#BeamPath.show_devices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.path.BeamPath.show_devices" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">show_devices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TextIO</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lightpath/path.html#BeamPath.show_devices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.path.BeamPath.show_devices" title="Permalink to this definition"></a></dt>
 <dd><p>Print a table of the devices along the beamline</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>file</strong> (<em>TextIO</em>) – File-like object to write output to.  Default behavior is
 printing to sys.stdout</p>
 </dd>
@@ -387,21 +389,21 @@ printing to sys.stdout</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lightpath.path.BeamPath.split">
-<span class="sig-name descname"><span class="pre">split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Device</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><span class="pre">BeamPath</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><span class="pre">BeamPath</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lightpath/path.html#BeamPath.split"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.path.BeamPath.split" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Device</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><span class="pre">BeamPath</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><span class="pre">BeamPath</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lightpath/path.html#BeamPath.split"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.path.BeamPath.split" title="Permalink to this definition"></a></dt>
 <dd><p>Split the beampath producing two new BeamPath objects either by a
 specific position or a devices location</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>z</strong> (<em>float</em>) – Z position to split the paths</p></li>
 <li><p><strong>device</strong> (<em>LightDevice</em><em>, </em><em>name</em><em>, or </em><em>base PV</em>) – The specified device will be the last device in the first
 <a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BeamPath</span></code></a> object</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Two new beampath instances</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath">BeamPath</a>, <a class="reference internal" href="#lightpath.path.BeamPath" title="lightpath.path.BeamPath">BeamPath</a></p>
 </dd>
 </dl>
@@ -409,10 +411,10 @@ specific position or a devices location</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lightpath.path.BeamPath.subscribe">
-<span class="sig-name descname"><span class="pre">subscribe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lightpath/path.html#BeamPath.subscribe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.path.BeamPath.subscribe" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">subscribe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lightpath/path.html#BeamPath.subscribe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.path.BeamPath.subscribe" title="Permalink to this definition"></a></dt>
 <dd><p>Subscribe to changes of the valve</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>cb</strong> (<em>callable</em>) – Callback to be run</p></li>
 <li><p><strong>event_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of event to run callback on</p></li>

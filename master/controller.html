@@ -1,20 +1,18 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LightController &mdash; LCLS Lightpath 1.0.1+11.gd916a21 documentation</title>
+  <title>LightController &mdash; LCLS Lightpath 1.0.2.dev55+g51f1bbf documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -29,14 +27,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> LCLS Lightpath
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            LCLS Lightpath
           </a>
               <div class="version">
-                1.0.1+11.gd916a21
+                1.0.2.dev55+g51f1bbf
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -90,7 +92,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">LightController</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/controller.rst.txt" rel="nofollow"> View page source</a>
@@ -119,12 +121,12 @@ impediment.  (equivalently, the path that lets the beam through farthest)</p>
 where the beam is</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="lightpath.LightController">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightpath.</span></span><span class="sig-name descname"><span class="pre">LightController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Client</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endstations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lightpath/controller.html#LightController"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.LightController" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightpath.</span></span><span class="sig-name descname"><span class="pre">LightController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Client</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endstations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lightpath/controller.html#LightController"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.LightController" title="Permalink to this definition"></a></dt>
 <dd><p>Controller for the LCLS Lightpath</p>
 <p>Handles grouping devices into beamlines and joining paths together. Also
 provides an overview of the state of the entire beamline</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>client</strong> (<em>happi.Client</em>) – Happi Client</p></li>
 <li><p><strong>endstations</strong> (<em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – List of experimental endstations to load BeamPath objects for. If left
@@ -138,13 +140,13 @@ as None, all endstations will be loaded</p></li>
 <dd><p>Return the most active path to the requested endstation</p>
 <p>Looks for the path with the latest impediment (highest z)</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>dest</strong> (<em>str</em>) – endstation to look for paths towards</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>path</strong> – the active path</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">BeamPath</span></code></p>
 </dd>
 </dl>
@@ -152,13 +154,13 @@ as None, all endstations will be loaded</p></li>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="lightpath.LightController.destinations">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">destinations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Device</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#lightpath.LightController.destinations" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">destinations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">ophyd.device.Device</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#lightpath.LightController.destinations" title="Permalink to this definition"></a></dt>
 <dd><p>Current device destinations for the LCLS photon beam</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>a list of beam destinations</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>List[Device]</p>
 </dd>
 </dl>
@@ -166,13 +168,13 @@ as None, all endstations will be loaded</p></li>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="lightpath.LightController.devices">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">devices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Device</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#lightpath.LightController.devices" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">devices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">ophyd.device.Device</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#lightpath.LightController.devices" title="Permalink to this definition"></a></dt>
 <dd><p>All of the devices loaded in the facility</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list of devices loaded in the facility</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>List[Device]</p>
 </dd>
 </dl>
@@ -184,13 +186,13 @@ as None, all endstations will be loaded</p></li>
 <dd><p>Return device in the facility.  Creates the device if it has
 not been already.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>device</strong> (<em>NodeName</em>) – name of device</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>requested device, or a mock version of the device</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Device</p>
 </dd>
 </dl>
@@ -198,17 +200,17 @@ not been already.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lightpath.LightController.get_paths">
-<span class="sig-name descname"><span class="pre">get_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">endstation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="path.html#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><span class="pre">BeamPath</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lightpath/controller.html#LightController.get_paths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.LightController.get_paths" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">endstation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="path.html#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><span class="pre">lightpath.path.BeamPath</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lightpath/controller.html#LightController.get_paths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.LightController.get_paths" title="Permalink to this definition"></a></dt>
 <dd><p>Returns the BeamPaths for a specified endstation.
 Create and fill the BeamPaths if they have not been already</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>endstation</strong> (<em>str</em>) – name of endstation to return paths for</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>a list of BeamPath’s to the requested endstation</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>List[<a class="reference internal" href="path.html#lightpath.path.BeamPath" title="lightpath.path.BeamPath">BeamPath</a>]</p>
 </dd>
 </dl>
@@ -219,13 +221,13 @@ Create and fill the BeamPaths if they have not been already</p>
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">imped_z</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="path.html#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><span class="pre">BeamPath</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/lightpath/controller.html#LightController.imped_z"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.LightController.imped_z" title="Permalink to this definition"></a></dt>
 <dd><p>Get z position of impediment or inf.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>path</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">BeamPath</span></code>) – BeamPath to find impediment position in</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>z position of impediment</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
@@ -233,13 +235,13 @@ Create and fill the BeamPaths if they have not been already</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="lightpath.LightController.incident_devices">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">incident_devices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Device</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#lightpath.LightController.incident_devices" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">incident_devices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">ophyd.device.Device</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#lightpath.LightController.incident_devices" title="Permalink to this definition"></a></dt>
 <dd><p>List of all devices in contact with photons along the beamline</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list of all incident devices in facility</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>List[Device]</p>
 </dd>
 </dl>
@@ -250,13 +252,13 @@ Create and fill the BeamPaths if they have not been already</p>
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_source_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/lightpath/controller.html#LightController.is_source_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.LightController.is_source_name" title="Permalink to this definition"></a></dt>
 <dd><p>Checks if the node name provided is a valid source name</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – name to check</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>if name is a valid source name</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -273,7 +275,7 @@ consider part of the path.</p>
 <p>Loads valid beampaths into the LightController.beamlines
 attribute for latedr access.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>endstation</strong> (<em>str</em>) – Name of endstation to load</p>
 </dd>
 </dl>
@@ -292,24 +294,24 @@ each contain all the devices on a given branch.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lightpath.LightController.make_graph">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">make_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">branch_devs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">SearchResult</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">branch_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sources</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DiGraph</span></span></span><a class="reference internal" href="_modules/lightpath/controller.html#LightController.make_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.LightController.make_graph" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">make_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">branch_devs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">happi.client.SearchResult</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">branch_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sources</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DiGraph</span></span></span><a class="reference internal" href="_modules/lightpath/controller.html#LightController.make_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.LightController.make_graph" title="Permalink to this definition"></a></dt>
 <dd><p>Create a graph with devices from <code class="docutils literal notranslate"><span class="pre">branch_devs</span></code> as nodes,
 arranged in z-order.</p>
 <p>It is assumed that all devices lie on branch: <code class="docutils literal notranslate"><span class="pre">branch_name</span></code></p>
 <p>If <code class="docutils literal notranslate"><span class="pre">sources</span></code> is provided, will prepend a source node at the
 beginning of the branch if <code class="docutils literal notranslate"><span class="pre">branch_name</span> <span class="pre">==</span> <span class="pre">sources</span></code></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>branch_devs</strong> (<em>List</em><em>[</em><em>happi.SearchResult</em><em>]</em>) – a list of devices to generate graph with</p></li>
 <li><p><strong>branch_name</strong> (<em>str</em>) – branch name, used to label edges</p></li>
 <li><p><strong>sources</strong> (<em>List</em><em>[</em><em>NodeName</em><em>]</em><em>, </em><em>optional</em>) – source node Names, by default []</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The branch comprised of nodes holding devices from branch_devs</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>nx.DiGraph</p>
 </dd>
 </dl>
@@ -322,13 +324,13 @@ beginning of the branch if <code class="docutils literal notranslate"><span clas
 (highest blocking z-position) to the requested device</p>
 <p>To get all possible paths, see <code class="docutils literal notranslate"><span class="pre">LightController.paths_to</span></code></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>device</strong> (<em>Device</em>) – A device somewhere in the facility</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>path to the specified device</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="path.html#lightpath.path.BeamPath" title="lightpath.path.BeamPath">BeamPath</a></p>
 </dd>
 </dl>
@@ -336,19 +338,19 @@ beginning of the branch if <code class="docutils literal notranslate"><span clas
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lightpath.LightController.paths_to">
-<span class="sig-name descname"><span class="pre">paths_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Device</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="path.html#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><span class="pre">BeamPath</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lightpath/controller.html#LightController.paths_to"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.LightController.paths_to" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">paths_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Device</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="path.html#lightpath.path.BeamPath" title="lightpath.path.BeamPath"><span class="pre">lightpath.path.BeamPath</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lightpath/controller.html#LightController.paths_to"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.LightController.paths_to" title="Permalink to this definition"></a></dt>
 <dd><p>Create all BeamPaths from the facility source to the requested device</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>device</strong> (<em>Device</em>) – A device somewhere in LCLS</p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>PathError</strong> – If a single, valid path cannot be determined</p>
 </dd>
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>paths</strong> – Paths to and including given device</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>List[<code class="xref py py-class docutils literal notranslate"><span class="pre">BeamPath</span></code>]</p>
 </dd>
 </dl>
@@ -356,7 +358,7 @@ beginning of the branch if <code class="docutils literal notranslate"><span clas
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lightpath.LightController.walk_facility">
-<span class="sig-name descname"><span class="pre">walk_facility</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lightpath/controller.html#LightController.walk_facility"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.LightController.walk_facility" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">walk_facility</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/lightpath/controller.html#LightController.walk_facility"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightpath.LightController.walk_facility" title="Permalink to this definition"></a></dt>
 <dd><p>Return the paths from each source to its destination by walking the
 graph.</p>
 <p>Starting from a source node, steps iteratively through a node’s
@@ -366,13 +368,13 @@ connections, we have reached the end of the line.</p>
 <p>Successors are considered invalid if a node’s output branch does not
 match the successor’s input.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>A mapping from source node names to path of nodes</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>Dict[NodeName, List[NodeName]]</p>
 </dd>
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>PathError</strong> – If a single, valid path cannot be determined</p>
 </dd>
 </dl>
