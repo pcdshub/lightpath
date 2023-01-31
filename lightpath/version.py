@@ -15,7 +15,8 @@ class VersionProxy(UserString):
 
     def _get_version(self) -> Optional[str]:
         # Checking for directory is faster than failing out of get_version
-        if (Path(__file__).parent.parent / '.git').exists():
+        repo_root = Path(__file__).resolve().parent.parent
+        if (repo_root / ".git").exists() or (repo_root / ".git_archival.txt").exists():
             try:
                 # Git checkout
                 from setuptools_scm import get_version
