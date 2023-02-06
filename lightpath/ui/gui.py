@@ -376,10 +376,6 @@ class LightApp(Display):
             # "upstream" devices now.  Possibly by branch name?
             hidden_upstream = (device.md.z < upstream_device_z)
             # Hide device if any of the criteria are met
-            if row[0].device.name == 'xcs_lodcm':
-                print('--')
-                print(not self.remove_check.isChecked(), row[0].last_state)
-                print(hidden_device_type, hidden_removed, hidden_upstream)
             row[0].setHidden(hidden_device_type
                              or hidden_removed
                              or hidden_upstream)
