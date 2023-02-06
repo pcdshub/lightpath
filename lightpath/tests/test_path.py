@@ -1,5 +1,6 @@
 import io
 import re
+import time
 from unittest.mock import Mock
 
 from ophyd.device import Device
@@ -203,6 +204,7 @@ def test_callback(path: BeamPath):
     path.subscribe(cb, run=False)
     # Change state of beampath
     path.devices[4].insert()
+    time.sleep(0.2)
     # Assert callback has been run
     assert cb.called
 
