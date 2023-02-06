@@ -37,6 +37,11 @@ requirements:
 test:
   imports:
     - lightpath
+  requires:
+    - ipython
+    - matplotlib
+    - pytest <7.2.0
+    - pytest-qt
 
 about:
   home: https://github.com/pcdshub/lightpath
