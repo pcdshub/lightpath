@@ -255,6 +255,8 @@ class LightApp(Display):
         self.update_path()
         # Update device type checkboxes
         self.update_device_types()
+        # re-filter based on present settings
+        self.filter()
         self.setWindowTitle(f'Lightpath - {self.selected_beamline()}')
 
     @contextlib.contextmanager
@@ -365,7 +367,7 @@ class LightApp(Display):
             # Hide if a hidden instance of a device type
             hidden_device_type = any([device.__module__ == dtype
                                       for dtype in self.hidden_devices])
-            # Hide if removed
+            # Hide if removed (checked if showing removed devices)
             hidden_removed = (not self.remove_check.isChecked()
                               and row[0].last_state == DeviceState.Removed)
             # Hide if upstream

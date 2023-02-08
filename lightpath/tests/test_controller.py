@@ -9,8 +9,9 @@ from lightpath.errors import PathError
 
 
 def test_controller_paths(lcls_client: happi.Client):
-    beamlines = {'XPP': 8, 'XCS': 13, 'MFX': 14, 'CXI': 15, 'MEC': 14,
-                 'TMO': 12, 'CRIX': 11, 'QRIX': 11, 'TXI': 5}
+    beamlines = {'XPP_PINK': 8, 'XPP_MONO': 11, 'XCS': 13, 'MFX': 14,
+                 'CXI': 15, 'MEC': 14, 'TMO': 12, 'CRIX': 11, 'QRIX': 11,
+                 'TXI': 5}
 
     # load controller with all beamlines + invalid ones
     controller = LightController(lcls_client,
@@ -25,14 +26,15 @@ def test_controller_paths(lcls_client: happi.Client):
 
     # Range of each path is correct
     # all HXR lines share a beginning
-    for line in ['XPP', 'XCS', 'MFX', 'CXI', 'MEC']:
+    for line in ['XPP_PINK', 'XPP_MONO', 'XCS', 'MFX', 'CXI', 'MEC']:
         assert controller.active_path(line).path[0].name == 'im1l0'
     # all SXR lines share a beginning
     for line in ['TMO', 'CRIX', 'QRIX']:
         assert controller.active_path(line).path[0].name == 'im1k0'
     # TXI omitted, doesn't work yet
 
-    assert controller.active_path('XPP').path[-1].name == 'xpp_lodcm'
+    assert controller.active_path('XPP_PINK').path[-1].name == 'xpp_lodcm'
+    assert controller.active_path('XPP_MONO').path[-1].name == 'im2l2'
     assert controller.active_path('XCS').path[-1].name == 'im2l3'
     assert controller.active_path('MFX').path[-1].name == 'im2l5'
     assert controller.active_path('CXI').path[-1].name == 'im6l0'
@@ -184,6 +186,6 @@ def test_sim_ctrl():
 
     lc = LightController(sim_client)
 
-    assert len(lc.beamlines.keys()) == 9
+    assert len(lc.beamlines.keys()) == 10
     assert len(lc.active_path('XCS').devices) == 13
     assert lc.get_device('sl2k0')
