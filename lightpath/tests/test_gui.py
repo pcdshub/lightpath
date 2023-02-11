@@ -69,7 +69,7 @@ def test_upstream_check(lightapp: LightApp, monkeypatch):
 
 
 def test_filtering(lightapp: LightApp, monkeypatch):
-    lightapp.destination_combo.setCurrentIndex(5)  # set current to MEC
+    lightapp.destination_combo.setCurrentIndex(4)  # set current to MEC
     # Create mock functions
     for row in lightapp.rows:
         monkeypatch.setattr(row[0], 'setHidden', Mock())
