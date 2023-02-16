@@ -15,7 +15,6 @@ Bugfixes
 
 Maintenance
 -----------
-- Splits the XPP line into 'XPP_PINK' and 'XPP_MONO' so both are visible and selectable.  This change only affects the default config file; the ability to specify multiple paths or endpoints for a single name in the config remains.
 - Copies test requirements into the conda recipe
 
 Contributors
