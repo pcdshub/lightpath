@@ -29,7 +29,7 @@ requirements:
     - ophyd
     - prettytable
     - pydm
-    - pyqt >=5,<5.15
+    - pyqt >=5
     - qtawesome
     - qtpy
     - typhos >=1.0.0
