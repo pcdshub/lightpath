@@ -4,7 +4,7 @@ numpy
 ophyd
 prettytable
 pydm
-PyQt5<5.15.0
+PyQt5
 qtawesome
 qtpy
 typhos>=1.0.0
