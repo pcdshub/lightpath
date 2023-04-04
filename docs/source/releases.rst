@@ -1,6 +1,29 @@
 Release History
 ###############
 
+
+v1.0.2 (2023-04-04)
+===================
+
+Bugfixes
+--------
+- Prevents cli entrypoint from returning the LightApp instance.
+- Filters the visible LightRow widgets after a path change.
+  This fixes a bug where changing paths would show all devices on a path,
+  ignoring the state of show-removed or device filter checkboxes.
+
+Maintenance
+-----------
+- Removes pcdsdevices dependency by vendoring AggregateSignal.
+- Copies test requirements into the conda recipe.
+- Fix a pre-commit issue where we point to a defunct mirror of flake8.
+
+Contributors
+------------
+- tangkong
+- zllentz
+
+
 v1.0.1 (2022-10-25)
 ===================
 
