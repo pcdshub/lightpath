@@ -4,14 +4,15 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Release History &mdash; LCLS Lightpath 1.0.2.dev55+g51f1bbf documentation</title>
+  <title>Release History &mdash; LCLS Lightpath 1.0.2.dev58+g02073a5 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
@@ -32,7 +33,7 @@
             LCLS Lightpath
           </a>
               <div class="version">
-                1.0.2.dev55+g51f1bbf
+                1.0.2.dev58+g02073a5
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -84,17 +85,44 @@
              
   <section id="release-history">
 <h1>Release History<a class="headerlink" href="#release-history" title="Permalink to this heading"></a></h1>
-<section id="v1-0-1-2022-10-25">
-<h2>v1.0.1 (2022-10-25)<a class="headerlink" href="#v1-0-1-2022-10-25" title="Permalink to this heading"></a></h2>
+<section id="v1-0-2-2023-04-04">
+<h2>v1.0.2 (2023-04-04)<a class="headerlink" href="#v1-0-2-2023-04-04" title="Permalink to this heading"></a></h2>
 <section id="bugfixes">
 <h3>Bugfixes<a class="headerlink" href="#bugfixes" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>Prevents cli entrypoint from returning the LightApp instance.</p></li>
+<li><p>Filters the visible LightRow widgets after a path change.
+This fixes a bug where changing paths would show all devices on a path,
+ignoring the state of show-removed or device filter checkboxes.</p></li>
+</ul>
+</section>
+<section id="maintenance">
+<h3>Maintenance<a class="headerlink" href="#maintenance" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>Removes pcdsdevices dependency by vendoring AggregateSignal.</p></li>
+<li><p>Copies test requirements into the conda recipe.</p></li>
+<li><p>Fix a pre-commit issue where we point to a defunct mirror of flake8.</p></li>
+</ul>
+</section>
+<section id="contributors">
+<h3>Contributors<a class="headerlink" href="#contributors" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>tangkong</p></li>
+<li><p>zllentz</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-0-1-2022-10-25">
+<h2>v1.0.1 (2022-10-25)<a class="headerlink" href="#v1-0-1-2022-10-25" title="Permalink to this heading"></a></h2>
+<section id="id1">
+<h3>Bugfixes<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">LightController.load_beamlines</span></code> now properly references the provided
 configuration if provided, rather than the default <code class="docutils literal notranslate"><span class="pre">beamlines</span></code> config</p></li>
 </ul>
 </section>
-<section id="contributors">
-<h3>Contributors<a class="headerlink" href="#contributors" title="Permalink to this heading"></a></h3>
+<section id="id2">
+<h3>Contributors<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h3>
 <ul class="simple">
 <li><p>tangkong</p></li>
 </ul>
@@ -143,8 +171,8 @@ currently in path</p></li>
 <li><p>Updates device icon color logic to consider both device and path state</p></li>
 </ul>
 </section>
-<section id="id1">
-<h3>Bugfixes<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
+<section id="id3">
+<h3>Bugfixes<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h3>
 <ul class="simple">
 <li><p>Fixes behavior of upstream filter checkbox by converting it to a combo
 box that allows users to select a device to filter devices upstream of
@@ -156,8 +184,8 @@ This now works with the current facility representation</p></li>
 <li><p>Fixes various font-awesome deprecation warnings</p></li>
 </ul>
 </section>
-<section id="maintenance">
-<h3>Maintenance<a class="headerlink" href="#maintenance" title="Permalink to this heading"></a></h3>
+<section id="id4">
+<h3>Maintenance<a class="headerlink" href="#id4" title="Permalink to this heading"></a></h3>
 <ul class="simple">
 <li><p>GUI now subscribes to lightpath_summary signals instead of the device</p></li>
 <li><p>Properly unsubscribes from signals on GUI shutdown</p></li>
@@ -177,8 +205,8 @@ default hutches</p></li>
 <li><p>Make <code class="docutils literal notranslate"><span class="pre">test_show_devices</span></code> use regex instead of hard-coded output</p></li>
 </ul>
 </section>
-<section id="id2">
-<h3>Contributors<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h3>
+<section id="id5">
+<h3>Contributors<a class="headerlink" href="#id5" title="Permalink to this heading"></a></h3>
 <ul class="simple">
 <li><p>tangkong</p></li>
 </ul>
