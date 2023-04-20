@@ -3,18 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>lightpath.path &mdash; LCLS Lightpath 1.0.2 documentation</title>
+  <title>lightpath.path &mdash; LCLS Lightpath 1.0.3.dev12+g22ec6aa documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=fb845ca8"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -32,7 +32,7 @@
             LCLS Lightpath
           </a>
               <div class="version">
-                1.0.2
+                1.0.3.dev12+g22ec6aa
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -121,7 +121,9 @@
 <span class="n">NOT_A_DEVICE</span> <span class="o">=</span> <span class="mi">0</span>
 
 
-<div class="viewcode-block" id="LightpathState"><a class="viewcode-back" href="../../path.html#lightpath.path.LightpathState">[docs]</a><span class="nd">@dataclass</span>
+<div class="viewcode-block" id="LightpathState">
+<a class="viewcode-back" href="../../path.html#lightpath.path.LightpathState">[docs]</a>
+<span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">LightpathState</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The lightpath-relevant state of a device. Devices must return an</span>
@@ -139,6 +141,7 @@
     <span class="n">inserted</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">removed</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">output</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span></div>
+
 
 
 <span class="k">class</span> <span class="nc">DeviceState</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">IntEnum</span><span class="p">):</span>
@@ -234,7 +237,9 @@
         <span class="k">return</span> <span class="n">DeviceState</span><span class="o">.</span><span class="n">Unknown</span><span class="p">,</span> <span class="n">state</span>
 
 
-<div class="viewcode-block" id="BeamPath"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath">[docs]</a><span class="k">class</span> <span class="nc">BeamPath</span><span class="p">(</span><span class="n">OphydObject</span><span class="p">):</span>
+<div class="viewcode-block" id="BeamPath">
+<a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath">[docs]</a>
+<span class="k">class</span> <span class="nc">BeamPath</span><span class="p">(</span><span class="n">OphydObject</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a straight line of devices along the beamline</span>
 
@@ -329,7 +334,9 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; List[Device]: List of devices ordered by coordinates &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_next_device</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
 
-<div class="viewcode-block" id="BeamPath.get_device_output"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.get_device_output">[docs]</a>    <span class="k">def</span> <span class="nf">get_device_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dev</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<div class="viewcode-block" id="BeamPath.get_device_output">
+<a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.get_device_output">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_device_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dev</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Find relevant output item by attempting to match with the</span>
 <span class="sd">        input branch of the next device in this path.</span>
@@ -362,6 +369,7 @@
             <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">0</span>
 
         <span class="k">return</span> <span class="n">output_keys</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">output</span><span class="p">[</span><span class="n">output_keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span></div>
+
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">blocking_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Device</span><span class="p">]:</span>
@@ -441,7 +449,9 @@
         <span class="c1"># Otherwise only return upstream of the impediment</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">inserted</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span> <span class="o">&lt;=</span> <span class="n">impediment</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span><span class="p">]</span>
 
-<div class="viewcode-block" id="BeamPath.show_devices"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.show_devices">[docs]</a>    <span class="k">def</span> <span class="nf">show_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">:</span> <span class="n">TextIO</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="BeamPath.show_devices">
+<a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.show_devices">[docs]</a>
+    <span class="k">def</span> <span class="nf">show_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">:</span> <span class="n">TextIO</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Print a table of the devices along the beamline</span>
 
@@ -465,6 +475,7 @@
                         <span class="n">d</span><span class="o">.</span><span class="n">output_branches</span><span class="p">,</span> <span class="n">find_device_state</span><span class="p">(</span><span class="n">d</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">])</span>
         <span class="c1"># Show table</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">pt</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">file</span><span class="p">)</span></div>
+
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">impediment</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Device</span><span class="p">:</span>
@@ -490,7 +501,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocking_devices</span><span class="p">)</span>
 
-<div class="viewcode-block" id="BeamPath.clear"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span>
+<div class="viewcode-block" id="BeamPath.clear">
+<a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.clear">[docs]</a>
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -544,7 +557,10 @@
 
         <span class="k">return</span> <span class="n">status</span></div>
 
-<div class="viewcode-block" id="BeamPath.join"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.join">[docs]</a>    <span class="k">def</span> <span class="nf">join</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">beampaths</span><span class="p">:</span> <span class="n">BeamPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BeamPath</span><span class="p">:</span>
+
+<div class="viewcode-block" id="BeamPath.join">
+<a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.join">[docs]</a>
+    <span class="k">def</span> <span class="nf">join</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">beampaths</span><span class="p">:</span> <span class="n">BeamPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BeamPath</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Join multiple beampaths with the current one</span>
 
@@ -566,7 +582,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">BeamPath</span><span class="o">.</span><span class="n">from_join</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">beampaths</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="BeamPath.split"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.split">[docs]</a>    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span>
+
+<div class="viewcode-block" id="BeamPath.split">
+<a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.split">[docs]</a>
+    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">z</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">Device</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -609,7 +628,10 @@
                          <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">_pre_</span><span class="si">{</span><span class="n">z</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
                          <span class="n">minimum_transmission</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">minimum_transmission</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="BeamPath.from_join"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.from_join">[docs]</a>    <span class="nd">@classmethod</span>
+
+<div class="viewcode-block" id="BeamPath.from_join">
+<a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.from_join">[docs]</a>
+    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_join</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">beampaths</span><span class="p">:</span> <span class="n">BeamPath</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BeamPath</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Join other beampaths with the current one</span>
@@ -640,6 +662,7 @@
         <span class="n">devices</span> <span class="o">=</span> <span class="p">[</span><span class="n">device</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">beampaths</span> <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">devices</span><span class="p">]</span>
         <span class="c1"># Create a new instance</span>
         <span class="k">return</span> <span class="n">BeamPath</span><span class="p">(</span><span class="o">*</span><span class="nb">set</span><span class="p">(</span><span class="n">devices</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
 
     <span class="k">def</span> <span class="nf">_ignore</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -697,7 +720,9 @@
         <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">z</span> <span class="o">&lt;=</span> <span class="n">block</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_run_subs</span><span class="p">(</span><span class="n">sub_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">SUB_PTH_CHNG</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">obj</span><span class="p">)</span>
 
-<div class="viewcode-block" id="BeamPath.subscribe"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.subscribe">[docs]</a>    <span class="k">def</span> <span class="nf">subscribe</span><span class="p">(</span>
+<div class="viewcode-block" id="BeamPath.subscribe">
+<a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.subscribe">[docs]</a>
+    <span class="k">def</span> <span class="nf">subscribe</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
         <span class="n">event_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -730,7 +755,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_has_subscribed</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span> <span class="n">event_type</span><span class="o">=</span><span class="n">event_type</span><span class="p">,</span> <span class="n">run</span><span class="o">=</span><span class="n">run</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="BeamPath.clear_device_subs"><a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.clear_device_subs">[docs]</a>    <span class="k">def</span> <span class="nf">clear_device_subs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="BeamPath.clear_device_subs">
+<a class="viewcode-back" href="../../path.html#lightpath.path.BeamPath.clear_device_subs">[docs]</a>
+    <span class="k">def</span> <span class="nf">clear_device_subs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Clears the ._device_moved callbacks from all devices in the path.</span>
 <span class="sd">        Distinct from BeamPath.clear_sub, which unsubscribes a specific</span>
@@ -740,6 +768,7 @@
             <span class="k">for</span> <span class="n">dev</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">devices</span><span class="p">:</span>
                 <span class="n">dev</span><span class="o">.</span><span class="n">lightpath_summary</span><span class="o">.</span><span class="n">clear_sub</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_device_moved</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_has_subscribed</span> <span class="o">=</span> <span class="kc">False</span></div>
+
 
     <span class="k">def</span> <span class="nf">_repr_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">yield</span> <span class="s1">&#39;range&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">range</span>
@@ -752,6 +781,7 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">devices</span> <span class="o">==</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">devices</span>
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
 </pre></div>
 
            </div>

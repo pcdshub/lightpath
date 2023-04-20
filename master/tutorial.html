@@ -4,18 +4,18 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Introduction &mdash; LCLS Lightpath 1.0.2 documentation</title>
+  <title>Introduction &mdash; LCLS Lightpath 1.0.3.dev12+g22ec6aa documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="_static/jquery.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=fb845ca8"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -35,7 +35,7 @@
             LCLS Lightpath
           </a>
               <div class="version">
-                1.0.2
+                1.0.3.dev12+g22ec6aa
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -91,9 +91,9 @@
            <div itemprop="articleBody">
              
   <section id="introduction">
-<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading"></a></h1>
+<h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h1>
 <section id="device-manipulation">
-<h2>Device Manipulation<a class="headerlink" href="#device-manipulation" title="Permalink to this heading"></a></h2>
+<h2>Device Manipulation<a class="headerlink" href="#device-manipulation" title="Link to this heading"></a></h2>
 <p>The lightpath abstracts control of multiple devices into a single beampath
 object. Actual device instantiation should be handled else where the lightpath
 just assumes that you give it a list of devices that match the
@@ -209,7 +209,7 @@ convenience of testing, but real devices may not.</p>
 </div>
 </section>
 <section id="branching-logic-and-graph-construction">
-<h2>Branching Logic, and Graph Construction<a class="headerlink" href="#branching-logic-and-graph-construction" title="Permalink to this heading"></a></h2>
+<h2>Branching Logic, and Graph Construction<a class="headerlink" href="#branching-logic-and-graph-construction" title="Link to this heading"></a></h2>
 <p>In order to determine the state of the “beamline”, Lightpath must first
 understand where the various devices lie along the beam path.  Lightpath does
 this by constructing a Directed Graph with the devices as nodes. This
@@ -229,7 +229,7 @@ branch by their z-position, or distance from the light source.</p>
 see the <a class="reference internal" href="interface.html#interface-api"><span class="std std-ref">Device Interface</span></a> section</p>
 </section>
 <section id="lcls-specific-notes">
-<h2>LCLS Specific Notes<a class="headerlink" href="#lcls-specific-notes" title="Permalink to this heading"></a></h2>
+<h2>LCLS Specific Notes<a class="headerlink" href="#lcls-specific-notes" title="Link to this heading"></a></h2>
 <figure class="align-default">
 <a class="reference internal image-reference" href="_images/LCLS_beamline_map.svg"><img alt="Schematic of LCLS facility, with branch names (red) and branching devices (blue) labeled." src="_images/LCLS_beamline_map.svg" width="100%" /></a>
 </figure>

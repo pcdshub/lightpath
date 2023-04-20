@@ -3,18 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>lightpath.controller &mdash; LCLS Lightpath 1.0.2 documentation</title>
+  <title>lightpath.controller &mdash; LCLS Lightpath 1.0.3.dev12+g22ec6aa documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=fb845ca8"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -32,7 +32,7 @@
             LCLS Lightpath
           </a>
               <div class="version">
-                1.0.2
+                1.0.3.dev12+g22ec6aa
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -129,7 +129,9 @@
     <span class="n">dev</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Device</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="LightController"><a class="viewcode-back" href="../../controller.html#lightpath.LightController">[docs]</a><span class="k">class</span> <span class="nc">LightController</span><span class="p">:</span>
+<div class="viewcode-block" id="LightController">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController">[docs]</a>
+<span class="k">class</span> <span class="nc">LightController</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Controller for the LCLS Lightpath</span>
 
@@ -180,7 +182,9 @@
         <span class="k">for</span> <span class="n">beamline</span> <span class="ow">in</span> <span class="n">dests</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">load_beamline</span><span class="p">(</span><span class="n">beamline</span><span class="p">)</span>
 
-<div class="viewcode-block" id="LightController.load_facility"><a class="viewcode-back" href="../../controller.html#lightpath.LightController.load_facility">[docs]</a>    <span class="k">def</span> <span class="nf">load_facility</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="LightController.load_facility">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.load_facility">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_facility</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Load the facility from the provided happi client.</span>
 
@@ -222,7 +226,10 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">compose_all</span><span class="p">(</span><span class="n">subgraphs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LightController.load_beamline"><a class="viewcode-back" href="../../controller.html#lightpath.LightController.load_beamline">[docs]</a>    <span class="k">def</span> <span class="nf">load_beamline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endstation</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LightController.load_beamline">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.load_beamline">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_beamline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endstation</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Load a beamline given the facility graph.  Finds all possible</span>
 <span class="sd">        paths from facility sources to the endstation&#39;s branch.</span>
@@ -263,7 +270,10 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">beamlines</span><span class="p">[</span><span class="n">endstation</span><span class="p">]</span> <span class="o">=</span> <span class="n">paths</span></div>
 
-<div class="viewcode-block" id="LightController.get_paths"><a class="viewcode-back" href="../../controller.html#lightpath.LightController.get_paths">[docs]</a>    <span class="k">def</span> <span class="nf">get_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endstation</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BeamPath</span><span class="p">]:</span>
+
+<div class="viewcode-block" id="LightController.get_paths">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.get_paths">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endstation</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BeamPath</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the BeamPaths for a specified endstation.</span>
 <span class="sd">        Create and fill the BeamPaths if they have not been already</span>
@@ -319,7 +329,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">beamlines</span><span class="p">[</span><span class="n">endstation</span><span class="p">]</span> <span class="o">=</span> <span class="n">filled_paths</span>
         <span class="k">return</span> <span class="n">filled_paths</span></div>
 
-<div class="viewcode-block" id="LightController.imped_z"><a class="viewcode-back" href="../../controller.html#lightpath.LightController.imped_z">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="LightController.imped_z">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.imped_z">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">imped_z</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">BeamPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get z position of impediment or inf.</span>
@@ -336,7 +349,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">impediment</span><span class="p">,</span> <span class="s1">&#39;md.z&#39;</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LightController.active_path"><a class="viewcode-back" href="../../controller.html#lightpath.LightController.active_path">[docs]</a>    <span class="k">def</span> <span class="nf">active_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BeamPath</span><span class="p">:</span>
+
+<div class="viewcode-block" id="LightController.active_path">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.active_path">[docs]</a>
+    <span class="k">def</span> <span class="nf">active_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BeamPath</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the most active path to the requested endstation</span>
 
@@ -363,7 +379,10 @@
 
         <span class="k">return</span> <span class="n">paths_by_length</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="LightController.is_source_name"><a class="viewcode-back" href="../../controller.html#lightpath.LightController.is_source_name">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="LightController.is_source_name">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.is_source_name">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">is_source_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Checks if the node name provided is a valid source name</span>
@@ -380,7 +399,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;source_&#39;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LightController.walk_facility"><a class="viewcode-back" href="../../controller.html#lightpath.LightController.walk_facility">[docs]</a>    <span class="k">def</span> <span class="nf">walk_facility</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">NodeName</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">NodeName</span><span class="p">]]:</span>
+
+<div class="viewcode-block" id="LightController.walk_facility">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.walk_facility">[docs]</a>
+    <span class="k">def</span> <span class="nf">walk_facility</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">NodeName</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">NodeName</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the paths from each source to its destination by walking the</span>
 <span class="sd">        graph.</span>
@@ -449,6 +471,7 @@
 
         <span class="k">return</span> <span class="n">paths</span></div>
 
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">destinations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Device</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -506,7 +529,9 @@
 
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">devices</span><span class="p">)</span>
 
-<div class="viewcode-block" id="LightController.paths_to"><a class="viewcode-back" href="../../controller.html#lightpath.LightController.paths_to">[docs]</a>    <span class="k">def</span> <span class="nf">paths_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BeamPath</span><span class="p">]:</span>
+<div class="viewcode-block" id="LightController.paths_to">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.paths_to">[docs]</a>
+    <span class="k">def</span> <span class="nf">paths_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BeamPath</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create all BeamPaths from the facility source to the requested device</span>
 
@@ -552,7 +577,10 @@
 
         <span class="k">return</span> <span class="n">beampaths</span></div>
 
-<div class="viewcode-block" id="LightController.path_to"><a class="viewcode-back" href="../../controller.html#lightpath.LightController.path_to">[docs]</a>    <span class="k">def</span> <span class="nf">path_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BeamPath</span><span class="p">:</span>
+
+<div class="viewcode-block" id="LightController.path_to">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.path_to">[docs]</a>
+    <span class="k">def</span> <span class="nf">path_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BeamPath</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the path with latest blocking device</span>
 <span class="sd">        (highest blocking z-position) to the requested device</span>
@@ -571,7 +599,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paths_to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">imped_z</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="LightController.make_graph"><a class="viewcode-back" href="../../controller.html#lightpath.LightController.make_graph">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="LightController.make_graph">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.make_graph">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">make_graph</span><span class="p">(</span>
         <span class="n">branch_devs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SearchResult</span><span class="p">],</span>
         <span class="n">branch_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -686,7 +717,10 @@
         <span class="n">graph</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">branch_name</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">graph</span></div>
 
-<div class="viewcode-block" id="LightController.get_device"><a class="viewcode-back" href="../../controller.html#lightpath.LightController.get_device">[docs]</a>    <span class="k">def</span> <span class="nf">get_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="n">NodeName</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Device</span><span class="p">:</span>
+
+<div class="viewcode-block" id="LightController.get_device">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.get_device">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="n">NodeName</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Device</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return device in the facility.  Creates the device if it has</span>
 <span class="sd">        not been already.</span>
@@ -720,7 +754,9 @@
                              <span class="s1">&#39;attempting to make a mock device&#39;</span><span class="p">)</span>
                 <span class="n">dev</span> <span class="o">=</span> <span class="n">make_mock_device</span><span class="p">(</span><span class="n">dev_data</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">device_name</span><span class="p">][</span><span class="s1">&#39;md&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dev</span> <span class="o">=</span> <span class="n">dev</span>
-                <span class="k">return</span> <span class="n">dev</span></div></div>
+                <span class="k">return</span> <span class="n">dev</span></div>
+</div>
+
 
 
 <span class="k">def</span> <span class="nf">get_active_outputs</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
