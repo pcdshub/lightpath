@@ -1,0 +1,6 @@
+docs-versions-menu
+sphinx
+sphinx_rtd_theme>=1.2.0
+sphinx-argparse
+# Required for Sphinx 6.0+ compatibility
+sphinxcontrib-jquery
