@@ -28,12 +28,13 @@ def test_widget_updates(lightrow: LightRow, path: BeamPath):
     ipimb.insert()
     ipimb.remove()
     ipimb.insert()
+    lightrow.device.insert()
 
     def half_removed():
         return (to_stylesheet_color(state_colors['half_removed'])
                 in ipimb_row.state_label.styleSheet())
 
-    wait_until(half_removed)
+    wait_until(half_removed, timeout=5)
     assert half_removed()
 
     lightrow.device.remove()
@@ -42,7 +43,7 @@ def test_widget_updates(lightrow: LightRow, path: BeamPath):
         return (to_stylesheet_color(state_colors['removed'])
                 in lightrow.state_label.styleSheet())
 
-    wait_until(removed)
+    wait_until(removed, timeout=5)
     assert removed()
 
     lightrow.device.insert()
@@ -51,7 +52,7 @@ def test_widget_updates(lightrow: LightRow, path: BeamPath):
         return (to_stylesheet_color(state_colors['blocking'])
                 in lightrow.state_label.styleSheet())
 
-    wait_until(blocking)
+    wait_until(blocking, timeout=5)
     assert blocking()
 
     # Check that callbacks have been called
