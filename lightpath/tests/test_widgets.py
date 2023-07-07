@@ -34,7 +34,7 @@ def test_widget_updates(lightrow: LightRow, path: BeamPath):
                 in ipimb_row.state_label.styleSheet())
 
     wait_until(half_removed)
-    assert half_removed
+    assert half_removed()
 
     lightrow.device.remove()
 
@@ -43,7 +43,7 @@ def test_widget_updates(lightrow: LightRow, path: BeamPath):
                 in lightrow.state_label.styleSheet())
 
     wait_until(removed)
-    assert removed
+    assert removed()
 
     lightrow.device.insert()
 
@@ -52,7 +52,7 @@ def test_widget_updates(lightrow: LightRow, path: BeamPath):
                 in lightrow.state_label.styleSheet())
 
     wait_until(blocking)
-    assert blocking
+    assert blocking()
 
     # Check that callbacks have been called
     assert lightrow.state_label.setText.called

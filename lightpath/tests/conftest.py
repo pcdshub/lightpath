@@ -48,6 +48,8 @@ def wait_until(condition: callable, interval=0.1, timeout=1, *args, **kwargs):
     while not condition(*args, **kwargs) and time.time() - start < timeout:
         time.sleep(interval)
 
+    print(f'{time.time() - start:.3} s elapsed')
+
 
 # Basic Device
 @pytest.fixture(scope='function')
