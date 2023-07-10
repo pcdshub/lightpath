@@ -4,6 +4,7 @@ import pytest
 from ophyd import Device
 
 from lightpath import BeamPath
+from lightpath.tests.conftest import wait_until
 from lightpath.ui import LightRow
 from lightpath.ui.widgets import (state_colors, symbol_for_device,
                                   to_stylesheet_color)
@@ -27,15 +28,33 @@ def test_widget_updates(lightrow: LightRow, path: BeamPath):
     ipimb.insert()
     ipimb.remove()
     ipimb.insert()
-    assert (to_stylesheet_color(state_colors['half_removed'])
-            in ipimb_row.state_label.styleSheet())
+    lightrow.device.insert()
+
+    def half_removed():
+        return (to_stylesheet_color(state_colors['half_removed'])
+                in ipimb_row.state_label.styleSheet())
+
+    wait_until(half_removed, timeout=5)
+    assert half_removed()
 
     lightrow.device.remove()
-    assert (to_stylesheet_color(state_colors['removed'])
-            in lightrow.state_label.styleSheet())
+
+    def removed():
+        return (to_stylesheet_color(state_colors['removed'])
+                in lightrow.state_label.styleSheet())
+
+    wait_until(removed, timeout=5)
+    assert removed()
+
     lightrow.device.insert()
-    assert (to_stylesheet_color(state_colors['blocking'])
-            in lightrow.state_label.styleSheet())
+
+    def blocking():
+        return (to_stylesheet_color(state_colors['blocking'])
+                in lightrow.state_label.styleSheet())
+
+    wait_until(blocking, timeout=5)
+    assert blocking()
+
     # Check that callbacks have been called
     assert lightrow.state_label.setText.called
 

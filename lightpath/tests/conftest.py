@@ -1,6 +1,7 @@
 import logging
 import os.path
 import sys
+import time
 from contextlib import contextmanager
 
 import happi
@@ -42,6 +43,14 @@ def set_level(pytestconfig):
 ############
 # Fixtures #
 ############
+def wait_until(condition: callable, interval=0.1, timeout=1, *args, **kwargs):
+    start = time.time()
+    while not condition(*args, **kwargs) and time.time() - start < timeout:
+        time.sleep(interval)
+
+    print(f'{time.time() - start:.3} s elapsed')
+
+
 # Basic Device
 @pytest.fixture(scope='function')
 def device():

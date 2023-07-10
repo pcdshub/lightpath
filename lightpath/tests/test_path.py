@@ -8,6 +8,7 @@ from ophyd.device import Device
 from lightpath import BeamPath
 from lightpath.mock_devices import Crystal, Status
 from lightpath.path import DeviceState, find_device_state
+from lightpath.tests.conftest import wait_until
 
 
 def raiser(*args, **kwargs):
@@ -206,6 +207,7 @@ def test_callback(path: BeamPath):
     path.devices[4].insert()
     time.sleep(0.2)
     # Assert callback has been run
+    wait_until(lambda: cb.called)
     assert cb.called
 
 

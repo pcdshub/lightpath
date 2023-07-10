@@ -2,6 +2,7 @@ from distutils.spawn import find_executable
 from unittest.mock import Mock
 
 import pytest
+from pytestqt.qtbot import QtBot
 
 from lightpath.controller import LightController
 from lightpath.ui import LightApp
@@ -68,7 +69,7 @@ def test_upstream_check(lightapp: LightApp, monkeypatch):
             row[0].setHidden.assert_called_with(False)
 
 
-def test_filtering(lightapp: LightApp, monkeypatch):
+def test_filtering(qtbot: QtBot, lightapp: LightApp, monkeypatch):
     lightapp.destination_combo.setCurrentIndex(4)  # set current to MEC
     # Create mock functions
     for row in lightapp.rows:
@@ -76,7 +77,7 @@ def test_filtering(lightapp: LightApp, monkeypatch):
     # Initialize properly with nothing hidden
     lightapp.filter()
     for row in lightapp.rows:
-        row[0].setHidden.assert_called_with(False)
+        qtbot.waitUntil(lambda: row[0].setHidden.assert_called_with(False))
     # Insert at least one device then hide
     device_row = lightapp.rows[2][0]
     device_row.device.insert()
@@ -87,27 +88,27 @@ def test_filtering(lightapp: LightApp, monkeypatch):
     lightapp.filter()
     for row in lightapp.rows:
         if row[0].device.get_lightpath_state().removed:
-            row[0].setHidden.assert_called_with(True)
+            qtbot.waitUntil(lambda: row[0].setHidden.assert_called_with(True))
         else:
-            row[0].setHidden.assert_called_with(False)
+            qtbot.waitUntil(lambda: row[0].setHidden.assert_called_with(False))
     # Hide upstream devices
     lightapp.select_devices('MEC')
     lightapp.remove_check.setChecked(True)
     lightapp.filter()
     for row in lightapp.rows:
         if row[0].device not in lightapp.light.active_path('MEC').path:
-            row[0].setHidden.assert_called_with(True)
+            qtbot.waitUntil(lambda: row[0].setHidden.assert_called_with(True))
         else:
-            row[0].setHidden.assert_called_with(False)
+            qtbot.waitUntil(lambda: row[0].setHidden.assert_called_with(False))
     # Dual hidden categories will not fight
     lightapp.remove_check.setChecked(False)
     lightapp.filter()
     for row in lightapp.rows:
         if ((row[0].device not in lightapp.light.active_path('MEC').path)
                 or (row[0].device.get_lightpath_state().removed)):
-            row[0].setHidden.assert_called_with(True)
+            qtbot.waitUntil(lambda: row[0].setHidden.assert_called_with(True))
         else:
-            row[0].setHidden.assert_called_with(False)
+            qtbot.waitUntil(lambda: row[0].setHidden.assert_called_with(False))
 
 
 def test_typhos_display(lightapp: LightApp):
