@@ -2,6 +2,21 @@ Release History
 ###############
 
 
+v1.0.3 (2023-09-14)
+===================
+
+Maintenance
+-----------
+- Update build requirements to use pip-provided extras for documentation and test builds.
+- Fix some tests, adding assert statements with timeouts.
+- Inherit secrets to the github actions workflow to enable pypi uploads
+
+Contributors
+------------
+- tangkong
+- zllentz
+
+
 v1.0.2 (2023-04-04)
 ===================
 
