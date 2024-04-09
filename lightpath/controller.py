@@ -116,10 +116,11 @@ class LightController:
             for branch_set in (res.metadata.get('input_branches', []),
                                res.metadata.get('output_branches', [])):
                 if branch_set is None:
-                    raise ValueError(
-                        f'device {res.item.name} has no branch information, '
+                    logger.warning(
+                        f'device ({res.item.name}) missing branch information, '
                         'check to make sure your happi database is '
                         'correctly implementing its container.')
+                    break
                 for branch in branch_set:
                     branch_dict.setdefault(branch, set()).add(res)
 
