@@ -147,7 +147,7 @@ class LightController:
         consider part of the path.
 
         Loads valid beampaths into the LightController.beamlines
-        attribute for latedr access.
+        attribute for later access.
 
         Parameters
         ----------
@@ -166,18 +166,46 @@ class LightController:
             # Find the paths from each source to the desired line
             for src in self.sources:
                 try:
-                    if nx.has_path(self.graph, src, branch):
-                        found_paths = nx.all_simple_paths(self.graph,
-                                                          source=src,
-                                                          target=branch)
-                        paths.extend(found_paths)
-                    else:
-                        logger.debug(f'No path between {src} and {branch}')
+                    path_exists: bool = nx.has_path(self.graph, src, branch)
                 except NodeNotFound:
                     logger.debug(f'Either source {src} or target {branch} '
                                  'not found.')
+                    path_exists = False
 
-        self.beamlines[endstation] = paths
+                if path_exists:
+                    found_paths = nx.all_simple_paths(self.graph,
+                                                      source=src,
+                                                      target=branch)
+
+                    # Trim beamline based on z-positions
+                    if isinstance(end_branches, dict):
+                        new_paths = list()
+                        for found_path in found_paths:
+                            end_z = end_branches[branch]
+                            if end_z is not None:
+                                # Only filter internal devices
+                                truncated_path = [
+                                    name for name in found_path[1:-1]
+                                    if self.graph.nodes[name]['md'].res['z'] < end_z
+                                ]
+                                truncated_path.append(found_path[-1])
+                                truncated_path.insert(0, found_path[0])
+                                new_paths.append(truncated_path)
+                            else:
+                                new_paths.append(found_path)
+
+                        paths.extend(new_paths)
+                    elif isinstance(end_branches, list):
+                        paths.extend(found_paths)
+                    else:
+                        raise TypeError('config is incorrectly formatted '
+                                        f'(found mapping from {endstation} to '
+                                        f'{type(end_branches)}).')
+
+                else:
+                    logger.debug(f'No path between {src} and {branch}')
+
+                self.beamlines[endstation] = paths
 
     def get_paths(self, endstation: str) -> list[BeamPath]:
         """
@@ -201,7 +229,7 @@ class LightController:
             return paths
 
         # create the BeamPaths if they have not been already
-        end_branches = self.beamline_config[endstation]
+        # end_branches = self.beamline_config[endstation]
         filled_paths = []
         for path in paths:
             subgraph = self.graph.subgraph(path)
@@ -214,23 +242,7 @@ class LightController:
                 minimum_transmission=self.min_trans
             )
 
-            if isinstance(end_branches, dict):
-                # access the last z for this branch
-                # if end_branches is Dict[BranchName, end_z], grab last
-                # allowable z with the branch name (last node in path)
-                last_z = end_branches[path[-1]]
-                if last_z:
-                    # append path with all devices before last z
-                    filled_paths.append(bp.split(last_z)[0])
-                else:
-                    filled_paths.append(bp)
-            elif isinstance(end_branches, list):
-                # end_branches is a simple list, no splitting needed
-                filled_paths.append(bp)
-            else:
-                raise TypeError('config is incorrectly formatted '
-                                f'(found mapping from {endstation} to '
-                                f'{type(end_branches)}).')
+            filled_paths.append(bp)
 
         self.beamlines[endstation] = filled_paths
         return filled_paths
