@@ -2,6 +2,21 @@ Release History
 ###############
 
 
+v1.0.4 (2024-04-12)
+===================
+
+Maintenance
+-----------
+- Remove hard failure when a lightpath-active device is malformed.  Instead of throwing an
+  exception, simply omit it from the facility graph
+- Trim beam paths before BeamPath objects are created, when device names are gathered into paths
+
+Contributors
+------------
+- tangkong
+
+
+
 v1.0.3 (2023-09-14)
 ===================
 
