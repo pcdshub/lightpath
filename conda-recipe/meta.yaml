@@ -27,6 +27,7 @@ outputs:
   - name: lightpath-base
     build:
       noarch: python
+      script: python -m pip install . -vv
     requirements:
       host:
         - python >=3.6
