@@ -49,7 +49,7 @@ outputs:
         - pip
         - setuptools_scm
       run:
-        - lightpath-base
+        - {{ pin_subpackage('lightpath-base', max_pin='x.x') }}
         - pydm
         - pyqt >=5
         - qtawesome
