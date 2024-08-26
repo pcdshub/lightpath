@@ -19,7 +19,6 @@ test:
     - lightpath
   requires:
     - ipython
-    - matplotlib
     - pytest <7.2.0
     - pytest-qt
 
@@ -37,6 +36,7 @@ outputs:
         - python >=3.6
         - coloredlogs
         - happi >=1.6.0
+        - networkx <3.3
         - numpy
         - ophyd
         - prettytable
