@@ -36,10 +36,12 @@ outputs:
         - python >=3.6
         - coloredlogs
         - happi >=1.6.0
-        - networkx <3.3
         - numpy
         - ophyd
         - prettytable
+      run_constrained:
+        - networkx <3.3  # networkx drops py3.9 support with 3.3
+        - numpy <2.0  # until upstream packages update (ophyd)
 
   - name: lightpath
     build:
