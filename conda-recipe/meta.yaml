@@ -16,24 +16,6 @@ build:
   noarch: python
   script: {{ PYTHON }} -m pip install . -vv
 
-requirements:
-  build:
-    - python >=3.6
-    - pip
-    - setuptools_scm
-  run:
-    - python >=3.6
-    - coloredlogs
-    - happi >=1.6.0
-    - numpy
-    - ophyd
-    - prettytable
-    - pydm
-    - pyqt >=5
-    - qtawesome
-    - qtpy
-    - typhos >=1.0.0
-
 test:
   imports:
     - lightpath
@@ -42,6 +24,40 @@ test:
     - matplotlib
     - pytest <7.2.0
     - pytest-qt
+
+outputs:
+  - name: lightpath-base
+    build:
+      noarch: python
+    requirements:
+      host:
+        - python >=3.6
+        - pip
+        - setuptools_scm
+      run:
+        - python >=3.6
+        - coloredlogs
+        - happi >=1.6.0
+        - numpy
+        - ophyd
+        - prettytable
+
+  - name: lightpath
+    build:
+      noarch: python
+    requirements:
+      host:
+        - python >=3.6
+        - pip
+        - setuptools_scm
+      run:
+        - lightpath-base
+        - pydm
+        - pyqt >=5
+        - qtawesome
+        - qtpy
+        - typhos >=1.0.0
+
 
 about:
   home: https://github.com/pcdshub/lightpath
