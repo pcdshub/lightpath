@@ -39,7 +39,6 @@ test:
     - lightpath
   requires:
     - ipython
-    - matplotlib
     - pytest <7.2.0
     - pytest-qt
 
