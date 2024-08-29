@@ -5,7 +5,7 @@ load_file_regex(load_file=os.path.join(import_name, "_version.py"),
 regex_pattern=".*version = '(\S+)'").group(1) %}
 
 package:
-  name: lightpath-suite
+  name: {{ package_name }}
   version: {{ version }}
 
 source:
@@ -13,56 +13,35 @@ source:
 
 build:
   number: 0
+  noarch: python
+  script: {{ PYTHON }} -m pip install . -vv
+
+requirements:
+  build:
+    - python >=3.6
+    - pip
+    - setuptools_scm
+  run:
+    - python >=3.6
+    - coloredlogs
+    - happi >=1.6.0
+    - numpy
+    - ophyd
+    - prettytable
+    - pydm
+    - pyqt >=5
+    - qtawesome
+    - qtpy
+    - typhos >=1.0.0
 
 test:
   imports:
     - lightpath
   requires:
     - ipython
+    - matplotlib
     - pytest <7.2.0
     - pytest-qt
-
-outputs:
-  - name: lightpath-base
-    build:
-      noarch: python
-      script: python -m pip install . -vv --no-deps --no-build-isolation
-    requirements:
-      host:
-        - python >=3.9
-        - pip
-        - setuptools
-        - setuptools_scm
-      run:
-        - python >=3.9
-        - coloredlogs
-        - happi >=1.6.0
-        - ophyd
-        - prettytable
-      run_constrained:
-        - networkx <3.3  # networkx drops py3.9 support with 3.3
-        - numpy <2.0  # until upstream packages update (ophyd)
-
-  - name: lightpath
-    build:
-      noarch: python
-    requirements:
-      host:
-        - python >=3.9
-        - pip
-        - setuptools
-        - setuptools_scm
-      run:
-        - {{ pin_subpackage('lightpath-base', max_pin='x.x') }}
-        - pydm
-        - pyqt >=5
-        - qtawesome
-        - qtpy
-        - typhos >=1.0.0
-      test:
-        imports:
-          - lightpath
-
 
 about:
   home: https://github.com/pcdshub/lightpath
