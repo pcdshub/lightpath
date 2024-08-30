@@ -39,7 +39,7 @@ test:
     - lightpath
   requires:
     - ipython
-    - pytest <7.2.0
+    - pytest
     - pytest-qt
 
 about:
