@@ -2,9 +2,5 @@ coloredlogs
 happi>=1.6.0
 numpy
 ophyd
+networkx<3.3
 prettytable
-pydm
-PyQt5
-qtawesome
-qtpy
-typhos>=1.0.0

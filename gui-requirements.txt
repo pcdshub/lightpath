@@ -1,0 +1,5 @@
+pydm
+PyQt5
+qtawesome
+qtpy
+typhos>=1.0.0

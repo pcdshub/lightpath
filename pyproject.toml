@@ -39,11 +39,14 @@ file = "README.rst"
 [tool.setuptools.dynamic.dependencies]
 file = [ "requirements.txt",]
 
+[tool.setuptools.dynamic.optional-dependencies.gui]
+file = "gui-requirements.txt"
+
 [tool.setuptools.dynamic.optional-dependencies.doc]
 file = "docs-requirements.txt"
 
 [tool.setuptools.dynamic.optional-dependencies.test]
-file = "dev-requirements.txt"
+file = ["dev-requirements.txt", "gui-requirements.txt"]
 
 [tool.pytest.ini_options]
 addopts = "--cov=."
