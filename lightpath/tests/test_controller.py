@@ -5,6 +5,7 @@ import happi
 import pytest
 
 from lightpath import LightController
+from lightpath.config import beamlines
 from lightpath.errors import PathError
 
 
@@ -184,6 +185,6 @@ def test_sim_ctrl():
 
     lc = LightController(sim_client)
 
-    assert len(lc.beamlines.keys()) == 9
+    assert len(lc.beamlines.keys()) == len(beamlines)
     assert len(lc.active_path('XCS').devices) == 13
     assert lc.get_device('sl2k0')
