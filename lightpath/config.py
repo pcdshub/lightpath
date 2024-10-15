@@ -11,6 +11,7 @@ beamlines = {'XPP': {'L0': 800, 'L2': None},
              'CXI': ['L0'],
              'MEC': ['L4'],
              'TMO': ['K4'],
+             'RIX': ['K1', 'K2'],
              'CRIX': ['K1'],
              'QRIX': ['K2'],
              'TXI': ['K3', 'L1']}
