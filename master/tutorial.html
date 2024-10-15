@@ -1,23 +1,21 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Introduction &mdash; LCLS Lightpath 1.0.5.dev14+g8df784d documentation</title>
+  <title>Introduction &mdash; LCLS Lightpath 1.0.6.dev7+gc7865aa documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=024e94d2"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=1b70267f"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -36,9 +34,6 @@
           <a href="index.html" class="icon icon-home">
             LCLS Lightpath
           </a>
-              <div class="version">
-                1.0.5.dev14+g8df784d
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -158,10 +153,10 @@ convenience of testing, but real devices may not.</p>
 <span class="gh">Out[6]: </span><span class="go">True</span>
 
 <span class="gp">In [7]: </span><span class="n">path</span><span class="o">.</span><span class="n">five</span><span class="o">.</span><span class="n">insert</span><span class="p">()</span>
-<span class="gh">Out[7]: </span><span class="go">DeviceStatus(device=five, done=False, success=False)</span>
+<span class="gh">Out[7]: </span><span class="go">DeviceStatus(device=five, done=True, success=True)</span>
 
 <span class="gp">In [8]: </span><span class="n">path</span><span class="o">.</span><span class="n">six</span><span class="o">.</span><span class="n">insert</span><span class="p">()</span>
-<span class="gh">Out[8]: </span><span class="go">DeviceStatus(device=six, done=False, success=False)</span>
+<span class="gh">Out[8]: </span><span class="go">DeviceStatus(device=six, done=True, success=True)</span>
 
 <span class="gp">In [9]: </span><span class="n">path</span><span class="o">.</span><span class="n">cleared</span>
 <span class="gh">Out[9]: </span><span class="go">True</span>
@@ -197,7 +192,7 @@ convenience of testing, but real devices may not.</p>
 <span class="gh">Out[13]: </span><span class="go">False</span>
 
 <span class="gp">In [14]: </span><span class="n">path</span><span class="o">.</span><span class="n">two</span><span class="o">.</span><span class="n">insert</span><span class="p">()</span>
-<span class="gh">Out[14]: </span><span class="go">DeviceStatus(device=two, done=False, success=False)</span>
+<span class="gh">Out[14]: </span><span class="go">DeviceStatus(device=two, done=True, success=True)</span>
 
 <span class="gp">In [15]: </span><span class="n">path</span><span class="o">.</span><span class="n">impediment</span> <span class="o">==</span> <span class="n">path</span><span class="o">.</span><span class="n">two</span>
 <span class="gh">Out[15]: </span><span class="go">True</span>
@@ -233,7 +228,8 @@ see the <a class="reference internal" href="interface.html#interface-api"><span 
 <section id="lcls-specific-notes">
 <h2>LCLS Specific Notes<a class="headerlink" href="#lcls-specific-notes" title="Link to this heading"></a></h2>
 <figure class="align-default">
-<a class="reference internal image-reference" href="_images/LCLS_beamline_map.svg"><img alt="Schematic of LCLS facility, with branch names (red) and branching devices (blue) labeled." src="_images/LCLS_beamline_map.svg" style="width: 100%;" /></a>
+<a class="reference internal image-reference" href="_images/LCLS_beamline_map.svg"><img alt="Schematic of LCLS facility, with branch names (red) and branching devices (blue) labeled." src="_images/LCLS_beamline_map.svg" style="width: 100%;" />
+</a>
 </figure>
 <p>The way Lightpath organizes devices (ordering devices on the same branch
 by z position) is greatly motivated by the LCLS facility and its naming
