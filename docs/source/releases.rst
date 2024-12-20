@@ -2,6 +2,27 @@ Release History
 ###############
 
 
+v1.0.6 (2024-12-19)
+===================
+
+Features
+--------
+- Add "RIX" beamline to load all "RIX" beamline devices.
+  This is used in the rix3 hutch-python session to control
+  any of the beamline devices.
+
+Contributors
+------------
+- zllentz
+
+
+
+v1.0.5 (2024-09-03)
+===================
+Separate lightpath and lightpath[gui] subpackages (for pip builds).
+No functional changes to the library code.
+
+
 v1.0.4 (2024-04-12)
 ===================
 
