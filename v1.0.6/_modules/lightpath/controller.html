@@ -1,0 +1,850 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lightpath.controller &mdash; LCLS Lightpath 1.0.6 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=e2a723ec"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            LCLS Lightpath
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Controlling the beamline</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../interface.html">Device Interface</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">Command Line Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../controller.html">LightController</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../path.html">BeamPath</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Notes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../upcoming_changes.html">Upcoming Changes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">LCLS Lightpath</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">lightpath.controller</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for lightpath.controller</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">While the :class:`.BeamPath` object provides basic control functionality, the</span>
+<span class="sd">:class:`.LightController` is what organizes of all of LCLS&#39;s</span>
+<span class="sd">devices. The facility is represented by an Directed Graph, starting at the</span>
+<span class="sd">source and ending at the beamline hutches.  After placing each device in the</span>
+<span class="sd">facility graph, each beamline is constructed as a :class:`.BeamPath` object.</span>
+
+<span class="sd">This includes not only devices on the upstream beamline but all of the</span>
+<span class="sd">beamlines before it. For example, the MEC beampath will include devices in both</span>
+<span class="sd">the FEE and the XRT.  The MEC beampath will also contain devices that appear in</span>
+<span class="sd">XPP&#39;s and XCS&#39;s beampath. In some cases there are multiple possible paths beam</span>
+<span class="sd">may take to reach a given endstation.  In the case of multiple possible paths,</span>
+<span class="sd">the :meth:`.LightController.active_path` will return the path with the latest</span>
+<span class="sd">impediment.  (equivalently, the path that lets the beam through farthest)</span>
+
+<span class="sd">The :class:`.LightController` handles this logic as well as a basic overview of</span>
+<span class="sd">where the beam is</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">from</span> <span class="nn">happi</span> <span class="kn">import</span> <span class="n">Client</span><span class="p">,</span> <span class="n">SearchResult</span>
+<span class="kn">from</span> <span class="nn">networkx.exception</span> <span class="kn">import</span> <span class="n">NodeNotFound</span>
+<span class="kn">from</span> <span class="nn">ophyd</span> <span class="kn">import</span> <span class="n">Device</span>
+
+<span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">beamlines</span>
+<span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">sources</span> <span class="k">as</span> <span class="n">default_sources</span>
+<span class="kn">from</span> <span class="nn">.errors</span> <span class="kn">import</span> <span class="n">PathError</span>
+<span class="kn">from</span> <span class="nn">.mock_devices</span> <span class="kn">import</span> <span class="n">Crystal</span><span class="p">,</span> <span class="n">Valve</span>
+<span class="kn">from</span> <span class="nn">.path</span> <span class="kn">import</span> <span class="n">BeamPath</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">NodeName</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="n">MaybeBeamPath</span> <span class="o">=</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">NodeName</span><span class="p">],</span> <span class="n">BeamPath</span><span class="p">]]</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">NodeMetadata</span><span class="p">:</span>
+    <span class="n">res</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SearchResult</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">dev</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Device</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="LightController">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController">[docs]</a>
+<span class="k">class</span> <span class="nc">LightController</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Controller for the LCLS Lightpath</span>
+
+<span class="sd">    Handles grouping devices into beamlines and joining paths together. Also</span>
+<span class="sd">    provides an overview of the state of the entire beamline</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    client : happi.Client</span>
+<span class="sd">        Happi Client</span>
+
+<span class="sd">    endstations: List[str], optional</span>
+<span class="sd">        List of experimental endstations to load BeamPath objects for. If left</span>
+<span class="sd">        as None, all endstations will be loaded</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">graph</span><span class="p">:</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">client</span><span class="p">:</span> <span class="n">Client</span><span class="p">,</span>
+        <span class="n">endstations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cfg</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">:</span> <span class="n">Client</span> <span class="o">=</span> <span class="n">client</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;beamlines&#39;</span><span class="p">:</span> <span class="n">beamlines</span><span class="p">,</span>
+            <span class="s1">&#39;hutches&#39;</span><span class="p">:</span> <span class="n">endstations</span><span class="p">,</span>
+            <span class="s1">&#39;sources&#39;</span><span class="p">:</span> <span class="n">default_sources</span><span class="p">,</span>
+            <span class="s1">&#39;min_trans&#39;</span><span class="p">:</span> <span class="mf">0.1</span>
+        <span class="p">}</span>
+        <span class="c1"># update default config with provided cfg</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beamline_config</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;beamlines&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hutches</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;hutches&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_sources</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;sources&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_trans</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;min_trans&#39;</span><span class="p">]</span>
+
+        <span class="c1"># a mapping of endstation name to either a path or initialized BeamPath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beamlines</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">MaybeBeamPath</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="c1"># sources found in facility</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="c1"># initialize graph -&gt; self.graph</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_facility</span><span class="p">()</span>
+
+        <span class="n">dests</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hutches</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">beamline_config</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="c1"># Find the requisite beamlines to reach our endstation</span>
+        <span class="k">for</span> <span class="n">beamline</span> <span class="ow">in</span> <span class="n">dests</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_beamline</span><span class="p">(</span><span class="n">beamline</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LightController.load_facility">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.load_facility">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_facility</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load the facility from the provided happi client.</span>
+
+<span class="sd">        The facility is represented by a directed graph, with</span>
+<span class="sd">        devices as nodes.  Edge weights are initialized as 0, and</span>
+<span class="sd">        labeled with their branch.</span>
+
+<span class="sd">        The facility graph is created by combining subgraphs that</span>
+<span class="sd">        each contain all the devices on a given branch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">search_range</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">math</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
+                                           <span class="n">active</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">lightpath</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;No lightpath-active devices found&#39;</span><span class="p">)</span>
+        <span class="c1"># gather devices by branch</span>
+        <span class="n">branch_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">branch_set</span> <span class="ow">in</span> <span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;input_branches&#39;</span><span class="p">,</span> <span class="p">[]),</span>
+                               <span class="n">res</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;output_branches&#39;</span><span class="p">,</span> <span class="p">[])):</span>
+                <span class="k">if</span> <span class="n">branch_set</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;device (</span><span class="si">{</span><span class="n">res</span><span class="o">.</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">) missing branch information, &#39;</span>
+                        <span class="s1">&#39;check to make sure your happi database is &#39;</span>
+                        <span class="s1">&#39;correctly implementing its container.&#39;</span><span class="p">)</span>
+                    <span class="k">break</span>
+                <span class="k">for</span> <span class="n">branch</span> <span class="ow">in</span> <span class="n">branch_set</span><span class="p">:</span>
+                    <span class="n">branch_dict</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">branch</span><span class="p">,</span> <span class="nb">set</span><span class="p">())</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+
+        <span class="c1"># Construct subgraphs and merge</span>
+        <span class="n">subgraphs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">branch_name</span><span class="p">,</span> <span class="n">branch_devs</span> <span class="ow">in</span> <span class="n">branch_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">subgraph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_graph</span><span class="p">(</span>
+                <span class="n">branch_devs</span><span class="p">,</span>
+                <span class="n">sources</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">default_sources</span><span class="p">,</span>
+                <span class="n">branch_name</span><span class="o">=</span><span class="n">branch_name</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">subgraph</span>
+                                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_source_name</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+            <span class="n">subgraphs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subgraph</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">compose_all</span><span class="p">(</span><span class="n">subgraphs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LightController.load_beamline">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.load_beamline">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_beamline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endstation</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load a beamline given the facility graph.  Finds all possible</span>
+<span class="sd">        paths from facility sources to the endstation&#39;s branch.</span>
+<span class="sd">        Branches are mapped to endstations in the config.</span>
+<span class="sd">        Each branch can be optionally mapped to a final z to</span>
+<span class="sd">        consider part of the path.</span>
+
+<span class="sd">        Loads valid beampaths into the LightController.beamlines</span>
+<span class="sd">        attribute for later access.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        endstation : str</span>
+<span class="sd">            Name of endstation to load</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">end_branches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">beamline_config</span><span class="p">[</span><span class="n">endstation</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unable to find </span><span class="si">%s</span><span class="s2"> as a configured endstation, &quot;</span>
+                           <span class="s2">&quot;assuming this is an invalid path&quot;</span><span class="p">,</span> <span class="n">endstation</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">paths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">branch</span> <span class="ow">in</span> <span class="n">end_branches</span><span class="p">:</span>
+            <span class="c1"># Find the paths from each source to the desired line</span>
+            <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">path_exists</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">has_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">branch</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">NodeNotFound</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Either source </span><span class="si">{</span><span class="n">src</span><span class="si">}</span><span class="s1"> or target </span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s1"> &#39;</span>
+                                 <span class="s1">&#39;not found.&#39;</span><span class="p">)</span>
+                    <span class="n">path_exists</span> <span class="o">=</span> <span class="kc">False</span>
+
+                <span class="k">if</span> <span class="n">path_exists</span><span class="p">:</span>
+                    <span class="n">found_paths</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">all_simple_paths</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="p">,</span>
+                                                      <span class="n">source</span><span class="o">=</span><span class="n">src</span><span class="p">,</span>
+                                                      <span class="n">target</span><span class="o">=</span><span class="n">branch</span><span class="p">)</span>
+
+                    <span class="c1"># Trim beamline based on z-positions</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">end_branches</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                        <span class="n">new_paths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                        <span class="k">for</span> <span class="n">found_path</span> <span class="ow">in</span> <span class="n">found_paths</span><span class="p">:</span>
+                            <span class="n">end_z</span> <span class="o">=</span> <span class="n">end_branches</span><span class="p">[</span><span class="n">branch</span><span class="p">]</span>
+                            <span class="k">if</span> <span class="n">end_z</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                <span class="c1"># Only filter internal devices</span>
+                                <span class="n">truncated_path</span> <span class="o">=</span> <span class="p">[</span>
+                                    <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">found_path</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s1">&#39;md&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">end_z</span>
+                                <span class="p">]</span>
+                                <span class="n">truncated_path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">found_path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                                <span class="n">truncated_path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">found_path</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                                <span class="n">new_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">truncated_path</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">new_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">found_path</span><span class="p">)</span>
+
+                        <span class="n">paths</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_paths</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">end_branches</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="n">paths</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">found_paths</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;config is incorrectly formatted &#39;</span>
+                                        <span class="sa">f</span><span class="s1">&#39;(found mapping from </span><span class="si">{</span><span class="n">endstation</span><span class="si">}</span><span class="s1"> to &#39;</span>
+                                        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">end_branches</span><span class="p">)</span><span class="si">}</span><span class="s1">).&#39;</span><span class="p">)</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No path between </span><span class="si">{</span><span class="n">src</span><span class="si">}</span><span class="s1"> and </span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">beamlines</span><span class="p">[</span><span class="n">endstation</span><span class="p">]</span> <span class="o">=</span> <span class="n">paths</span></div>
+
+
+<div class="viewcode-block" id="LightController.get_paths">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.get_paths">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endstation</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BeamPath</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the BeamPaths for a specified endstation.</span>
+<span class="sd">        Create and fill the BeamPaths if they have not been already</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        endstation : str</span>
+<span class="sd">            name of endstation to return paths for</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        List[BeamPath]</span>
+<span class="sd">            a list of BeamPath&#39;s to the requested endstation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># if path exists, return it</span>
+        <span class="n">paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">beamlines</span><span class="p">[</span><span class="n">endstation</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">BeamPath</span><span class="p">)</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">]):</span>
+            <span class="k">return</span> <span class="n">paths</span>
+
+        <span class="c1"># create the BeamPaths if they have not been already</span>
+        <span class="c1"># end_branches = self.beamline_config[endstation]</span>
+        <span class="n">filled_paths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+            <span class="n">subgraph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="n">devices</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_device</span><span class="p">(</span><span class="n">dev_name</span><span class="p">)</span>
+                       <span class="k">for</span> <span class="n">dev_name</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">subgraph</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">data</span><span class="p">()</span>
+                       <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;md&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+            <span class="n">bp</span> <span class="o">=</span> <span class="n">BeamPath</span><span class="p">(</span>
+                <span class="o">*</span><span class="n">devices</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">endstation</span><span class="p">,</span>
+                <span class="n">minimum_transmission</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_trans</span>
+            <span class="p">)</span>
+
+            <span class="n">filled_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bp</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">beamlines</span><span class="p">[</span><span class="n">endstation</span><span class="p">]</span> <span class="o">=</span> <span class="n">filled_paths</span>
+        <span class="k">return</span> <span class="n">filled_paths</span></div>
+
+
+<div class="viewcode-block" id="LightController.imped_z">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.imped_z">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">imped_z</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">BeamPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get z position of impediment or inf.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path : :class:`BeamPath`</span>
+<span class="sd">            BeamPath to find impediment position in</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            z position of impediment</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">impediment</span><span class="p">,</span> <span class="s1">&#39;md.z&#39;</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LightController.active_path">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.active_path">[docs]</a>
+    <span class="k">def</span> <span class="nf">active_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BeamPath</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the most active path to the requested endstation</span>
+
+<span class="sd">        Looks for the path with the latest impediment (highest z)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dest : str</span>
+<span class="sd">            endstation to look for paths towards</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        path : :class:`BeamPath`</span>
+<span class="sd">            the active path</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_paths</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PathError</span><span class="p">(</span><span class="s1">&#39;No paths in facility to the &#39;</span>
+                            <span class="sa">f</span><span class="s1">&#39;desired endstation: </span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">paths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">paths_by_length</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">imped_z</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">paths_by_length</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="LightController.is_source_name">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.is_source_name">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">is_source_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if the node name provided is a valid source name</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            name to check</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            if name is a valid source name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;source_&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LightController.walk_facility">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.walk_facility">[docs]</a>
+    <span class="k">def</span> <span class="nf">walk_facility</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">NodeName</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">NodeName</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the paths from each source to its destination by walking the</span>
+<span class="sd">        graph.</span>
+
+<span class="sd">        Starting from a source node, steps iteratively through a node&#39;s</span>
+<span class="sd">        successors (nearest neighbors).  If there is one and only one valid</span>
+<span class="sd">        successor, step to that device and repeat.  Once there are no more</span>
+<span class="sd">        connections, we have reached the end of the line.</span>
+
+<span class="sd">        Successors are considered invalid if a node&#39;s output branch does not</span>
+<span class="sd">        match the successor&#39;s input.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Dict[NodeName, List[NodeName]]</span>
+<span class="sd">            A mapping from source node names to path of nodes</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        PathError</span>
+<span class="sd">            If a single, valid path cannot be determined</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">paths</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">NodeName</span><span class="p">,</span> <span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">}</span>
+
+        <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">successors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">successors</span><span class="p">(</span><span class="n">src</span><span class="p">))</span>
+            <span class="c1"># skip to node after source node</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">curr</span> <span class="o">=</span> <span class="n">successors</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">PathError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Isolated node (</span><span class="si">{</span><span class="n">src</span><span class="si">}</span><span class="s1">) in graph, has &#39;</span>
+                                <span class="s1">&#39;no successors.  Database may be &#39;</span>
+                                <span class="s1">&#39;misconfigured&#39;</span><span class="p">)</span>
+            <span class="n">curr_dev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_device</span><span class="p">(</span><span class="n">curr</span><span class="p">)</span>
+
+            <span class="k">while</span> <span class="n">successors</span><span class="p">:</span>
+                <span class="c1"># get output branches that receive beam</span>
+                <span class="n">out_branches</span> <span class="o">=</span> <span class="n">get_active_outputs</span><span class="p">(</span><span class="n">curr_dev</span><span class="p">)</span>
+                <span class="n">connections</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">succ</span> <span class="ow">in</span> <span class="n">successors</span><span class="p">:</span>
+                    <span class="n">succ_dev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_device</span><span class="p">(</span><span class="n">succ</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">succ_dev</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="c1"># reached a node without a device, (the end)</span>
+                        <span class="k">continue</span>
+
+                    <span class="n">in_branches</span> <span class="o">=</span> <span class="n">succ_dev</span><span class="o">.</span><span class="n">input_branches</span>
+
+                    <span class="n">active_links</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">out_branches</span>
+                                    <span class="k">if</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">in_branches</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">active_links</span><span class="p">:</span>
+                        <span class="n">connections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">succ</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">connections</span><span class="p">:</span>
+                    <span class="c1"># should be at the end</span>
+                    <span class="k">break</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">connections</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">PathError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;indeterminate pathing, </span><span class="si">{</span><span class="n">succ</span><span class="si">}</span><span class="s1"> has &#39;</span>
+                        <span class="sa">f</span><span class="s1">&#39;multiple valid children: </span><span class="si">{</span><span class="n">connections</span><span class="si">}</span><span class="s1">&#39;</span>
+                    <span class="p">)</span>
+
+                <span class="n">curr</span> <span class="o">=</span> <span class="n">connections</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">curr</span><span class="p">)</span>
+                <span class="n">curr_dev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_device</span><span class="p">(</span><span class="n">curr</span><span class="p">)</span>
+                <span class="n">successors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">successors</span><span class="p">(</span><span class="n">curr</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">paths</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">destinations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Device</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Current device destinations for the LCLS photon beam</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        List[Device]</span>
+<span class="sd">            a list of beam destinations</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">find_dest</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot; small closure to cache the impediment&quot;&quot;&quot;</span>
+            <span class="n">imped</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">impediment</span>
+            <span class="k">if</span> <span class="n">imped</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">imped</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">branching_devices</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">imped</span>
+
+        <span class="n">dests</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">endstation</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">beamlines</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_paths</span><span class="p">(</span><span class="n">endstation</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+                <span class="n">dest</span> <span class="o">=</span> <span class="n">find_dest</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">dest</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">dests</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">dests</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">devices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Device</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        All of the devices loaded in the facility</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        List[Device]</span>
+<span class="sd">            list of devices loaded in the facility</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">n</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;md&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dev</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">data</span><span class="p">()]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">incident_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Device</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        List of all devices in contact with photons along the beamline</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        List[Device]</span>
+<span class="sd">            list of all incident devices in facility</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">devices</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">endstation</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">beamlines</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_paths</span><span class="p">(</span><span class="n">endstation</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+                <span class="n">devices</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">incident_devices</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">devices</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LightController.paths_to">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.paths_to">[docs]</a>
+    <span class="k">def</span> <span class="nf">paths_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">BeamPath</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create all BeamPaths from the facility source to the requested device</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        device : Device</span>
+<span class="sd">            A device somewhere in LCLS</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        PathError</span>
+<span class="sd">            If a single, valid path cannot be determined</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        paths : List[:class:`BeamPath`]</span>
+<span class="sd">            Paths to and including given device</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">paths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">nx</span><span class="o">.</span><span class="n">has_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">device</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+                <span class="n">found_paths</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">all_simple_paths</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">src</span><span class="p">,</span>
+                                                  <span class="n">target</span><span class="o">=</span><span class="n">device</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="n">paths</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">found_paths</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No path between </span><span class="si">{</span><span class="n">src</span><span class="si">}</span><span class="s1"> and </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">paths</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PathError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No paths from sources to </span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">subgraphs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">]</span>
+        <span class="n">beampaths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">subg</span> <span class="ow">in</span> <span class="n">subgraphs</span><span class="p">:</span>
+            <span class="n">devs</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;md&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dev</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">subg</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">data</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;md&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dev</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+            <span class="n">beampaths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">BeamPath</span><span class="p">(</span>
+                    <span class="o">*</span><span class="n">devs</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">device</span><span class="o">.</span><span class="n">md</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">_path&#39;</span><span class="p">,</span>
+                    <span class="n">minimum_transmission</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_trans</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">beampaths</span></div>
+
+
+<div class="viewcode-block" id="LightController.path_to">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.path_to">[docs]</a>
+    <span class="k">def</span> <span class="nf">path_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BeamPath</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the path with latest blocking device</span>
+<span class="sd">        (highest blocking z-position) to the requested device</span>
+
+<span class="sd">        To get all possible paths, see ``LightController.paths_to``</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        device : Device</span>
+<span class="sd">            A device somewhere in the facility</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        BeamPath</span>
+<span class="sd">            path to the specified device</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paths_to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">imped_z</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="LightController.make_graph">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.make_graph">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">make_graph</span><span class="p">(</span>
+        <span class="n">branch_devs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SearchResult</span><span class="p">],</span>
+        <span class="n">branch_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">sources</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">NodeName</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a graph with devices from ``branch_devs`` as nodes,</span>
+<span class="sd">        arranged in z-order.</span>
+
+<span class="sd">        It is assumed that all devices lie on branch: ``branch_name``</span>
+
+<span class="sd">        If ``sources`` is provided, will prepend a source node at the</span>
+<span class="sd">        beginning of the branch if ``branch_name == sources``</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        branch_devs : List[happi.SearchResult]</span>
+<span class="sd">            a list of devices to generate graph with</span>
+
+<span class="sd">        branch_name : str</span>
+<span class="sd">            branch name, used to label edges</span>
+
+<span class="sd">        sources : List[NodeName], optional</span>
+<span class="sd">            source node Names, by default []</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        nx.DiGraph</span>
+<span class="sd">            The branch comprised of nodes holding devices from branch_devs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+        <span class="n">result_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">branch_devs</span><span class="p">)</span>
+        <span class="n">result_list</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">])</span>
+        <span class="c1"># label nodes with device name, store SearchResult and leave</span>
+        <span class="c1"># a place for the ophyd device</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">result_list</span><span class="p">:</span>
+            <span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">res</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                         <span class="p">{</span><span class="s1">&#39;md&#39;</span><span class="p">:</span> <span class="n">NodeMetadata</span><span class="p">(</span><span class="n">res</span><span class="o">=</span><span class="n">res</span><span class="p">,</span> <span class="n">dev</span><span class="o">=</span><span class="kc">None</span><span class="p">)}))</span>
+
+        <span class="c1"># construct edges</span>
+        <span class="n">edges</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">NodeName</span><span class="p">,</span> <span class="n">NodeName</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">skipped_right</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">skipped_left</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">last_on_branch</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># weight not used currently, but may be for path finding algos</span>
+        <span class="n">edata</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;weight&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;branch&#39;</span><span class="p">:</span> <span class="n">branch_name</span><span class="p">}</span>
+        <span class="c1"># Need to properly handle &quot;dangling&quot; devices that either:</span>
+        <span class="c1"># only have the current branch in their input (skipped_right)</span>
+        <span class="c1"># - these devices will not have output edge</span>
+        <span class="c1"># only have the current branch in their output (skipped_left)</span>
+        <span class="c1"># - these devices will not have an input edge</span>
+
+        <span class="c1"># These dangling nodes are distinct from branching nodes, and</span>
+        <span class="c1"># will be joined when subgraphs are merged.</span>
+
+        <span class="c1"># In addition, after dangling nodes are attached, non-dangling</span>
+        <span class="c1"># nodes should be connected, skipping the dangling nodes.</span>
+        <span class="c1"># Thus the last_on_branch device must be tracked</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)):</span>
+            <span class="n">curr_dev</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;md&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">res</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">branch_name</span> <span class="ow">in</span> <span class="n">curr_dev</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;input_branches&#39;</span><span class="p">]</span> <span class="ow">and</span>
+                    <span class="n">branch_name</span> <span class="ow">in</span> <span class="n">curr_dev</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;output_branches&#39;</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">last_on_branch</span> <span class="o">!=</span> <span class="n">i</span><span class="p">:</span>
+                    <span class="c1"># attach skipped devices</span>
+                    <span class="k">for</span> <span class="n">ri</span> <span class="ow">in</span> <span class="n">skipped_right</span><span class="p">:</span>
+                        <span class="n">edges</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">nodes</span><span class="p">[</span><span class="n">last_on_branch</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                                     <span class="n">nodes</span><span class="p">[</span><span class="n">ri</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">edata</span><span class="p">))</span>
+                    <span class="n">skipped_right</span> <span class="o">=</span> <span class="p">[]</span>
+
+                    <span class="k">for</span> <span class="n">li</span> <span class="ow">in</span> <span class="n">skipped_left</span><span class="p">:</span>
+                        <span class="n">edges</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">nodes</span><span class="p">[</span><span class="n">li</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">edata</span><span class="p">))</span>
+                    <span class="n">skipped_left</span> <span class="o">=</span> <span class="p">[]</span>
+
+                    <span class="c1"># make edge between last_on_branch and current node</span>
+                    <span class="c1"># luckily duplicate edges are ignored</span>
+                    <span class="n">edges</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">nodes</span><span class="p">[</span><span class="n">last_on_branch</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                                 <span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">edata</span><span class="p">))</span>
+                <span class="c1"># update last_on_branch</span>
+                <span class="n">last_on_branch</span> <span class="o">=</span> <span class="n">i</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">next_dev</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;md&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">res</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="c1"># we are at the end, skip steps that look ahead</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">curr_dev</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;output_branches&#39;</span><span class="p">])</span> <span class="o">&amp;</span>
+                    <span class="nb">set</span><span class="p">(</span><span class="n">next_dev</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;input_branches&#39;</span><span class="p">])):</span>
+                <span class="c1"># base case, make edge as normal</span>
+                <span class="n">edges</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">edata</span><span class="p">))</span>
+            <span class="c1"># process dangling nodes.  Here we skip making edges for</span>
+            <span class="c1"># this node, and attach it to next node with branch_name</span>
+            <span class="c1"># as its input and output (saved as last_on_branch)</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">branch_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">curr_dev</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;input_branches&#39;</span><span class="p">]):</span>
+                <span class="n">skipped_left</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">branch_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">curr_dev</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;output_branches&#39;</span><span class="p">]):</span>
+                <span class="n">skipped_right</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="c1"># add sources</span>
+        <span class="k">if</span> <span class="n">branch_name</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+            <span class="n">nodes</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;source_</span><span class="si">{</span><span class="n">branch_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                             <span class="p">{</span><span class="s1">&#39;md&#39;</span><span class="p">:</span> <span class="n">NodeMetadata</span><span class="p">()}))</span>
+            <span class="n">edges</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">edata</span><span class="p">))</span>
+        <span class="c1"># add end point</span>
+        <span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">branch_name</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;md&#39;</span><span class="p">:</span> <span class="n">NodeMetadata</span><span class="p">()}))</span>
+        <span class="n">edges</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">nodes</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">edata</span><span class="p">))</span>
+
+        <span class="n">graph</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span>
+
+        <span class="n">graph</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">branch_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">graph</span></div>
+
+
+<div class="viewcode-block" id="LightController.get_device">
+<a class="viewcode-back" href="../../controller.html#lightpath.LightController.get_device">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="n">NodeName</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Device</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return device in the facility.  Creates the device if it has</span>
+<span class="sd">        not been already.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        device : NodeName</span>
+<span class="sd">            name of device</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Device</span>
+<span class="sd">            requested device, or a mock version of the device</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dev_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">device_name</span><span class="p">][</span><span class="s1">&#39;md&#39;</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;requested device (</span><span class="si">{</span><span class="n">device_name</span><span class="si">}</span><span class="s1">) not in facility&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">dev_data</span><span class="o">.</span><span class="n">dev</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">dev_data</span><span class="o">.</span><span class="n">dev</span>
+        <span class="k">elif</span> <span class="n">dev_data</span><span class="o">.</span><span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># not instantiated yet, create and fill</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">dev</span> <span class="o">=</span> <span class="n">dev_data</span><span class="o">.</span><span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">device_name</span><span class="p">][</span><span class="s1">&#39;md&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dev</span> <span class="o">=</span> <span class="n">dev</span>
+                <span class="k">return</span> <span class="n">dev</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Device </span><span class="si">{</span><span class="n">device_name</span><span class="si">}</span><span class="s1"> failed to load, &#39;</span>
+                             <span class="s1">&#39;attempting to make a mock device&#39;</span><span class="p">)</span>
+                <span class="n">dev</span> <span class="o">=</span> <span class="n">make_mock_device</span><span class="p">(</span><span class="n">dev_data</span><span class="o">.</span><span class="n">res</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">device_name</span><span class="p">][</span><span class="s1">&#39;md&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dev</span> <span class="o">=</span> <span class="n">dev</span>
+                <span class="k">return</span> <span class="n">dev</span></div>
+</div>
+
+
+
+<span class="k">def</span> <span class="nf">get_active_outputs</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a list of branch names that are receiving beam.</span>
+<span class="sd">    Alternatively, returns a list of branches this device is delivering</span>
+<span class="sd">    beam to with transmission &gt; 0.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    device : Device</span>
+<span class="sd">        Device to get active output branches for</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    List[str]</span>
+<span class="sd">        List of active branches</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">outputs</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">get_lightpath_state</span><span class="p">()</span><span class="o">.</span><span class="n">output</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="n">br</span> <span class="k">for</span> <span class="n">br</span><span class="p">,</span> <span class="n">trans</span> <span class="ow">in</span> <span class="n">outputs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">trans</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">make_mock_device</span><span class="p">(</span><span class="n">result</span><span class="p">:</span> <span class="n">SearchResult</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Device</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a mock device that implements the Lightpath Interface using</span>
+<span class="sd">    the metadata provided. If more than one output branch is found,</span>
+<span class="sd">    uses a slightly more complicated ``Crystal`` mock device.  Creates</span>
+<span class="sd">    a ``Valve`` mock device otherwise</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    result : SearchResult</span>
+<span class="sd">        a happi.SearchResult containing the metadata needed to mock</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Device</span>
+<span class="sd">        a mock device usable in the Lightpath app</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">md</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">metadata</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">md</span><span class="p">[</span><span class="s1">&#39;output_branches&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">MockClass</span> <span class="o">=</span> <span class="n">Crystal</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">MockClass</span> <span class="o">=</span> <span class="n">Valve</span>
+
+    <span class="n">mock_dev</span> <span class="o">=</span> <span class="n">MockClass</span><span class="p">(</span><span class="n">md</span><span class="p">[</span><span class="s1">&#39;prefix&#39;</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;MOCK_&#39;</span> <span class="o">+</span> <span class="n">md</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">z</span><span class="o">=</span><span class="n">md</span><span class="p">[</span><span class="s1">&#39;z&#39;</span><span class="p">],</span>
+                         <span class="n">input_branches</span><span class="o">=</span><span class="n">md</span><span class="p">[</span><span class="s1">&#39;input_branches&#39;</span><span class="p">],</span>
+                         <span class="n">output_branches</span><span class="o">=</span><span class="n">md</span><span class="p">[</span><span class="s1">&#39;output_branches&#39;</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">mock_dev</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, SLAC National Accelerator Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
