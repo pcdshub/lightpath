@@ -19,7 +19,8 @@ Contributors
 
 v1.0.5 (2024-09-03)
 ===================
-
+Separate lightpath and lightpath[gui] subpackages (for pip builds).
+No functional changes to the library code.
 
 
 v1.0.4 (2024-04-12)
