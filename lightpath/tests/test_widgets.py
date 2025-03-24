@@ -32,10 +32,9 @@ def test_widget_updates(lightrow: LightRow, path: BeamPath, qtbot: QtBot):
     ipimb.remove()
     ipimb.insert()
 
-    # Valve3 (lightrow) and ipimb5 both inserted
-    # minimum transmission = 0.1, fully blocked by valve3
+    # ipimb5, valve10 both inserted
+    # minimum transmission = 0.1, fully blocked by valve10, partially by ipimb5
 
-    # expecting the device updated callback to trigger update in ipimb_row
     # half-removed == inserted but not in blocking devices
     def half_removed():
         return (to_stylesheet_color(state_colors['half_removed'])
@@ -48,6 +47,7 @@ def test_widget_updates(lightrow: LightRow, path: BeamPath, qtbot: QtBot):
                 in valve10_row.state_label.styleSheet())
     qtbot.waitUntil(valve10_blocking, timeout=5)
 
+    # valve3 (lightrow) upstream of all devices, fully blocks
     lightrow.device.remove()
 
     def removed():
