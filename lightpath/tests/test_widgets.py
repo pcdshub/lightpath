@@ -2,16 +2,16 @@ from unittest.mock import Mock
 
 import pytest
 from ophyd import Device
+from pytestqt.qtbot import QtBot
 
 from lightpath import BeamPath
-from lightpath.tests.conftest import wait_until
 from lightpath.ui import LightRow
 from lightpath.ui.widgets import (state_colors, symbol_for_device,
                                   to_stylesheet_color)
 
 
 @pytest.fixture(scope='function')
-def lightrow(path: BeamPath, qtbot):
+def lightrow(path: BeamPath, qtbot: QtBot):
     # Generate lightpath
     w = LightRow(path.path[3], path)
     qtbot.addWidget(w)
@@ -20,31 +20,41 @@ def lightrow(path: BeamPath, qtbot):
     return w
 
 
-def test_widget_updates(lightrow: LightRow, path: BeamPath):
+def test_widget_updates(lightrow: LightRow, path: BeamPath, qtbot: QtBot):
     # inserted device may still permit beam
     ipimb = path.path[5]
     ipimb_row = LightRow(ipimb, path)
+    # Insert valve downstream of ipimb
+    valve10_row = LightRow(path.path[10], path)
+    valve10_row.device.insert()
     # Toggle device to trigger callbacks
     ipimb.insert()
     ipimb.remove()
     ipimb.insert()
-    lightrow.device.insert()
 
+    # ipimb5, valve10 both inserted
+    # minimum transmission = 0.1, fully blocked by valve10, partially by ipimb5
+
+    # half-removed == inserted but not in blocking devices
     def half_removed():
         return (to_stylesheet_color(state_colors['half_removed'])
                 in ipimb_row.state_label.styleSheet())
 
-    wait_until(half_removed, timeout=5)
-    assert half_removed()
+    qtbot.waitUntil(half_removed, timeout=5)
 
+    def valve10_blocking():
+        return (to_stylesheet_color(state_colors['blocking'])
+                in valve10_row.state_label.styleSheet())
+    qtbot.waitUntil(valve10_blocking, timeout=5)
+
+    # valve3 (lightrow) upstream of all devices, fully blocks
     lightrow.device.remove()
 
     def removed():
         return (to_stylesheet_color(state_colors['removed'])
                 in lightrow.state_label.styleSheet())
 
-    wait_until(removed, timeout=5)
-    assert removed()
+    qtbot.waitUntil(removed, timeout=5)
 
     lightrow.device.insert()
 
@@ -52,8 +62,7 @@ def test_widget_updates(lightrow: LightRow, path: BeamPath):
         return (to_stylesheet_color(state_colors['blocking'])
                 in lightrow.state_label.styleSheet())
 
-    wait_until(blocking, timeout=5)
-    assert blocking()
+    qtbot.waitUntil(blocking, timeout=5)
 
     # Check that callbacks have been called
     assert lightrow.state_label.setText.called

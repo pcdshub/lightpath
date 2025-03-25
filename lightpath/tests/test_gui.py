@@ -5,6 +5,7 @@ import pytest
 from pytestqt.qtbot import QtBot
 
 from lightpath.controller import LightController
+from lightpath.path import DeviceState
 from lightpath.ui import LightApp
 
 
@@ -81,7 +82,11 @@ def test_filtering(qtbot: QtBot, lightapp: LightApp, monkeypatch):
     # Insert at least one device then hide
     device_row = lightapp.rows[2][0]
     device_row.device.insert()
+    for row in lightapp.rows:
+        qtbot.waitUntil(lambda: row[0].last_state is not DeviceState.Disconnected)
+
     lightapp.remove_check.setChecked(False)
+    qtbot.waitUntil(lambda: not lightapp.remove_check.isChecked())
     # Reset mock
     for row in lightapp.rows:
         row[0].setHidden.reset_mock()
