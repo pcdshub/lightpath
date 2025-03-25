@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Device Interface &mdash; LCLS Lightpath 1.0.6.dev7+gc7865aa documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+  <title>Device Interface &mdash; LCLS Lightpath 1.0.7.dev5+gf4d9c2e documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=1b70267f"></script>
+      <script src="_static/documentation_options.js?v=4773ffeb"></script>
       <script src="_static/doctools.js?v=9a2dae69"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -179,11 +179,11 @@ for the updated status of the device.  (Lightpath may also query
 <code class="docutils literal notranslate"><span class="pre">get_lightpath_state()</span></code> at other points).</p>
 <p>Putting all of this together, a minimal device definition that fulfills the
 lightpath interface requirements might look like:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">lightpath</span> <span class="kn">import</span> <span class="n">LightpathState</span>
-<span class="kn">from</span> <span class="nn">ophyd</span> <span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">EpicsSignal</span>
-<span class="kn">from</span> <span class="nn">ophyd</span> <span class="kn">import</span> <span class="n">Component</span> <span class="k">as</span> <span class="n">Cpt</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightpath</span><span class="w"> </span><span class="kn">import</span> <span class="n">LightpathState</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">EpicsSignal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd</span><span class="w"> </span><span class="kn">import</span> <span class="n">Component</span> <span class="k">as</span> <span class="n">Cpt</span>
 
-<span class="k">class</span> <span class="nc">MyDevice</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyDevice</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
 
     <span class="c1"># if we were to only care about one signal</span>
     <span class="n">lightpath_summary</span> <span class="o">=</span> <span class="n">Cpt</span><span class="p">(</span><span class="n">EpicsSignal</span><span class="p">,</span> <span class="s1">&#39;:MY:PV&#39;</span><span class="p">)</span>
@@ -191,7 +191,7 @@ lightpath interface requirements might look like:</p>
     <span class="n">input_branches</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;K0&#39;</span><span class="p">]</span>
     <span class="n">output_branches</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;K0&#39;</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">get_lightpath_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_lightpath_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">LightpathState</span><span class="p">(</span>
             <span class="n">inserted</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">removed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -207,11 +207,11 @@ the ophyd callback queue with Channel Access requests.  This was found to be
 necessary for beam paths with many devices.</p>
 <p>In LCLS, you might see a device object definition that looks like the
 following:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">lightpath</span> <span class="kn">import</span> <span class="n">LightpathState</span>
-<span class="kn">from</span> <span class="nn">pcdsdevices.interface</span> <span class="kn">import</span> <span class="n">LightpathMixin</span>
-<span class="kn">from</span> <span class="nn">ophyd</span> <span class="kn">import</span> <span class="n">Device</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightpath</span><span class="w"> </span><span class="kn">import</span> <span class="n">LightpathState</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pcdsdevices.interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">LightpathMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span>
 
-<span class="k">class</span> <span class="nc">BaseDevice</span><span class="p">(</span><span class="n">Device</span><span class="p">,</span> <span class="n">LightpathMixin</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BaseDevice</span><span class="p">(</span><span class="n">Device</span><span class="p">,</span> <span class="n">LightpathMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base class for some specific device</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -222,7 +222,7 @@ following:</p>
 
     <span class="c1"># &lt; ... unrelated methods snipped ... &gt;</span>
 
-    <span class="k">def</span> <span class="nf">calc_lightpath_state</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calc_lightpath_state</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">xwidth</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">ywidth</span><span class="p">:</span> <span class="nb">float</span>

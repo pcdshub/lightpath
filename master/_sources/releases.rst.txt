@@ -2,6 +2,19 @@ Release History
 ###############
 
 
+v1.0.7 (2025-03-25)
+===================
+
+Bugfixes
+--------
+- Fix a couple of flaky tests to improve reproducibility
+
+Contributors
+------------
+- tangkong
+
+
+
 v1.0.6 (2024-12-19)
 ===================
 
