@@ -12,35 +12,63 @@ source:
   path: ..
 
 build:
-  number: 0
-  noarch: python
-  script: {{ PYTHON }} -m pip install . -vv
+  entry_points:
+    - lightpath = lightpath.main:entrypoint
+  number: 1
 
 requirements:
-  build:
-    - python >=3.6
-    - pip
-    - setuptools_scm
-  run:
-    - python >=3.6
-    - coloredlogs
-    - happi >=1.6.0
-    - numpy
-    - ophyd
-    - prettytable
-    - pydm
-    - pyqt >=5
-    - qtawesome
-    - qtpy
-    - typhos >=1.0.0
+  host:
+    - python >={{ python_min }}
 
 test:
   imports:
     - lightpath
-  requires:
-    - ipython
-    - pytest
-    - pytest-qt
+
+outputs:
+  - name: lightpath-base
+    build:
+      noarch: python
+      script: {{ PYTHON }} -m pip install . -vv
+    requirements:
+      host:
+        - python {{ python_min }}
+        - pip
+        - setuptools
+        - setuptools_scm
+      run:
+        - python >={{ python_min }}
+        - coloredlogs
+        - happi >=1.6.0
+        - ophyd
+        - prettytable
+      run_constrained:
+        - networkx <3.3  # [py<=39]
+      test:
+        requires:
+          - python {{ python_min }}
+
+  - name: lightpath
+    build:
+      noarch: python
+    requirements:
+      host:
+        - python {{ python_min }}
+        - pip
+        - setuptools
+        - setuptools_scm
+      run:
+        - {{ pin_subpackage('lightpath-base', max_pin='x.x.x') }}
+        - python >={{ python_min }}
+        - pydm
+        - pyqt >=5
+        - qtawesome
+        - qtpy
+        - typhos >=1.0.0
+      test:
+        imports:
+          - lightpath
+        requires:
+          - python {{ python_min }}
 
 about:
   home: https://github.com/pcdshub/lightpath
