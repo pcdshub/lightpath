@@ -2,5 +2,5 @@ coloredlogs
 happi>=1.6.0
 numpy
 ophyd
-networkx<3.3
+networkx
 prettytable

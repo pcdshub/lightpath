@@ -8,7 +8,7 @@ description = "{{ cookiecutter.description }}"
 dynamic = [ "version", "readme", "dependencies", "optional-dependencies", "optional-dependencies",]
 keywords = []
 name = "lightpath"
-requires-python = ">=3.9"
+requires-python = ">=3.12"
 [[project.authors]]
 name = "SLAC National Accelerator Laboratory"
 

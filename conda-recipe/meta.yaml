@@ -18,13 +18,14 @@ build:
 
 requirements:
   build:
-    - python >=3.6
+    - python >=3.12
     - pip
     - setuptools_scm
   run:
-    - python >=3.6
+    - python >=3.12
     - coloredlogs
     - happi >=1.6.0
+    - networkx
     - numpy
     - ophyd
     - prettytable
@@ -41,6 +42,7 @@ test:
     - ipython
     - pytest
     - pytest-qt
+    - pytest-cov
 
 about:
   home: https://github.com/pcdshub/lightpath

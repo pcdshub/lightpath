@@ -1,4 +1,4 @@
-from distutils.spawn import find_executable
+import shutil
 from unittest.mock import Mock
 
 import pytest
@@ -28,7 +28,7 @@ def test_app_buttons(lightapp: LightApp):
 
 def test_lightpath_launch_script():
     # Check that the executable was installed
-    assert find_executable('lightpath')
+    assert shutil.which('lightpath')
 
 
 def test_focus_on_device(lightapp: LightApp, monkeypatch):
